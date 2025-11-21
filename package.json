@@ -1,11 +1,12 @@
 {
   "name": "unistress-web-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "UniStress – student wellbeing tracking web application",
   "type": "module",
-  "main": "server.js",
+  "main": "backend/server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,11 +22,13 @@
   "homepage": "https://github.com/Tineprah07/Unistress-Web-App#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "chart.js": "^4.5.1",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
-    "sqlite3": "^5.1.7"
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
   }
 }
