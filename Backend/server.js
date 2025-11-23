@@ -7,7 +7,8 @@ import { fileURLToPath } from "url";
 import session from "express-session";
 import dotenv from "dotenv";
 import cors from "cors";
-import pool, { testDbConnection } from "./db/pool.js";
+import { testDbConnection } from "./db/pool.js";
+import authRoutes from "./routes/authRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -67,6 +68,9 @@ app.get("/", (req, res) => {
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "UniStress backend is live" });
 });
+
+// Auth routes
+app.use("/api/auth", authRoutes);
 
 // Test route to confirm database connection
 app.get("/api/db-test", async (req, res) => {
