@@ -20,3 +20,12 @@ export async function testDbConnection() {
 }
 
 export default pool;
+
+
+
+
+
+
+// To connect to the database directly using psql, use:
+// psql -U augustine -d unistress_db
+// \d users

@@ -1,7 +1,15 @@
-// User table setup script
+// -------------------------
+// UniStress Database Init
+// -------------------------
+// This script creates the initial database tables that
+// UniStress needs to run. You only execute it once,
+// or again if you reset the database.
 
 import pool from "./pool.js";
 
+// -------------------------
+// Create Users Table
+// -------------------------
 async function createUsersTable() {
   const createTableQuery = `
     CREATE TABLE IF NOT EXISTS users (
@@ -18,11 +26,23 @@ async function createUsersTable() {
     console.log("✅ users table is ready");
   } catch (error) {
     console.error("❌ Error creating users table:", error);
-  } finally {
-    // Close the pool so the script can exit
-    await pool.end();
   }
 }
 
-// Run the function when this file is executed
-createUsersTable();
+// -------------------------
+// Run all table initialisations
+// -------------------------
+async function runInit() {
+  await createUsersTable();
+  await pool.end(); // close connection so script ends
+}
+
+// Execute init function
+runInit();
+
+
+
+// Note that i will add more tables later as needed.
+
+// To run this script, use the command:
+// node backend/db/init.js
