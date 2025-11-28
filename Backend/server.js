@@ -101,18 +101,10 @@ app.get("/api/db-test", async (req, res) => {
 // -------------------------
 // Start Server
 // -------------------------
-// app.listen(PORT, () => {
-//   console.log(`UniStress running at http://localhost:${PORT}`);
-// });
-
 app.listen(PORT, () => {
-  console.log(`---------------------------------------------------`);
-  console.log(` UniStress Backend Running`);
-  console.log(`---------------------------------------------------`);
-  console.log(` Server:   http://localhost:${PORT}`);
-  console.log(` Health:   http://localhost:${PORT}/api/health`);
-  console.log(` DB Test:  http://localhost:${PORT}/api/db-test`);
-  console.log(`---------------------------------------------------`);
+  console.log(`-----------------------------------------------`);
+  console.log(`UniStress running at http://localhost:${PORT}`);
+  console.log(`-----------------------------------------------`);  
 });
 
 
