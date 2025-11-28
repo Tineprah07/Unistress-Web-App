@@ -50,15 +50,22 @@ app.use((req, res, next) => {
 // -------------------------
 // Static Frontend
 // -------------------------
-// Path to frontend public folder
-const publicPath = path.join(__dirname, "../src/public");
+// 1. Define the root path to the Frontend folder
+const frontendPath = path.join(__dirname, "../Frontend");
+
+// 2. Define specific paths for your sibling folders
+const publicPath = path.join(frontendPath, "public"); // for css, js
+const assetsPath = path.join(frontendPath, "assets"); // for images
+const viewsPath = path.join(frontendPath, "views");   // for html files
 
 // Serve static files
 app.use(express.static(publicPath));
+app.use("/assets", express.static(assetsPath));
+
 
 // Landing page (shows index.html)
 app.get("/", (req, res) => {
-  res.sendFile(path.join(publicPath, "index.html"));
+  res.sendFile(path.join(viewsPath, "index.html"));
 });
 
 // -------------------------
