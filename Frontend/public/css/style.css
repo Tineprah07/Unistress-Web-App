@@ -25,79 +25,72 @@ body {
     max-width: 600px;
 }
 
-/* --- LOGO WRAPPER --- */
+/* LOGO WRAPPER */
 .logo-wrapper {
     display: flex;
-    align-items: baseline; 
-    justify-content: center; /* Keeps everything centered */
+    align-items: baseline;
+    justify-content: center;
     margin-bottom: 40px;
     height: 120px;
-    /* Transition for layout shifts if needed */
-    transition: all 1.0s ease;
+    transition: all 1s ease;
 }
 
 /* THE STATIC U */
 .static-u {
-    font-size: 6rem;
+    font-size: clamp(4rem, 10vw, 6rem);
     font-weight: 800;
     line-height: 1;
     background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 10px 20px rgba(78, 84, 200, 0.25));
-    z-index: 2; /* Keeps U on top */
+    z-index: 2;
 }
 
 /* LETTERS CONTAINER */
 .letters-container {
     display: flex;
     margin-left: 2px;
-    overflow: hidden; /* Hides letters when width shrinks */
-    
-    /* Set a max-width large enough to fit text, acts as "auto" */
-    max-width: 400px; 
+    overflow: hidden;
+    max-width: 400px;
     opacity: 1;
-    
-    /* THE SLIDE TRANSITION */
-    /* We transition max-width to 0 to simulate the slide */
     transition: max-width 0.8s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.5s ease;
+    will-change: max-width, opacity;
 }
 
-/* STATE: COLLAPSED (Added by JS at 50%) */
+/* COLLAPSE STATE */
 .letters-container.collapse {
-    max-width: 0px;
+    max-width: 0;
     opacity: 0;
     margin-left: 0;
 }
 
-/* INDIVIDUAL LETTERS – static hidden state */
+/* INDIVIDUAL LETTERS */
 .letters-container span {
-    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    font-size: clamp(1.5rem, 4.5vw, 2.5rem);
     font-weight: 600;
     color: #2d3436;
     display: inline-block;
     white-space: nowrap;
-
-    opacity: 0;   /* hidden */
+    opacity: 0;
 }
 
-/* Reveal state */
+/* Reveal state (static appearance) */
 .letters-container span.reveal {
     animation: fadeIn 400ms ease forwards;
 }
 
-/* Keyframe: pure opacity only */
 @keyframes fadeIn {
     from { opacity: 0; }
-    to   { opacity: 1; }
+    to { opacity: 1; }
 }
 
-
-/* --- LOADING BAR --- */
+/* LOADING BAR */
 .loading-area {
-    width: 320px;
+    width: min(20rem, 85vw);
     opacity: 0;
     margin-top: -30px;
+    margin-bottom: 100px;
     animation: simpleFadeIn 1s ease forwards 0.2s;
 }
 
@@ -130,49 +123,17 @@ body {
     font-weight: 700;
 }
 
-/* --- SMALL RESPONSIVE IMPROVEMENTS (recommended) --- */
-.static-u {
-    font-size: clamp(4rem, 10vw, 6rem);
-}
-
-.letters-container span {
-    font-size: clamp(1.5rem, 4.5vw, 2.5rem);
-}
-
-/* Keep loading area responsive */
-.loading-area {
-    width: min(20rem, 85vw);
-    margin-bottom: 100px;
-}
-
-/* --- CENTRING BEHAVIOUR DURING COLLAPSE --- */
-/* This ensures the 'U' ends up truly centred after collapse */
-.logo-wrapper {
-    position: relative;
-}
-
-/* When letters collapse, we centre the wrapper contents tightly */
-.logo-wrapper.is-collapsed {
-    justify-content: center;
-}
-
-/* Optional: smoother feel when collapsing */
-.letters-container {
-    will-change: max-width, opacity;
-}
-
-/* Unistress */
+/* Footer */
 .footer-brand {
     position: absolute;
-    bottom: 30px;            
+    bottom: 30px;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #040505;          
+    color: #040505;
     letter-spacing: 1.5px;
 }
 
-
-/* --- REDUCED MOTION (professional touch) --- */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
     .letters-container,
     .progress-bar,
@@ -184,43 +145,29 @@ body {
 
     .letters-container span {
         opacity: 1 !important;
-        filter: none !important;
-        transform: none !important;
     }
 }
 
-
-/* Ensure this keyframe exists (it was in your original code) */
-@keyframes simpleFadeIn { to { opacity: 1; } }
-
-/* KEYFRAMES */
-@keyframes mistReveal {
-    0% { opacity: 0; filter: blur(15px); transform: translateY(15px) scale(0.9); }
-    100% { opacity: 1; filter: blur(0); transform: translateY(0) scale(1); }
+@keyframes simpleFadeIn {
+    to { opacity: 1; }
 }
-
-@keyframes simpleFadeIn { to { opacity: 1; } }
 
 /* PHONE FIXES */
 @media (max-width: 480px) {
 
-    /* Keep the U the same size on phone */
     .static-u {
         font-size: 6rem;
     }
 
-    /* Increase "nistress" size on phone */
     .letters-container span {
         font-size: 2.2rem;
     }
 
-    /* Slightly tighten spacing */
     .letters-container {
         margin-left: 1px;
         max-width: 280px;
     }
 
-    /* Bring loading bar closer */
     .logo-wrapper {
         margin-bottom: 18px;
         height: auto;
@@ -232,4 +179,3 @@ body {
         width: min(18rem, 85vw);
     }
 }
-
