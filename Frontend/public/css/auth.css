@@ -39,6 +39,10 @@ button.dot {
   --unistress-gradient: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
   --unistress-bar: linear-gradient(90deg, #4e54c8, #8f94fb);
   --text-on-primary: #ffffff;
+
+  --cosmic-deep: #15194a;
+  --cosmic-mid: #3b3fba;
+  --cosmic-soft: #8f94fb;
 }
 
 .signin {
@@ -54,7 +58,11 @@ button.dot {
 .signin-left {
   position: relative;
   padding: 3rem;
-  background: var(--unistress-gradient);
+  /* Deep-space base */
+  background:
+    radial-gradient(1000px 600px at 18% 20%, rgba(255,255,255,0.12), transparent 55%),
+    radial-gradient(900px 560px at 82% 80%, rgba(0,0,0,0.22), transparent 60%),
+    linear-gradient(145deg, var(--cosmic-deep) 0%, #2c2f82 45%, #6f76f5 100%);
   color: var(--text-on-primary);
   overflow: hidden;
   display: flex;
@@ -64,30 +72,60 @@ button.dot {
   z-index: 1;
 }
 
-/* Floating Background Shapes */
 .left-bg-decor {
   position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.4;
+  background: transparent;
   z-index: -1;
-  display: block;
+  pointer-events: none;
 }
 
+/* Inner Ring */
 .decor-1 {
-  width: 300px;
-  height: 300px;
-  background: #8f94fb;
-  top: -10%;
-  left: -10%;
+  width: 500px;
+  height: 500px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+  /* "Breathe" Animation */
+  animation: breathe 8s ease-in-out infinite; 
 }
 
+/* Outer Ring */
 .decor-2 {
-  width: 400px;
-  height: 400px;
-  background: #4e54c8;
-  bottom: -10%;
-  right: -10%;
+  width: 800px;
+  height: 800px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 60px rgba(138, 43, 226, 0.1); /* Subtle purple glow */
+  animation: breathe 8s ease-in-out infinite;
+  animation-delay: 1s; /* Slight delay for a ripple effect */
+}
+
+/* Add a third ring using pseudo-element for more depth */
+.signin-left::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1200px;
+  height: 1200px;
+  border: 1px dashed rgba(255, 255, 255, 0.03); /* Dashed for tech feel */
+  border-radius: 50%;
+  z-index: -2;
+  animation: spinSlow 60s linear infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+  50% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+}
+
+@keyframes spinSlow {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 /* Branding Area */
@@ -465,6 +503,11 @@ button.dot.active {
     z-index: 10;
     align-content: start;
   }
+
+  .decor-1 { width: 400px; height: 400px; }
+  .decor-2 { width: 600px; height: 600px; }
+  .signin-left::before { width: 800px; height: 800px; }
+
 }
  
 /* --- MOBILE PHONE (Max Width 480px) --- */
@@ -481,6 +524,11 @@ button.dot.active {
     padding: 1rem;
     padding-bottom: 2rem;
   }
+
+  /* Shrink the rings significantly for phone so they aren't overwhelming */
+  .decor-1 { width: 250px; height: 250px; border-color: rgba(255,255,255,0.08); }
+  .decor-2 { width: 380px; height: 380px; border-color: rgba(255,255,255,0.05); }
+  .signin-left::before { width: 500px; height: 500px; opacity: 0.5; }
 
   .left-brand {
     gap: 0.4rem;
