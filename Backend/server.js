@@ -109,5 +109,5 @@ app.listen(PORT, () => {
 
 
 // Run commands to start the server:
-// node server.js or npm run dev
+// node Backend/server.js or npm run dev or npm start
 

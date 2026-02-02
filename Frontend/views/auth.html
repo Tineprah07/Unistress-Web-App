@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniStress | Sign in</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+</head>
+
+<body>
+  <main class="signin">
+
+    <section class="signin-left">
+      <span class="left-bg-decor decor-1" aria-hidden="true"></span>
+      <span class="left-bg-decor decor-2" aria-hidden="true"></span>
+
+      <header class="left-top">
+        <figure class="left-brand">
+          <span class="static-u">U</span>
+          <figcaption class="brand-stack">
+            <span class="brand-name">UniStress</span>
+            <span class="brand-tag">Student Wellbeing Tracker</span>
+          </figcaption>
+        </figure>
+      </header>
+
+      <section class="carousel-container" aria-label="Wellbeing Features">
+          
+          <ul class="image-carousel">
+    
+              <li class="img-slide active">
+                  <dotlottie-player src="https://lottie.host/1702abdb-5ab2-4692-9a0d-d26243cc2de8/f5deOEodV5.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
+              </li>
+              
+              <li class="img-slide">
+                  <dotlottie-player src="https://lottie.host/90792410-a6f6-4e44-9451-ee08291f1358/Tu334aXjrE.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
+              </li>
+
+              <li class="img-slide">
+                  <img src="images/sleep.png" alt="Sleep">
+              </li>
+
+              <li class="img-slide">
+                  <dotlottie-player src="https://lottie.host/f80bbcc8-1977-4aaf-8d27-f3b78041bbfc/vSy5yieYk9.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
+              </li>
+
+              <li class="img-slide">
+                  <img src="images/hydration.png" alt="Hydration">
+              </li>
+
+          </ul>
+
+          <div class="text-carousel">
+              
+              <div class="text-slide active">
+                  <h2 class="slide-title">
+                      Manage Stress <i class="fa-solid fa-leaf"></i>
+                  </h2>
+                  <p class="slide-desc">
+                    Check in with your stress levels, slow your breathing, and reset your mind between lectures and deadlines.
+                  </p>
+              </div>
+
+              <div class="text-slide">
+                  <h2 class="slide-title">
+                      Stay Active <i class="fa-solid fa-dumbbell"></i>
+                  </h2>
+                  <p class="slide-desc">Log workouts, daily movement, or gym sessions to keep your body energised and your mood balanced.</p>
+              </div>
+
+              <div class="text-slide">
+                  <h2 class="slide-title">
+                      Improve Sleep <i class="fa-solid fa-moon"></i>
+                  </h2>
+                  <p class="slide-desc">Track your sleep habits and build healthier routines so you wake up rested and ready to focus.</p>
+              </div>
+
+              <div class="text-slide">
+                  <h2 class="slide-title">
+                      Stay Focused <i class="fa-solid fa-book-open"></i>
+                  </h2>
+                  <p class="slide-desc">Log your study sessions and reduce academic overwhelm with clear goals.</p>
+              </div>
+
+              <div class="text-slide">
+                  <h2 class="slide-title">
+                      Track Hydration <i class="fa-solid fa-droplet"></i>
+                  </h2>
+                  <p class="slide-desc">Stay hydrated throughout the day to maintain peak cognitive performance.</p>
+              </div>
+
+          </div>
+
+          <nav class="carousel-indicators" aria-label="Slide Navigation">
+            <button class="dot active" type="button" aria-label="Go to slide 1"></button>
+            <button class="dot" type="button" aria-label="Go to slide 2"></button>
+            <button class="dot" type="button" aria-label="Go to slide 3"></button>
+            <button class="dot" type="button" aria-label="Go to slide 4"></button>
+            <button class="dot" type="button" aria-label="Go to slide 5"></button>
+          </nav>
+
+      </section>
+    </section>
+
+    <section class="signin-right">
+      <header class="form-header">
+        <p class="right-brand">UniStress</p>
+        <h2 class="form-title">Welcome back!</h2>
+        <p class="form-subtitle">Don’t have an account? <a class="link" href="/views/register.html">Create a new account</a></p>
+      </header>
+
+      <form class="form" action="/api/auth/login" method="post">
+        <label class="field">
+          <span class="field-label">Email</span>
+          <input class="field-input" type="email" name="email" placeholder="you@uni.ac.uk" required>
+        </label>
+        <label class="field">
+          <span class="field-label">Password</span>
+          <input class="field-input" type="password" name="password" placeholder="••••••••" required>
+        </label>
+        <button class="btn btn-primary" type="submit">Sign in</button>
+        <p class="divider">or</p>
+        <button class="btn btn-outline google-btn" type="button">
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" class="google-icon" aria-hidden="true">
+          Sign in with Google
+        </button>
+        <p class="form-footer">Forgot password? <a class="link" href="/views/forgot.html">Click here</a></p>
+      </form>
+    </section>
+
+  </main>
+
+    <script src="/js/auth.js"></script>
+</body>
+</html>

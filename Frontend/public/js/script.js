@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadingText.textContent = "Welcome.";
         loadingText.style.color = "#4e54c8";
         // Future redirect logic can be placed here
-        // window.location.href = '/home.html';
+        window.location.href = '/views/auth.html';
     }
 
 });
