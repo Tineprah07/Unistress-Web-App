@@ -61,6 +61,7 @@ const viewsPath = path.join(frontendPath, "views");   // for html files
 // Serve static files
 app.use(express.static(publicPath));
 app.use("/assets", express.static(assetsPath));
+app.use("/views", express.static(viewsPath));
 
 
 // Landing page (shows index.html)

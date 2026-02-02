@@ -440,6 +440,34 @@ button.dot.active {
 /* =========================================
    4. RESPONSIVE: PHONE ONLY (Max width 480px)
    ========================================= */
+
+/* --- TABLET / SMALL LAPTOP (Max Width 1024px) --- */
+@media (max-width: 768px) {
+  .signin {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    min-height: auto;
+  }
+
+  .signin-left {
+    padding: 3rem;
+    min-height: auto;
+    padding-bottom: 5rem; /* Space for the overlap */
+  }
+
+  .signin-right {
+    padding: 1.5rem;
+    background: #ffffff;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    margin-top: -1.5rem;
+    position: relative;
+    z-index: 10;
+    align-content: start;
+  }
+}
+ 
+/* --- MOBILE PHONE (Max Width 480px) --- */
 @media (max-width: 480px) {
   .signin {
     grid-template-columns: 1fr;
@@ -592,3 +620,4 @@ button.dot.active {
     text-align: center;
   }
 }
+
