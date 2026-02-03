@@ -108,38 +108,69 @@
     </section>
 
     <section class="signin-right">
-      <header class="form-header">
-        <p class="right-brand">UniStress</p>
-        <h2 class="form-title">Hello, Welcome!</h2>
-        <p class="form-subtitle">Don’t have an account? <a class="link" href="/views/register.html">Create a new account</a></p>
-      </header>
+      <div class="auth-banner">
+        <button class="banner-btn active" id="tabLogin">Sign In</button>
+        <button class="banner-btn" id="tabRegister">Create Account</button>
+      </div>
 
-      <form class="form" action="/api/auth/login" method="post">
+      <header class="form-header">
+        <h2 class="form-title" id="authTitle">Welcome to UniStress</h2>
+        <p class="auth-description">
+          Your companion for academic balance. Track your habits, stay energized, and master your student life.
+        </p>
+        </header>
+
+      <form class="form" id="loginForm" action="/api/auth/login" method="post">
+        <label class="field">
+          <span class="field-label">Email</span>
+          <input class="field-input" type="email" name="email" placeholder="you@uni.ac.uk" required>
+        </label>
+        
+        <label class="field">
+          <span class="field-label">Password</span>
+          <div class="password-wrapper">
+            <input class="field-input" type="password" name="password" id="passwordInput" placeholder="••••••••" required>
+            <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
+          </div>
+          <div class="forgot-link-container">
+            <span class="forgot-text">Forgot password?</span> 
+            <a class="link small-link" href="/views/forgot.html">Click here</a>
+          </div>
+        </label>
+
+        <button class="btn btn-primary" type="submit">Sign in</button>
+        <p class="divider">or</p>
+        <button class="btn btn-outline google-btn" type="button">
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" class="google-icon">
+          Sign in with Google
+        </button>
+
+        <p class="form-footer" id="authSubtitle">
+          Don’t have an account? <a class="link" href="#" id="inlineRegister">Create a new account</a>
+        </p>
+      </form>
+
+      <form class="form" id="registerForm" action="/api/auth/register" method="post" style="display: none;">
+        <label class="field">
+          <span class="field-label">Full Name</span>
+          <input class="field-input" type="text" name="name" placeholder="Alex Student" required>
+        </label>
         <label class="field">
           <span class="field-label">Email</span>
           <input class="field-input" type="email" name="email" placeholder="you@uni.ac.uk" required>
         </label>
         <label class="field">
-          <span class="field-label">Password</span>
+          <span class="field-label">Create Password</span>
           <div class="password-wrapper">
-            <input 
-              class="field-input" 
-              type="password" 
-              name="password" 
-              id="passwordInput" 
-              placeholder="••••••••" 
-              required
-            >
-            <i class="fa-solid fa-eye toggle-password" id="togglePassword" aria-label="Show password" role="button" tabindex="0"></i>
+            <input class="field-input" type="password" name="password" placeholder="••••••••" required>
           </div>
         </label>
-        <button class="btn btn-primary" type="submit">Sign in</button>
+        <button class="btn btn-primary" type="submit">Create Account</button>
         <p class="divider">or</p>
         <button class="btn btn-outline google-btn" type="button">
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" class="google-icon" aria-hidden="true">
-          Sign in with Google
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" class="google-icon">
+          Sign up with Google
         </button>
-        <p class="form-footer">Forgot password? <a class="link" href="/views/forgot.html">Click here</a></p>
       </form>
     </section>
 

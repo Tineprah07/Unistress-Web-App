@@ -312,9 +312,9 @@ button.dot.active {
 .signin-right {
   background: #ffffff;
   display: grid;
-  align-content: center;
+  align-content: start; /* Changed from center to start */
   justify-items: center;
-  padding: 3.2rem 2rem;
+  padding: 5rem 2rem;   /* Increased top padding to position the whole block */
 }
 
 .signin-right * {
@@ -328,7 +328,71 @@ button.dot.active {
 }
 
 .form-header {
-  margin-bottom: 1.8rem;
+  margin-bottom: 1rem;  /* Reduced from 1.8rem to 1rem */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 26rem;
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0;        /* Ensure no extra space here */
+}
+
+/* Styling for the new Welcome text and Paragraph */
+.form-title {
+  font-size: 2.2rem; 
+  margin-bottom: 0.8rem;
+  color: #111827;
+}
+
+/* Container for the link under the password */
+.forgot-link-container {
+    margin-top: 0.5rem;
+    text-align: left; /* Changed from right to left */
+    display: block;
+    width: 100%;
+}
+
+/* The "Forgot password?" grey text */
+.forgot-text {
+    color: #6b7280;
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+/* The "Click here" purple link */
+.small-link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4e54c8;
+    text-decoration: none;
+    margin-left: 2px; /* Small gap between the text and the link */
+}
+
+.small-link:hover {
+    text-decoration: underline;
+}
+
+.auth-description {
+  font-size: 0.95rem;
+  color: #4b5563; /* Subtle grey for readability */
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  max-width: 100%;
+}
+
+/* Adjust the existing subtitle to sit nicely under the paragraph */
+.form-subtitle {
+  font-size: 0.9rem;
+  color: #6b7280;
+  border-top: 1px solid #f3f4f6; /* Subtle line to separate description from link */
+  padding-top: 1rem;
+  margin-top: 1rem;
 }
 
 .right-brand {
@@ -433,9 +497,11 @@ button.dot.active {
 }
 
 .form-footer {
-  margin-top: 0.5rem;
-  font-size: 0.95rem;
-  color: #6b7280;
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #6b7280;
+    width: 100%;
 }
 
 .divider {
@@ -524,6 +590,49 @@ button.dot.active {
 
 .toggle-password:hover {
   color: #4e54c8; /* Highlights with your brand color */
+}
+
+/* Update the container to handle absolute positioning */
+.signin-right {
+  background: #ffffff;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  padding: 3.2rem 2rem;
+  position: relative; /* Required for the banner's absolute position */
+  padding-top: 8rem;   /* This creates fixed space for the banner at the top */
+}
+
+/* Update the banner to move independently */
+.auth-banner {
+  position: absolute; /* Moves it out of the normal layout flow */
+  top: 2rem;          /* Distance from the very top of the right panel */
+  display: flex;
+  background: #f3f4f6;
+  padding: 5px;
+  border-radius: 12px;
+  width: calc(100% - 4rem); /* Adjusts width based on container padding */
+  max-width: 26rem;
+  z-index: 20;
+}
+
+.banner-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  color: #6b7280;
+}
+
+.banner-btn.active {
+  background: #ffffff;
+  color: #4e54c8;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 /* =========================================

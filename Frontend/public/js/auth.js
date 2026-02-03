@@ -100,4 +100,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const authTitle = document.getElementById('authTitle');
+    const authSubtitle = document.getElementById('authSubtitle');
+
+    /* --- Updated Form Toggle Logic --- */
+
+    function showRegister(e) {
+        if(e) e.preventDefault();
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'grid';
+        tabLogin.classList.remove('active');
+        tabRegister.classList.add('active');
+        
+        authTitle.textContent = "Join UniStress";
+        document.querySelector('.auth-description').textContent = "Create your account today to start tracking your daily wellbeing, setting study goals, and mastering your student life.";
+        
+        // 1. Update the HTML
+        authSubtitle.innerHTML = 'Already have an account? <a class="link" href="#" id="inlineLogin">Sign in here</a>';
+        
+        // 2. RE-BIND the listener to the brand new link just created
+        document.getElementById('inlineLogin').addEventListener('click', showLogin);
+    }
+
+    function showLogin(e) {
+        if(e) e.preventDefault();
+        loginForm.style.display = 'grid';
+        registerForm.style.display = 'none';
+        tabRegister.classList.remove('active');
+        tabLogin.classList.add('active');
+        
+        authTitle.textContent = "Welcome to UniStress";
+        
+        // Updated short version here:
+        document.querySelector('.auth-description').textContent = "Your companion for academic balance. Track your habits, stay energized, and master your student life.";
+        
+        authSubtitle.innerHTML = 'Don’t have an account? <a class="link" href="#" id="inlineRegister">Create a new account</a>';
+        document.getElementById('inlineRegister').addEventListener('click', showRegister);
+    }
+
+    // Initial event listeners for the tabs and the starting link
+    tabLogin.addEventListener('click', showLogin);
+    tabRegister.addEventListener('click', showRegister);
+    // Use a check to prevent errors if the element isn't there initially
+    const initialLink = document.getElementById('inlineRegister');
+    if (initialLink) initialLink.addEventListener('click', showRegister);
+
 });
