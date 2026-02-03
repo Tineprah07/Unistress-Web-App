@@ -312,9 +312,11 @@ button.dot.active {
 .signin-right {
   background: #ffffff;
   display: grid;
-  align-content: start; /* Changed from center to start */
+  align-content: center;
   justify-items: center;
-  padding: 5rem 2rem;   /* Increased top padding to position the whole block */
+  padding: 3.2rem 2rem;
+  position: relative; /* Required for the banner's absolute position */
+  padding-top: 8rem;   /* This creates fixed space for the banner at the top */
 }
 
 .signin-right * {
@@ -363,6 +365,23 @@ button.dot.active {
     color: #6b7280;
     font-size: 0.85rem;
     font-weight: 400;
+}
+
+/* Password Hint Styling */
+.password-hint {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.3rem;
+  font-weight: 400;
+}
+
+/* Ensure the register footer matches the login footer style */
+#registerFooter {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #6b7280;
+  width: 100%;
 }
 
 /* The "Click here" purple link */
@@ -592,17 +611,6 @@ button.dot.active {
   color: #4e54c8; /* Highlights with your brand color */
 }
 
-/* Update the container to handle absolute positioning */
-.signin-right {
-  background: #ffffff;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  padding: 3.2rem 2rem;
-  position: relative; /* Required for the banner's absolute position */
-  padding-top: 8rem;   /* This creates fixed space for the banner at the top */
-}
-
 /* Update the banner to move independently */
 .auth-banner {
   position: absolute; /* Moves it out of the normal layout flow */
@@ -669,77 +677,63 @@ button.dot.active {
   .signin-left::before { width: 800px; height: 800px; }
 
 }
- 
-/* --- MOBILE PHONE (Max Width 480px) --- */
+
 @media (max-width: 480px) {
+
+  /* Prevent page scrolling, but keep layout fitting real phone viewport */
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
   .signin {
+    height: 100dvh;        /* real visible height on modern mobile browsers */
+    height: 100svh;        /* fallback */
+    min-height: 100svh;
+    overflow: hidden;
+
+    display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-    min-height: 100vh;
+    grid-template-rows: 40% 60%; /* give more space to the form */
   }
 
+  /* -------------------------
+     TOP VISUAL PANEL (smaller)
+     ------------------------- */
   .signin-left {
-    display: flex;
-    min-height: auto;
-    padding: 1rem;
-    padding-bottom: 2rem;
+    padding: 0.9rem 1rem 0.6rem;
+    overflow: hidden;
   }
 
-  /* Shrink the rings significantly for phone so they aren't overwhelming */
-  .decor-1 { width: 250px; height: 250px; border-color: rgba(255,255,255,0.08); }
-  .decor-2 { width: 380px; height: 380px; border-color: rgba(255,255,255,0.05); }
-  .signin-left::before { width: 500px; height: 500px; opacity: 0.5; }
-
-  .left-brand {
-    gap: 0.4rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .static-u {
-    font-size: 1.8rem;
-  }
-
-  .brand-name {
-    font-size: 0.9rem;
-  }
-
-  .brand-tag {
-    font-size: 0.65rem;
-  }
+  .left-top { margin-bottom: 0.25rem; }
+  .static-u { font-size: 1.45rem; }
+  .brand-name { font-size: 0.85rem; }
+  .brand-tag { font-size: 0.62rem; }
 
   .carousel-container {
-    margin-top: 0;
-    max-width: 100%;
+    margin-top: 0.2rem;
+    justify-content: center;
   }
 
-  .image-carousel {
-    height: 160px;
-  }
-
-  .img-slide dotlottie-player {
-    max-width: 250px;
-  }
-
-  .img-slide img {
-    max-height: 100%;
-  }
+  .image-carousel { height: 115px; }
+  .img-slide dotlottie-player { max-width: 180px; }
+  .img-slide img { max-height: 100%; }
 
   .text-carousel {
-    height: 70px;
-    margin-top: 0.2rem;
+    height: 52px;
+    margin-top: 0.25rem;
   }
 
   .slide-title {
-    font-size: 1.1rem;
-    gap: 8px;
+    font-size: 0.98rem;
+    margin-bottom: 0.25rem;
+    gap: 0.4rem;
   }
 
-  .slide-title i {
-    font-size: 1rem;
-  }
+  .slide-title i { font-size: 0.9rem; }
 
   .slide-desc {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     line-height: 1.2;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -747,85 +741,118 @@ button.dot.active {
     overflow: hidden;
   }
 
+  /* Dots smaller and slightly higher */
   .carousel-indicators {
     margin-top: 0.2rem;
+    gap: 0.3rem;
+    transform: translateY(-0.3rem);
   }
 
-  button.dot {
-    width: 5px;
-    height: 5px;
-  }
+  button.dot { width: 0.26rem; height: 0.26rem; }
+  button.dot.active { width: 0.7rem; }
 
-  /* Right Side Compact Style */
+  /* Rings toned down so they don’t dominate */
+  .decor-1 { width: 220px; height: 220px; }
+  .decor-2 { width: 330px; height: 330px; }
+  .signin-left::before { width: 520px; height: 520px; opacity: 0.35; }
+
+  /* -------------------------
+     FORM PANEL (fits + safe area)
+     ------------------------- */
   .signin-right {
-    padding: 1.5rem;
-    background: #ffffff;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    margin-top: -1.5rem;
-    position: relative;
-    z-index: 10;
-    align-content: start;
+    overflow: hidden; /* keep one-screen behaviour */
+    padding: 0.75rem 1rem calc(0.9rem + env(safe-area-inset-bottom));
+    margin-top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
   }
 
-  .form-header,
-  .form {
-    max-width: 100%;
+  /* Make the banner compact */
+  .auth-banner {
+    position: static;
+    width: 100%;
+    max-width: 18rem;
+    margin: 0 auto 0.5rem;
+    padding: 0.2rem;
+    border-radius: 0.75rem;
+  }
+
+  .banner-btn {
+    padding: 0.32rem 0.45rem;
+    font-size: 0.7rem;
   }
 
   .form-header {
-    margin-bottom: 1rem;
+    margin-bottom: 0.35rem;
     text-align: center;
-  }
-
-  .right-brand {
-    font-size: 0.75rem;
-    margin-bottom: 0.2rem;
   }
 
   .form-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.2rem;
+    font-size: 1.05rem;
+    margin-bottom: 0.15rem;
   }
 
-  .form-subtitle {
-    font-size: 0.85rem;
+  /* Shorten description a bit to save height */
+  .auth-description {
+    font-size: 0.72rem;
+    line-height: 1.2;
+    margin: 0 auto;
+    max-width: 95%;
   }
 
+  /* Tight form spacing */
   .form {
-    gap: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    width: 100%;
+    margin-top: 0.45rem;
   }
 
-  .field {
-    gap: 0.2rem;
-  }
-
-  .field-label {
-    font-size: 0.85rem;
-  }
+  .field { gap: 0.2rem; }
+  .field-label { font-size: 0.76rem; }
 
   .field-input {
-    height: 2.5rem;
-    font-size: 0.9rem;
+    height: 2.2rem;
+    font-size: 0.88rem;
     border-radius: 0.6rem;
+  }
+
+  .forgot-link-container {
+    margin-top: 0.25rem;
+    text-align: left;
+  }
+
+  .forgot-text,
+  .small-link {
+    font-size: 0.78rem;
   }
 
   .btn {
-    height: 2.5rem;
+    height: 2.35rem;
     font-size: 0.9rem;
-    border-radius: 0.6rem;
-    margin-top: 0.2rem;
+    border-radius: 0.65rem;
+    margin-top: 0.1rem;
   }
 
   .divider {
-    margin: 0;
-    font-size: 0.8rem;
+    margin: 0.18rem 0;
+    font-size: 0.78rem;
   }
 
-  .form-footer {
-    margin-top: 0.5rem;
-    font-size: 0.8rem;
-    text-align: center;
+  /* Footer sizes equal for login/register and close to Google button */
+  .form-footer,
+  #registerFooter {
+    margin-top: 0.25rem;
+    font-size: 0.82rem;
+    line-height: 1.2;
+    text-align: centre;
+  }
+
+  .form-footer .link,
+  #registerFooter .link {
+    font-size: 0.82rem;
+    font-weight: 600;
   }
 }
-

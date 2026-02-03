@@ -155,22 +155,32 @@
           <span class="field-label">Full Name</span>
           <input class="field-input" type="text" name="name" placeholder="Alex Student" required>
         </label>
+
         <label class="field">
           <span class="field-label">Email</span>
           <input class="field-input" type="email" name="email" placeholder="you@uni.ac.uk" required>
         </label>
+
         <label class="field">
           <span class="field-label">Create Password</span>
           <div class="password-wrapper">
             <input class="field-input" type="password" name="password" placeholder="••••••••" required>
           </div>
+          <p class="password-hint">Password must be at least 8 characters</p>
         </label>
+
         <button class="btn btn-primary" type="submit">Create Account</button>
+        
         <p class="divider">or</p>
+        
         <button class="btn btn-outline google-btn" type="button">
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" class="google-icon">
           Sign up with Google
         </button>
+
+        <p class="form-footer" id="registerFooter">
+          Already have an account? <a class="link small-link" href="#" id="inlineLogin">Click here</a>
+        </p>
       </form>
     </section>
 
