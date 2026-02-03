@@ -120,7 +120,17 @@
         </label>
         <label class="field">
           <span class="field-label">Password</span>
-          <input class="field-input" type="password" name="password" placeholder="••••••••" required>
+          <div class="password-wrapper">
+            <input 
+              class="field-input" 
+              type="password" 
+              name="password" 
+              id="passwordInput" 
+              placeholder="••••••••" 
+              required
+            >
+            <i class="fa-solid fa-eye toggle-password" id="togglePassword" aria-label="Show password" role="button" tabindex="0"></i>
+          </div>
         </label>
         <button class="btn btn-primary" type="submit">Sign in</button>
         <p class="divider">or</p>

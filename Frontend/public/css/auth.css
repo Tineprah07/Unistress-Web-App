@@ -8,6 +8,14 @@
   font-family: 'Inter', 'Poppins', sans-serif;
 }
 
+.fa-solid,
+.fa-regular,
+.fa-brands {
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900;
+}
+
+
 body {
   background-color: #ffffff;
   min-height: 100vh;
@@ -474,6 +482,56 @@ button.dot.active {
   height: 1.2rem;
 }
 
+/* Password Toggle Styling */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper .field-input {
+  width: 100%;
+  padding-right: 3rem;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+
+  color: #9ca3af;
+  font-size: 1.05rem;
+  z-index: 10;
+
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+
+  display: grid;
+  place-items: center;
+
+  transition: color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+}
+
+.toggle-password:hover {
+  color: #4e54c8;
+  background: rgba(78, 84, 200, 0.10);
+}
+
+.toggle-password:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+.toggle-password:focus-visible {
+  outline: 0.2rem solid rgba(78, 84, 200, 0.35);
+  outline-offset: 0.15rem;
+}
+
+
+.toggle-password:hover {
+  color: #4e54c8; /* Highlights with your brand color */
+}
 
 /* =========================================
    4. RESPONSIVE: PHONE ONLY (Max width 480px)

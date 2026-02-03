@@ -57,4 +57,47 @@ document.addEventListener('DOMContentLoaded', () => {
             startTimer(); // Restart timer
         });
     });
+
+    // -------------------------
+    // Password Visibility Toggle (correct icon logic)
+    // -------------------------
+    const togglePassword = document.querySelector('#togglePassword');
+    const passwordInput = document.querySelector('#passwordInput');
+
+    function syncPasswordIcon() {
+        const isHidden = passwordInput.getAttribute('type') === 'password';
+
+        // Hidden => show "eye" (clicking will reveal)
+        // Visible => show "eye-slash" (clicking will hide)
+        togglePassword.classList.toggle('fa-eye', isHidden);
+        togglePassword.classList.toggle('fa-eye-slash', !isHidden);
+
+        togglePassword.setAttribute(
+            'aria-label',
+            isHidden ? 'Show password' : 'Hide password'
+        );
+    }
+
+    function togglePasswordVisibility() {
+        const isHidden = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isHidden ? 'text' : 'password');
+        syncPasswordIcon();
+    }
+
+    if (togglePassword && passwordInput) {
+        // Ensure correct icon on page load
+        syncPasswordIcon();
+
+        togglePassword.addEventListener('click', togglePasswordVisibility);
+
+        // Keyboard accessibility (Enter / Space)
+        togglePassword.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            togglePasswordVisibility();
+            }
+        });
+    }
+
+
 });
