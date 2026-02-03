@@ -130,7 +130,7 @@
           <span class="field-label">Password</span>
           <div class="password-wrapper">
             <input class="field-input" type="password" name="password" id="passwordInput" placeholder="••••••••" required>
-            <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
+            <i class="fa-solid fa-eye toggle-password" id="togglePassword" tabindex="0" role="button" aria-label="Show password"></i>
           </div>
           <div class="forgot-link-container">
             <span class="forgot-text">Forgot password?</span> 
@@ -164,7 +164,8 @@
         <label class="field">
           <span class="field-label">Create Password</span>
           <div class="password-wrapper">
-            <input class="field-input" type="password" name="password" placeholder="••••••••" required>
+            <input class="field-input" type="password" name="password" id="registerPasswordInput" placeholder="••••••••" required>
+            <i class="fa-solid fa-eye toggle-password" id="toggleRegisterPassword" tabindex="0" role="button" aria-label="Show password"></i>
           </div>
           <p class="password-hint">Password must be at least 8 characters</p>
         </label>

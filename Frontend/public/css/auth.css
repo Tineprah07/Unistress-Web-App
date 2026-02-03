@@ -662,7 +662,7 @@ button.dot.active {
   }
 
   .signin-right {
-    padding: 1.5rem;
+    padding: 2rem 1.5rem; /* Reduced top padding since banner is no longer absolute */
     background: #ffffff;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
@@ -670,6 +670,22 @@ button.dot.active {
     position: relative;
     z-index: 10;
     align-content: start;
+    display: flex;       /* Use flex to stack elements vertically */
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* FIX: Change banner from absolute to static/relative so it takes up space */
+  .auth-banner {
+    position: relative; 
+    top: 0;
+    margin-bottom: 2rem; /* Adds space between banner and the text below */
+    width: 100%;
+    max-width: 26rem;
+  }
+
+  .form-header {
+    margin-bottom: 1.5rem;
   }
 
   .decor-1 { width: 400px; height: 400px; }
