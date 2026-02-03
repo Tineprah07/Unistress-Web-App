@@ -1,0 +1,39 @@
+/* Frontend/public/css/global.css */
+
+/* 1. IMPORT FONTS FROM GOOGLE HERE (One place only!) */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap');
+
+/* 2. DEFINE VARIABLES (Change colors/fonts easily here) */
+:root {
+    /* Fonts */
+    --font-heading: 'Nunito', sans-serif;
+    --font-body: 'Open Sans', sans-serif;
+
+    /* Your Brand Colors (Moved here for easy access) */
+    --primary-color: #4e54c8;
+    --secondary-color: #8f94fb;
+    --text-color: #2d3436;
+    --bg-color: #ffffff;
+}
+
+/* 3. APPLY UNIVERSALLY */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body); /* Applies to everything by default */
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    line-height: 1.6;
+}
+
+/* 4. DEFAULT HEADING STYLES */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+}

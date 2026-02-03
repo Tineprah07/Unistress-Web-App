@@ -1,13 +1,6 @@
 /* =========================================
    1. RESET & SEMANTIC BASE
    ========================================= */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Inter', 'Poppins', sans-serif;
-}
-
 .fa-solid,
 .fa-regular,
 .fa-brands {
