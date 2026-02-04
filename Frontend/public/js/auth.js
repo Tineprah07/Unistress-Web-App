@@ -182,33 +182,25 @@ document.addEventListener('DOMContentLoaded', () => {
   else showLogin();
 
   // =========================
-  // Form Submission Logic
+  // 1. Registration Handler
   // =========================
-
-  // --- Registration Handler ---
   registerForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Get values using the name attributes or IDs
+    // Extract values from the form inputs
     const name = registerForm.querySelector('input[name="name"]').value;
     const email = registerForm.querySelector('input[name="email"]').value;
     const password = document.getElementById('registerPasswordInput').value;
 
-    // NEW: Add a confirm password check if you add the field to your HTML
-    const confirmPassword = document.getElementById('confirmPasswordInput').value;
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+    // Basic Validation
+    if (!name || !email || !password) {
+      alert("Please fill in all fields.");
       return;
     }
 
     if (password.length < 8) {
-        alert("Password must be at least 8 characters long.");
-        return;
-    }
-
-    if (!name || !email || !password) {
-        alert("Please fill in all fields.");
-        return;
+      alert("Password must be at least 8 characters long.");
+      return;
     }
 
     try {
@@ -221,20 +213,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Account created successfully! Redirecting...");
-        // After registration, the backend usually logs them in. 
-        // Redirect them to your dashboard/main app page
+        alert("Account created successfully!");
+        // Redirect to home page (or dashboard) after success
         window.location.href = '/'; 
       } else {
-        alert(data.error || "Registration failed. Please try again.");
+        // Show server-side error message (e.g., "Email is already registered.")
+        alert(data.error || "Registration failed.");
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert("Something went wrong. Is the server running?");
+      console.error('Registration Error:', error);
+      alert("Unable to connect to the server. Please ensure the backend is running.");
     }
   });
 
-  // --- Login Handler ---
+  // =========================
+  // 2. Login Handler
+  // =========================
   loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -254,10 +248,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Successful login
         window.location.href = '/'; 
       } else {
-        alert(data.error || "Invalid email or password.");
+        // Show server-side error message (e.g., "Invalid email or password.")
+        alert(data.error || "Login failed.");
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Login Error:', error);
       alert("Connection error. Please try again later.");
     }
   });
