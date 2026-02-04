@@ -180,5 +180,87 @@ document.addEventListener('DOMContentLoaded', () => {
   const savedTab = localStorage.getItem(TAB_KEY);
   if (savedTab === 'register') showRegister();
   else showLogin();
+
+  // =========================
+  // Form Submission Logic
+  // =========================
+
+  // --- Registration Handler ---
+  registerForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Get values using the name attributes or IDs
+    const name = registerForm.querySelector('input[name="name"]').value;
+    const email = registerForm.querySelector('input[name="email"]').value;
+    const password = document.getElementById('registerPasswordInput').value;
+
+    // NEW: Add a confirm password check if you add the field to your HTML
+    const confirmPassword = document.getElementById('confirmPasswordInput').value;
+    if (password !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    if (password.length < 8) {
+        alert("Password must be at least 8 characters long.");
+        return;
+    }
+
+    if (!name || !email || !password) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Account created successfully! Redirecting...");
+        // After registration, the backend usually logs them in. 
+        // Redirect them to your dashboard/main app page
+        window.location.href = '/'; 
+      } else {
+        alert(data.error || "Registration failed. Please try again.");
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert("Something went wrong. Is the server running?");
+    }
+  });
+
+  // --- Login Handler ---
+  loginForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = loginForm.querySelector('input[name="email"]').value;
+    const password = document.getElementById('passwordInput').value;
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Successful login
+        window.location.href = '/'; 
+      } else {
+        alert(data.error || "Invalid email or password.");
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert("Connection error. Please try again later.");
+    }
+  });
   
 });
+
