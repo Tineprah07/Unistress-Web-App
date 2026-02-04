@@ -15,36 +15,30 @@ import {
 // -------------------------
 // Register new user
 // -------------------------
+// Backend/controllers/authController.js
+
 export async function registerUser(req, res) {
   try {
     const { name, email, password } = req.body;
 
-    // Basic validation
     if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ error: "Name, email and password are required." });
+      return res.status(400).json({ error: "All fields are required." });
     }
 
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ error: "Password must be at least 6 characters long." });
+    // Updated to 8 characters as per your modern app requirement
+    if (password.length < 8) {
+      return res.status(400).json({ error: "Password must be at least 8 characters long." });
     }
 
-    // Check if email already exists
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
-      return res.status(409).json({ error: "Email is already registered." });
+      // Specific message for your banner: "account already exist"
+      return res.status(409).json({ error: "This email is already registered." });
     }
 
-    // Hash the password
     const passwordHash = await bcrypt.hash(password, 10);
-
-    // Create user in the database
     const newUser = await createUser(name, email, passwordHash);
 
-    // Save user in session (log them in)
     req.session.user = {
       id: newUser.id,
       name: newUser.name,
@@ -64,31 +58,29 @@ export async function registerUser(req, res) {
 // -------------------------
 // Login user
 // -------------------------
+
 export async function loginUser(req, res) {
   try {
     const { email, password } = req.body;
 
-    // Basic validation
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ error: "Email and password are required." });
+      return res.status(400).json({ error: "Email and password are required." });
     }
 
     const user = await findUserByEmail(email);
 
+    // Specific check for point #1: "email doesnt exist"
     if (!user) {
-      return res.status(401).json({ error: "Invalid email or password." });
+      return res.status(404).json({ error: "Email doesn't exist" });
     }
 
-    // Compare password with stored hash
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
 
+    // Specific check for point #2: "incorrect password"
     if (!passwordMatch) {
-      return res.status(401).json({ error: "Invalid email or password." });
+      return res.status(401).json({ error: "Incorrect password" });
     }
 
-    // Store minimal user info in the session
     req.session.user = {
       id: user.id,
       name: user.name,

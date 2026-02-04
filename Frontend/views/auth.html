@@ -13,6 +13,11 @@
 </head>
 
 <body>
+  <aside id="notificationBanner" class="notification-banner" aria-live="polite">
+    <i id="bannerIcon" class="fa-solid"></i>
+    <output id="bannerMessage"></output>
+</aside>
+
   <main class="signin">
 
     <section class="signin-left">
@@ -129,7 +134,7 @@
         <label class="field">
           <span class="field-label">Password</span>
           <div class="password-wrapper">
-            <input class="field-input" type="password" name="password" id="passwordInput" placeholder="••••••••" required>
+            <input class="field-input" type="password" name="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" required>
             <i class="fa-solid fa-eye toggle-password" id="togglePassword" tabindex="0" role="button" aria-label="Show password"></i>
           </div>
           <div class="forgot-link-container">
@@ -164,7 +169,7 @@
         <label class="field">
           <span class="field-label">Create Password</span>
           <div class="password-wrapper">
-            <input class="field-input" type="password" name="password" id="registerPasswordInput" placeholder="••••••••" required>
+            <input class="field-input" type="password" name="password" id="registerPasswordInput" placeholder="••••••••" autocomplete="new-password" required>
             <i class="fa-solid fa-eye toggle-password" id="toggleRegisterPassword" tabindex="0" role="button" aria-label="Show password"></i>
           </div>
           <p class="password-hint">Password must be at least 8 characters</p>

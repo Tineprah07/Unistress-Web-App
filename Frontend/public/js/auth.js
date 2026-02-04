@@ -1,4 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // --- HELPERS ---
+  
+  // Reusable Banner Function for consistent notifications
+  const showBanner = (message, type = 'error') => {
+    const banner = document.getElementById('notificationBanner');
+    const msgEl = document.getElementById('bannerMessage');
+    const iconEl = document.getElementById('bannerIcon');
+
+    if (!banner) return;
+
+    banner.className = `notification-banner ${type} show`;
+    msgEl.textContent = message;
+    
+    // Switch icons based on type
+    iconEl.className = type === 'success' 
+        ? 'fa-solid fa-circle-check' 
+        : 'fa-solid fa-circle-exclamation';
+
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+      banner.classList.remove('show');
+    }, 4000);
+  };
+
   // =========================
   // Carousel (images + text)
   // =========================
@@ -37,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (slideInterval) clearInterval(slideInterval);
   }
 
-  // Start carousel after everything is stable (reduces flicker)
   function setInitialCarouselState() {
     changeSlide(0);
     startTimer();
@@ -50,13 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setInitialCarouselState();
   }
 
-  // Pause on hover
   if (carousel) {
     carousel.addEventListener('mouseenter', stopTimer);
     carousel.addEventListener('mouseleave', startTimer);
   }
 
-  // Dots manual control
   dots.forEach((dot, index) => {
     dot.addEventListener('click', () => {
       changeSlide(index);
@@ -65,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================
-  // Password visibility toggles (login + register)
+  // Password visibility & Feedback
   // =========================
   function setupPasswordToggle(toggleSelector, inputSelector) {
     const toggleIcon = document.querySelector(toggleSelector);
@@ -99,6 +120,38 @@ document.addEventListener('DOMContentLoaded', () => {
   setupPasswordToggle('#togglePassword', '#passwordInput');
   setupPasswordToggle('#toggleRegisterPassword', '#registerPasswordInput');
 
+  // Real-time Password Strength feedback
+  const regPasswordInput = document.getElementById('registerPasswordInput');
+  const hint = document.querySelector('.password-hint');
+
+  const checkStrength = (password) => {
+    let score = 0;
+    if (!password) return { label: "Short", color: "#6b7280" };
+
+    // Entropy-based scoring
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    if (password.length < 8) return { label: "Weak (Too Short)", color: "#dc2626" };
+    if (score <= 2) return { label: "Fair", color: "#f59e0b" };
+    if (score <= 4) return { label: "Strong", color: "#16a34a" };
+    return { label: "Very Strong", color: "#1d4ed8" };
+  };
+
+  regPasswordInput?.addEventListener('input', (e) => {
+    const val = e.target.value;
+    const strength = checkStrength(val);
+
+    if (hint) {
+      hint.style.color = strength.color;
+      hint.style.fontWeight = "600";
+      hint.textContent = `Strength: ${strength.label}`;
+    }
+  });
+
   // =========================
   // Tabs: Sign In <-> Create Account
   // =========================
@@ -110,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const authDescription = document.querySelector('.auth-description');
   const authSubtitle = document.querySelector('#authSubtitle');
 
-  // Keep selected tab after refresh
   const TAB_KEY = 'unistress_auth_tab';
 
   function bindInlineLinks() {
@@ -136,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
         'Create your account today to start tracking your daily wellbeing, setting study goals, and mastering your student life.';
     }
 
-    // Update footer under the login form header
     if (authSubtitle) {
       authSubtitle.innerHTML =
         'Already have an account? <a class="link" href="#" id="inlineLogin">Sign in here</a>';
@@ -173,10 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
   tabLogin?.addEventListener('click', showLogin);
   tabRegister?.addEventListener('click', showRegister);
 
-  // Initial inline links (from your HTML)
   bindInlineLinks();
 
-  // Restore last open tab on refresh
   const savedTab = localStorage.getItem(TAB_KEY);
   if (savedTab === 'register') showRegister();
   else showLogin();
@@ -187,19 +236,17 @@ document.addEventListener('DOMContentLoaded', () => {
   registerForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Extract values from the form inputs
     const name = registerForm.querySelector('input[name="name"]').value;
     const email = registerForm.querySelector('input[name="email"]').value;
-    const password = document.getElementById('registerPasswordInput').value;
+    const password = regPasswordInput.value;
 
-    // Basic Validation
     if (!name || !email || !password) {
-      alert("Please fill in all fields.");
+      showBanner("Please fill in all fields.");
       return;
     }
 
     if (password.length < 8) {
-      alert("Password must be at least 8 characters long.");
+      showBanner("Password must be at least 8 characters long.");
       return;
     }
 
@@ -213,16 +260,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Account created successfully!");
-        // Redirect to home page (or dashboard) after success
-        window.location.href = '/'; 
+        showBanner("Account created! Redirecting...", "success");
+        setTimeout(() => {
+          window.location.href = '/api/db-test'; 
+        }, 1500);
       } else {
-        // Show server-side error message (e.g., "Email is already registered.")
-        alert(data.error || "Registration failed.");
+        // Displays backend error: e.g., "This email is already registered."
+        showBanner(data.error || "Registration failed.");
       }
     } catch (error) {
-      console.error('Registration Error:', error);
-      alert("Unable to connect to the server. Please ensure the backend is running.");
+      showBanner("Unable to connect to the server.");
     }
   });
 
@@ -245,17 +292,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Successful login
-        window.location.href = '/'; 
+        showBanner("Success! Redirecting...", "success");
+        setTimeout(() => {
+          window.location.href = '/api/db-test';
+        }, 1200);
       } else {
-        // Show server-side error message (e.g., "Invalid email or password.")
-        alert(data.error || "Login failed.");
+        // Displays backend error: e.g., "Email doesn't exist" or "Incorrect password"
+        showBanner(data.error || "Login failed."); 
       }
     } catch (error) {
-      console.error('Login Error:', error);
-      alert("Connection error. Please try again later.");
+      showBanner("Server connection lost.");
     }
   });
-  
 });
-
