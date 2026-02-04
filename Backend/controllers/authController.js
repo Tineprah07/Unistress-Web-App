@@ -58,6 +58,7 @@ export async function registerUser(req, res) {
 // -------------------------
 // Login user
 // -------------------------
+// Backend/controllers/authController.js
 
 export async function loginUser(req, res) {
   try {

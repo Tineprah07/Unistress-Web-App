@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   // --- HELPERS ---
   
-  // Reusable Banner Function for consistent notifications
   const showBanner = (message, type = 'error') => {
     const banner = document.getElementById('notificationBanner');
     const msgEl = document.getElementById('bannerMessage');
@@ -12,12 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     banner.className = `notification-banner ${type} show`;
     msgEl.textContent = message;
     
-    // Switch icons based on type
     iconEl.className = type === 'success' 
         ? 'fa-solid fa-circle-check' 
         : 'fa-solid fa-circle-exclamation';
 
-    // Auto-hide after 4 seconds
     setTimeout(() => {
       banner.classList.remove('show');
     }, 4000);
@@ -120,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupPasswordToggle('#togglePassword', '#passwordInput');
   setupPasswordToggle('#toggleRegisterPassword', '#registerPasswordInput');
 
-  // Real-time Password Strength feedback
   const regPasswordInput = document.getElementById('registerPasswordInput');
   const hint = document.querySelector('.password-hint');
 
@@ -128,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let score = 0;
     if (!password) return { label: "Short", color: "#6b7280" };
 
-    // Entropy-based scoring
     if (password.length >= 8) score++;
     if (password.length >= 12) score++;
     if (/[A-Z]/.test(password)) score++;
@@ -231,77 +226,67 @@ document.addEventListener('DOMContentLoaded', () => {
   else showLogin();
 
   // =========================
-  // 1. Registration Handler
-  // =========================
-  registerForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    // 1. Registration Handler
+    // =========================
+    registerForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    const name = registerForm.querySelector('input[name="name"]').value;
-    const email = registerForm.querySelector('input[name="email"]').value;
-    const password = regPasswordInput.value;
+        const name = registerForm.querySelector('input[name="name"]').value;
+        const email = registerForm.querySelector('input[name="email"]').value;
+        const password = regPasswordInput.value;
 
-    if (!name || !email || !password) {
-      showBanner("Please fill in all fields.");
-      return;
-    }
+        if (!name || !email || !password) {
+            showBanner("Please fill in all fields.");
+            return;
+        }
 
-    if (password.length < 8) {
-      showBanner("Password must be at least 8 characters long.");
-      return;
-    }
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password })
+            });
 
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
-      });
+            const data = await response.json();
 
-      const data = await response.json();
+            if (response.ok) {
+                // IMMEDIATE REDIRECT: Takes you directly to your homepage file
+                window.location.href = '/views/homepage.html'; 
+            } else {
+                showBanner(data.error || "Registration failed.");
+            }
+        } catch (error) {
+            showBanner("Unable to connect to the server.");
+        }
+    });
 
-      if (response.ok) {
-        showBanner("Account created! Redirecting...", "success");
-        setTimeout(() => {
-          window.location.href = '/api/db-test'; 
-        }, 1500);
-      } else {
-        // Displays backend error: e.g., "This email is already registered."
-        showBanner(data.error || "Registration failed.");
-      }
-    } catch (error) {
-      showBanner("Unable to connect to the server.");
-    }
-  });
+    // =========================
+    // 2. Login Handler
+    // =========================
+    loginForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-  // =========================
-  // 2. Login Handler
-  // =========================
-  loginForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
+        const email = loginForm.querySelector('input[name="email"]').value;
+        const password = document.getElementById('passwordInput').value;
 
-    const email = loginForm.querySelector('input[name="email"]').value;
-    const password = document.getElementById('passwordInput').value;
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+            const data = await response.json();
 
-      const data = await response.json();
+            if (response.ok) {
+                // IMMEDIATE REDIRECT: Takes you directly to your homepage file
+                window.location.href = '/views/homepage.html'; 
+            } else {
+                showBanner(data.error || "Invalid email or password.");
+            }
+        } catch (error) {
+            showBanner("Server connection lost.");
+        }
+    });
 
-      if (response.ok) {
-        showBanner("Success! Redirecting...", "success");
-        setTimeout(() => {
-          window.location.href = '/api/db-test';
-        }, 1200);
-      } else {
-        // Displays backend error: e.g., "Email doesn't exist" or "Incorrect password"
-        showBanner(data.error || "Login failed."); 
-      }
-    } catch (error) {
-      showBanner("Server connection lost.");
-    }
-  });
 });
