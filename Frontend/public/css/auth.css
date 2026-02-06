@@ -798,8 +798,10 @@ button.dot.active {
 
   /* Make sure the left panel allows the button to be visible */
   .signin-left {
-    display: flex;
-    flex-direction: column;
+    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
+    padding: 2rem;
   }
 
   .carousel-container {
@@ -843,8 +845,8 @@ button.dot.active {
     justify-content: flex-start;
     min-height: 100vh;
     width: 100%;
-    padding: 2rem 1.5rem;
-    padding-top: 6rem;
+    padding: 1.6rem 1.2rem;
+    padding-top: 2.6rem;
   }
 
   /* On desktop/tablet, you don't want this button */
@@ -867,13 +869,74 @@ button.dot.active {
     line-height: 1.45;
   }
 
+  .banner-btn {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
 
+  /* Header: reduce title + spacing */
+  .form-header {
+    margin-bottom: 1.2rem;
+  }
+
+  .form-title {
+    font-size: 1.4rem;
+    line-height: 1.15;
+    margin-bottom: 0.6rem;
+  }
+
+  .auth-description {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin-bottom: 1.1rem;
+  }
+
+  /* Form width: full but still clean */
+  .form-header,
+  .form {
+    width: 100%;
+    max-width: 20rem;
+  }
+
+  /* Inputs and buttons: slightly shorter */
+  .field-input {
+    height: 2.9rem;
+    border-radius: 0.85rem;
+  }
+
+  .btn {
+    height: 2.9rem;
+    border-radius: 0.85rem;
+  }
+
+  /* Divider: reduce spacing so it fits */
+  .divider {
+    margin: 0.6rem 0;
+  }
+
+  /* Footer spacing */
+  .form-footer {
+    margin-top: 1.1rem;
+    font-size: 0.8rem;
+  }
   
+  .small-link,
+  .forgot-text {
+    font-size: 0.8rem;
+  }
+
+  .forgot-link-container {
+    margin-top: 0.05rem; /* try 0.15rem–0.3rem */
+  }
+
+  #registerFooter {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+  }
+
 }
 
 /* Mobile-only CTA: hidden by default */
 .mobile-get-started {
   display: none;
 }
-
-
