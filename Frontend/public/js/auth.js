@@ -289,4 +289,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    const mobileGetStartedBtn = document.querySelector('#mobileGetStarted');
+
+    mobileGetStartedBtn?.addEventListener('click', () => {
+      document.body.classList.add('mobile-auth-open');
+      window.location.hash = 'auth'; // optional: allows back behaviour
+    });
+
+    // Optional: if user refreshes while on auth screen, keep it open
+    if (window.location.hash === '#auth') {
+      document.body.classList.add('mobile-auth-open');
+    }
+
+    // Optional: handle back button to return to left screen
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash !== '#auth') {
+        document.body.classList.remove('mobile-auth-open');
+      }
+    });
+
+
 });

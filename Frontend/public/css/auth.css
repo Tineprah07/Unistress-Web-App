@@ -735,10 +735,145 @@ button.dot.active {
 
 }
 
-/* 480 */
 /* =========================================
-  
+   4. RESPONSIVE: PHONE ONLY (Max width 480px)
    ========================================= */
 @media (max-width: 480px) {
 
+  /* body {
+    overflow: hidden;
+  } */
+
+  /* Make mobile act like 2 separate screens */
+  .signin {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    min-height: 100vh;
+  }
+
+  .signin-right {
+    display: none;
+  }
+
+  /* Move brand down without affecting layout */
+  .left-top {
+    transform: translateY(2.2rem);
+  }
+
+  /* Keep it left aligned and smaller */
+  .static-u {
+    /* font-size: 2.2rem; */
+    opacity: 0.35;
+  }
+
+  .brand-name {
+    font-size: 0.95rem;
+  }
+
+  .brand-tag {
+    font-size: 0.75rem;
+  }
+
+  .left-brand {
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  /* Show only on mobile */
+  .mobile-get-started {
+    display: block !important;
+    width: 100%;
+    height: 3.1rem;
+    border-radius: 0.9rem;
+    border: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    backdrop-filter: blur(10px);
+    margin-top: 1.2rem;
+  }
+
+
+  /* Make sure the left panel allows the button to be visible */
+  .signin-left {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .carousel-container {
+    justify-content: flex-start;
+    flex-grow: 1;
+  }
+
+  .image-carousel {
+    transform: translateY(2rem) scale(1);
+  }
+
+  /* Push the text carousel down */
+  .text-carousel {
+    height: 110px;
+    margin-top: 2.2rem; /* small, controlled shift */
+  }
+
+  /* Push the dots slightly down */
+  .carousel-indicators {
+    margin-top: 1.4rem;
+  }
+
+
+  .mobile-get-started:active {
+    transform: translateY(1px);
+  }
+
+  .mobile-get-started:hover {
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  /* When user taps GET STARTED: show RIGHT screen only */
+  body.mobile-auth-open .signin-left {
+    display: none;
+  }
+
+  body.mobile-auth-open .signin-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    width: 100%;
+    padding: 2rem 1.5rem;
+    padding-top: 6rem;
+  }
+
+  /* On desktop/tablet, you don't want this button */
+  body:not(.mobile-auth-open) .signin-right {
+    display: none;
+  }
+
+  .mobile-get-started {
+    display: block !important;
+    margin-top: -1.2rem;
+  }
+
+  /* Fix hydration illustration being visually smaller */
+  .img-slide img[src*="hydration"] {
+    transform: scale(1.2);
+  }
+
+  .slide-desc {
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+
+
+  
 }
+
+/* Mobile-only CTA: hidden by default */
+.mobile-get-started {
+  display: none;
+}
+
+
