@@ -16,7 +16,7 @@ import crypto from "crypto";
 import pool from "../db/pool.js";
 import {
   createResetToken,
-  findResetTokenByHash,
+  findValidResetToken,
   markTokenUsed,
   invalidateActiveTokensForUser,
 } from "../models/passwordResetModel.js";
@@ -196,7 +196,7 @@ export async function resetPassword(req, res) {
     }
 
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-    const record = await findResetTokenByHash(tokenHash);
+    const record = await findValidResetToken(tokenHash); 
 
     if (!record) return res.status(400).json({ error: "Invalid or expired token." });
     if (record.used) return res.status(400).json({ error: "This reset link has already been used." });

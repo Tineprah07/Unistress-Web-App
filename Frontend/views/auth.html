@@ -227,6 +227,24 @@
           </p>
         </div>
       </template>
+
+      <form id="resetPasswordForm" class="auth-form" style="display: none;">
+        <div class="field">
+          <label for="resetPasswordInput">New Password</label>
+          <div class="input-group">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="resetPasswordInput" name="newPassword" placeholder="At least 8 characters" required>
+            <i class="fa-solid fa-eye toggle-password" id="toggleResetPassword"></i>
+          </div>
+          <div class="password-hint reset-hint">Strength: Short</div>
+        </div>
+        
+        <button type="submit" class="btn-primary">Update Password</button>
+        
+        <div class="form-footer">
+          <a href="#" class="link" id="backToLoginFromReset">Back to sign in</a>
+        </div>
+      </form>
     </section>
   </main>
 

@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.querySelector('#loginForm');
   const registerForm = document.querySelector('#registerForm');
   const forgotForm = document.querySelector('#forgotForm');
+  const resetPasswordForm = document.querySelector('#resetPasswordForm');
 
   const authTitle = document.querySelector('#authTitle');
   const authDescription = document.querySelector('.auth-description');
@@ -62,13 +63,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (tab === 'login') tabLogin?.classList.add('active');
     if (tab === 'register') tabRegister?.classList.add('active');
-    // for 'forgot' we leave both inactive
   };
 
   const hideAllViews = () => {
     if (loginForm) loginForm.style.display = 'none';
     if (registerForm) registerForm.style.display = 'none';
     if (forgotForm) forgotForm.style.display = 'none';
+    if (resetPasswordForm) resetPasswordForm.style.display = 'none';
   };
 
   const showAuthBanner = (show) => {
@@ -81,6 +82,25 @@ document.addEventListener('DOMContentLoaded', () => {
     first?.focus?.();
   };
 
+  const setBtnLoading = (btn, loadingText) => {
+    if (!btn) return () => {};
+    const originalText = btn.textContent;
+    btn.textContent = loadingText;
+    btn.disabled = true;
+
+    return () => {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    };
+  };
+
+  const getResetTokenFromUrl = () => {
+    const hashQuery = window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '';
+    const urlQuery = window.location.search?.slice(1) || '';
+    const params = new URLSearchParams(hashQuery || urlQuery);
+    return params.get('token');
+  };
+
   // =========================
   // Carousel (images + text)
   // =========================
@@ -89,8 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let slideInterval;
 
   function changeSlide(index) {
-    [imgSlides, textSlides, dots].forEach(group => {
-      group.forEach(el => el.classList.remove('active'));
+    [imgSlides, textSlides, dots].forEach((group) => {
+      group.forEach((el) => el.classList.remove('active'));
     });
 
     if (imgSlides[index]) imgSlides[index].classList.add('active');
@@ -173,9 +193,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setupPasswordToggle('#togglePassword', '#passwordInput');
   setupPasswordToggle('#toggleRegisterPassword', '#registerPasswordInput');
+  setupPasswordToggle('#toggleResetPassword', '#resetPasswordInput');
 
   // =========================
-  // Register password strength (nice UX)
+  // Register password strength
   // =========================
   const checkStrength = (password) => {
     let score = 0;
@@ -203,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================
-  // Inline links binder (re-bind after innerHTML updates)
+  // Inline links binder (safe after innerHTML changes)
   // =========================
   function bindInlineLinks() {
     const inlineRegister = document.querySelector('#inlineRegister');
@@ -269,15 +290,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function resetForgotToForm() {
     if (!forgotForm) return;
-
-    // Remove any previous success state
     forgotForm.querySelector('.success-state')?.remove();
-
-    // Ensure base form controls are visible again
     const baseEls = forgotForm.querySelectorAll('.field, button[type="submit"], .form-footer');
-    baseEls.forEach(el => (el.style.display = ''));
+    baseEls.forEach((el) => (el.style.display = ''));
 
-    // Reset submit button if needed
     const submitBtn = forgotForm.querySelector('button[type="submit"]');
     if (submitBtn) {
       submitBtn.disabled = false;
@@ -288,10 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function showForgot() {
     hideAllViews();
     showAuthBanner(false);
-    setTabActive('forgot');
-
     if (forgotForm) forgotForm.style.display = 'grid';
-
     resetForgotToForm();
 
     if (authTitle) authTitle.textContent = 'Recover Account';
@@ -307,12 +320,25 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(TAB_KEY, 'forgot');
     bindInlineLinks();
 
-    // If they refreshed, keep the email they typed previously (nice UX)
     const savedEmail = localStorage.getItem(FORGOT_EMAIL_KEY);
     const emailInput = forgotForm?.querySelector('input[name="email"]');
     if (emailInput && savedEmail) emailInput.value = savedEmail;
 
     focusFirstInput(forgotForm);
+  }
+
+  function showResetView() {
+    hideAllViews();
+    showAuthBanner(false);
+    if (resetPasswordForm) resetPasswordForm.style.display = 'grid';
+
+    if (authTitle) authTitle.textContent = 'Set New Password';
+    if (authDescription) {
+      authDescription.textContent = 'Choose a strong, unique password to secure your account.';
+    }
+    if (authSubtitle) authSubtitle.innerHTML = '';
+
+    focusFirstInput(resetPasswordForm);
   }
 
   // =========================
@@ -333,23 +359,22 @@ document.addEventListener('DOMContentLoaded', () => {
     showForgot();
   });
 
-  // Back link inside forgot form
-  document.querySelector('#backToLogin')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    showLogin();
-  });
-
   // =========================
   // Persist view on refresh
   // =========================
-  const savedTab = localStorage.getItem(TAB_KEY);
-  if (savedTab === 'register') showRegister();
-  else if (savedTab === 'forgot') showForgot();
-  else showLogin();
+  if (window.location.hash.startsWith('#reset')) {
+    showResetView();
+  } else {
+    const savedTab = localStorage.getItem(TAB_KEY);
+    if (savedTab === 'register') showRegister();
+    else if (savedTab === 'forgot') showForgot();
+    else showLogin();
+  }
 
   // =========================
-  // Login submit (unchanged behaviour)
+  // Submission Handlers
   // =========================
+
   loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -361,11 +386,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    const restoreBtn = setBtnLoading(submitBtn, 'Signing in...');
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -374,15 +403,14 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/views/homepage.html';
       } else {
         showBanner(data.error || 'Invalid email or password.');
+        restoreBtn();
       }
     } catch (error) {
       showBanner('Server connection lost.');
+      restoreBtn();
     }
   });
 
-  // =========================
-  // Register submit (unchanged behaviour)
-  // =========================
   registerForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -395,11 +423,20 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    if (password.length < 8) {
+      showBanner('Password must be at least 8 characters long.');
+      return;
+    }
+
+    const submitBtn = registerForm.querySelector('button[type="submit"]');
+    const restoreBtn = setBtnLoading(submitBtn, 'Creating account...');
+
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        credentials: 'include',
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -408,89 +445,114 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/views/homepage.html';
       } else {
         showBanner(data.error || 'Registration failed.');
+        restoreBtn();
       }
     } catch (error) {
       showBanner('Unable to connect to the server.');
+      restoreBtn();
     }
   });
 
-  // =========================
-  // Forgot submit (Sending... -> confirmation template)
-  // =========================
   forgotForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const emailInput = forgotForm.querySelector('input[name="email"]');
     const submitBtn = forgotForm.querySelector('button[type="submit"]');
-
     const email = emailInput?.value?.trim();
 
-    if (!email) {
-      showBanner('Please enter your email address.');
-      return;
-    }
-
-    if (!isValidEmail(email)) {
+    if (!email || !isValidEmail(email)) {
       showBanner('Please enter a valid email address.');
       return;
     }
 
-    // Persist email so refresh keeps it
     localStorage.setItem(FORGOT_EMAIL_KEY, email);
 
-    if (submitBtn) {
-      submitBtn.textContent = 'Sending...';
-      submitBtn.disabled = true;
-    }
+    const restoreBtn = setBtnLoading(submitBtn, 'Sending...');
 
     try {
-      // Replace this with your real endpoint later:
-      // await fetch('/api/auth/forgot', { method:'POST', headers:{...}, body: JSON.stringify({ email }) })
-      await new Promise(resolve => setTimeout(resolve, 400));
+      const response = await fetch('/api/auth/forgot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
+      });
 
-      // Hide base form content
-      const baseEls = forgotForm.querySelectorAll('.field, button[type="submit"], .form-footer');
-      baseEls.forEach(el => (el.style.display = 'none'));
+      if (response.ok) {
+        const baseEls = forgotForm.querySelectorAll('.field, button[type="submit"], .form-footer');
+        baseEls.forEach((el) => (el.style.display = 'none'));
 
-      // Render success state from template
-      if (forgotSuccessTemplate) {
-        const clone = forgotSuccessTemplate.content.cloneNode(true);
+        if (forgotSuccessTemplate) {
+          const clone = forgotSuccessTemplate.content.cloneNode(true);
 
-        const emailDisplay = clone.querySelector('.user-email-display');
-        if (emailDisplay) emailDisplay.textContent = email;
+          const emailDisplay = clone.querySelector('.user-email-display');
+          if (emailDisplay) emailDisplay.textContent = email;
 
-        const backBtn = clone.querySelector('#backToLoginBtn');
-        backBtn?.addEventListener('click', () => {
-          localStorage.removeItem(FORGOT_EMAIL_KEY);
-          showLogin();
-        });
+          clone.querySelector('#backToLoginBtn')?.addEventListener('click', () => {
+            localStorage.removeItem(FORGOT_EMAIL_KEY);
+            showLogin();
+          });
 
-        const retry = clone.querySelector('#retryForgot');
-        retry?.addEventListener('click', (ev) => {
-          ev.preventDefault();
-          resetForgotToForm();
-          if (submitBtn) {
-            submitBtn.textContent = 'Send Reset Link';
-            submitBtn.disabled = false;
-          }
-          focusFirstInput(forgotForm);
-        });
+          clone.querySelector('#retryForgot')?.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            resetForgotToForm();
+            focusFirstInput(forgotForm);
+          });
 
-        forgotForm.appendChild(clone);
+          forgotForm.appendChild(clone);
+        }
       } else {
-        // Fallback if template is missing
-        showBanner('Reset link sent (template missing).', 'success');
+        const data = await response.json().catch(() => ({}));
+        showBanner(data.error || 'Failed to send reset link.');
+        restoreBtn();
       }
-
-      // Keep user on this view even after refresh if you want:
-      localStorage.setItem(TAB_KEY, 'forgot');
-
     } catch (error) {
       showBanner('Something went wrong. Please try again.');
-      if (submitBtn) {
-        submitBtn.textContent = 'Send Reset Link';
-        submitBtn.disabled = false;
+      restoreBtn();
+    }
+  });
+
+  resetPasswordForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const newPassword = document.getElementById('resetPasswordInput')?.value;
+    const submitBtn = resetPasswordForm.querySelector('button[type="submit"]');
+
+    if (!newPassword || newPassword.length < 8) {
+      showBanner('Password must be at least 8 characters long.');
+      return;
+    }
+
+    const token = getResetTokenFromUrl();
+    if (!token) {
+      showBanner('Invalid or missing reset token.');
+      return;
+    }
+
+    const restoreBtn = setBtnLoading(submitBtn, 'Updating...');
+
+    try {
+      const response = await fetch('/api/auth/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ token, newPassword }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok) {
+        showBanner('Password updated successfully! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.hash = '';
+          showLogin();
+        }, 1200);
+      } else {
+        showBanner(data.error || 'Failed to reset password.');
+        restoreBtn();
       }
+    } catch (error) {
+      showBanner('Server connection lost.');
+      restoreBtn();
     }
   });
 
@@ -502,12 +564,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.hash = 'auth';
   });
 
-  if (window.location.hash === '#auth') {
-    document.body.classList.add('mobile-auth-open');
-  }
-
   window.addEventListener('hashchange', () => {
-    if (window.location.hash !== '#auth') {
+    if (window.location.hash.startsWith('#reset')) {
+      showResetView();
+    } else if (window.location.hash !== '#auth') {
       document.body.classList.remove('mobile-auth-open');
     }
   });
