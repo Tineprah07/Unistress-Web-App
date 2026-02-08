@@ -30,12 +30,57 @@ async function createUsersTable() {
 }
 
 // -------------------------
+// Create Password Reset Tokens Table
+// -------------------------
+async function createPasswordResetTable() {
+  const query = `
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token_hash TEXT NOT NULL,
+      expires_at TIMESTAMP NOT NULL,
+      used BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_password_reset_user_id
+    ON password_reset_tokens(user_id);
+
+    CREATE INDEX IF NOT EXISTS idx_password_reset_token_hash
+    ON password_reset_tokens(token_hash);
+
+    CREATE UNIQUE INDEX IF NOT EXISTS uq_password_reset_active_token_per_user
+    ON password_reset_tokens(user_id)
+    WHERE used = FALSE;
+  `;
+
+  try {
+    await pool.query(query);
+    console.log("✅ password_reset_tokens table is ready");
+  } catch (error) {
+    console.error("❌ Error creating password_reset_tokens table:", error);
+  }
+}
+
+
+// -------------------------
 // Run all table initialisations
 // -------------------------
 async function runInit() {
-  await createUsersTable();
-  await pool.end(); // close connection so script ends
+  try {
+    await pool.query("BEGIN");
+    await createUsersTable();
+    await createPasswordResetTable();
+    await pool.query("COMMIT");
+  } catch (error) {
+    await pool.query("ROLLBACK");
+    console.error("❌ Error running init:", error);
+    throw error;
+  } finally {
+    await pool.end();
+  }
 }
+
 
 // Execute init function
 runInit();

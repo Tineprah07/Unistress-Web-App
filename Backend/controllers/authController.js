@@ -12,6 +12,16 @@ import {
   findUserById,
 } from "../models/userModel.js";
 
+import crypto from "crypto";
+import pool from "../db/pool.js";
+import {
+  createResetToken,
+  findResetTokenByHash,
+  markTokenUsed,
+  invalidateActiveTokensForUser,
+} from "../models/passwordResetModel.js";
+
+
 // -------------------------
 // Register new user
 // -------------------------
@@ -127,4 +137,88 @@ export async function getCurrentUser(req, res) {
   return res.json({
     user: req.session.user,
   });
+}
+
+// -------------------------
+// Forgot password (Request reset link)
+// POST /api/auth/forgot
+// -------------------------
+export async function requestPasswordReset(req, res) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required." });
+    }
+
+    const user = await findUserByEmail(email);
+
+    // Always return a generic success message (prevents email enumeration)
+    if (!user) {
+      return res.json({ message: "If the email exists, a reset link will be sent." });
+    }
+
+    // Ensure we don't violate your "one active token per user" index
+    await invalidateActiveTokensForUser(user.id);
+
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 10); // 10 minutes
+
+    await createResetToken(user.id, tokenHash, expiresAt);
+
+    // For now: return token in development so you can test without email
+    return res.json({
+      message: "If the email exists, a reset link will be sent.",
+      devToken: process.env.NODE_ENV !== "production" ? rawToken : undefined,
+      expiresAt,
+    });
+  } catch (error) {
+    console.error("Error in requestPasswordReset:", error);
+    return res.status(500).json({ error: "Something went wrong." });
+  }
+}
+
+// -------------------------
+// Reset password
+// POST /api/auth/reset
+// -------------------------
+export async function resetPassword(req, res) {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: "Token and new password are required." });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: "Password must be at least 8 characters long." });
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const record = await findResetTokenByHash(tokenHash);
+
+    if (!record) return res.status(400).json({ error: "Invalid or expired token." });
+    if (record.used) return res.status(400).json({ error: "This reset link has already been used." });
+    if (new Date(record.expires_at) < new Date()) {
+      return res.status(400).json({ error: "Reset link expired." });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // Transaction: update password + mark token used
+    await pool.query("BEGIN");
+    await pool.query(`UPDATE users SET password_hash = $1 WHERE id = $2;`, [
+      passwordHash,
+      record.user_id,
+    ]);
+    await markTokenUsed(record.id);
+    await pool.query("COMMIT");
+
+    return res.json({ message: "Password reset successful." });
+  } catch (error) {
+    await pool.query("ROLLBACK").catch(() => {});
+    console.error("Error in resetPassword:", error);
+    return res.status(500).json({ error: "Something went wrong." });
+  }
 }
