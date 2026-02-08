@@ -16,7 +16,7 @@
   <aside id="notificationBanner" class="notification-banner" aria-live="polite">
     <i id="bannerIcon" class="fa-solid"></i>
     <output id="bannerMessage"></output>
-</aside>
+  </aside>
 
   <main class="signin">
 
@@ -117,6 +117,7 @@
       </section>
     </section>
 
+    <!-- Right Screen -->
     <section class="signin-right">
       <div class="auth-banner">
         <button class="banner-btn active" id="tabLogin">Sign In</button>
@@ -130,6 +131,7 @@
         </p>
         </header>
 
+      <!-- Login Section -->
       <form class="form" id="loginForm" action="/api/auth/login" method="post">
         <label class="field">
           <span class="field-label">Email</span>
@@ -143,8 +145,8 @@
             <i class="fa-solid fa-eye toggle-password" id="togglePassword" tabindex="0" role="button" aria-label="Show password"></i>
           </div>
           <div class="forgot-link-container">
-            <span class="forgot-text">Forgot password?</span> 
-            <a class="link small-link" href="/views/forgot.html">Click here</a>
+              <span class="forgot-text">Forgot password?</span> 
+              <a class="link small-link" href="#" id="forgotPasswordLink">Click here</a>
           </div>
         </label>
 
@@ -160,6 +162,7 @@
         </p>
       </form>
 
+      <!-- Register Section -->
       <form class="form" id="registerForm" action="/api/auth/register" method="post" style="display: none;">
         <label class="field">
           <span class="field-label">Full Name</span>
@@ -193,10 +196,41 @@
           Already have an account? <a class="link small-link" href="#" id="inlineLogin">Click here</a>
         </p>
       </form>
-    </section>
 
+      <!-- Forget Password Section -->
+      <form class="form" id="forgotForm" style="display: none;">
+          <label class="field">
+              <span class="field-label">Email Address</span>
+              <input class="field-input" type="email" name="email" placeholder="you@uni.ac.uk" required>
+          </label>
+
+          <button class="btn btn-primary" type="submit">Send Reset Link</button>
+          
+          <p class="form-footer">
+              Remember your password? <a class="link small-link" href="#" id="backToLogin">Sign in here</a>
+          </p>
+      </form>
+
+      <template id="forgotSuccessTemplate">
+        <div class="success-state">
+          <i class="fa-solid fa-paper-plane success-icon"></i>
+          <h3 class="success-title">Check your email</h3>
+          <p class="success-text">
+            We've sent a recovery link to <br>
+            <strong class="user-email-display"></strong>
+          </p>
+          <button type="button" class="btn btn-primary" id="backToLoginBtn" style="width: 100%;">
+              Back to Sign In
+          </button>
+          <p class="form-footer">
+            Didn't get it? <a class="link small-link" href="#" id="retryForgot">Try again</a>
+          </p>
+        </div>
+      </template>
+    </section>
   </main>
 
-    <script src="/js/auth.js"></script>
+  <script src="/js/auth.js"></script>
+
 </body>
 </html>

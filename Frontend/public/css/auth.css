@@ -940,3 +940,40 @@ button.dot.active {
 .mobile-get-started {
   display: none;
 }
+
+/* --- Forgot Password Success State --- */
+
+.success-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem 0;
+    animation: fadeIn 0.5s ease;
+}
+
+.success-icon {
+    font-size: 3rem;
+    color: #4e54c8; /* Matches your brand primary */
+    margin-bottom: 1.2rem;
+    display: block;
+}
+
+.success-title {
+    margin-bottom: 0.8rem;
+    color: var(--cosmic-deep);
+    font-weight: 600;
+}
+
+.success-text {
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.user-email-display {
+    color: var(--cosmic-deep);
+    word-break: break-all;
+}
