@@ -20,11 +20,18 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:3000";
+
 // -------------------------
 // Core Middleware
 // -------------------------
 // Enable CORS (allows frontend to call backend API safely)
-app.use(cors());
+app.use(
+  cors({
+    origin: FRONTEND_ORIGIN,
+    credentials: true,
+  })
+);
 
 // Parse JSON bodies
 app.use(express.json());
@@ -38,8 +45,16 @@ app.use(
     secret: process.env.SESSION_SECRET || "change_this_secret",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    },
   })
 );
+
+
 
 // Make logged-in user available everywhere if needed
 app.use((req, res, next) => {
