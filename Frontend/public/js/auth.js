@@ -401,7 +401,6 @@ document.addEventListener('DOMContentLoaded', () => {
   loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // FIXED: Corrected syntax error here
     const emailInput = loginForm.querySelector('input[name="email"]');
     const passwordInput = loginForm.querySelector('input[name="password"]');
 
@@ -412,9 +411,6 @@ document.addEventListener('DOMContentLoaded', () => {
       showBanner('Please fill in your email and password.');
       return;
     }
-
-    const submitBtn = loginForm.querySelector('button[type="submit"]');
-    const restoreBtn = setBtnLoading(submitBtn, 'Signing in...');
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -427,14 +423,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
+        // Direct redirect without waiting for UI changes
         window.location.href = '/views/homepage.html';
       } else {
         showBanner(data.error || 'Invalid email or password.');
-        restoreBtn();
       }
     } catch (error) {
       showBanner('Server connection lost.');
-      restoreBtn();
     }
   });
 
