@@ -9,6 +9,9 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { testDbConnection } from "./db/pool.js";
 import authRoutes from "./routes/authRoutes.js";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { findUserByEmail, createUser, findUserByGoogleId, findUserById } from "./models/userModel.js";
 
 // Load environment variables
 dotenv.config();
@@ -54,13 +57,70 @@ app.use(
   })
 );
 
+// Initialize Passport and Session Support
+app.use(passport.initialize());
+app.use(passport.session());
 
+// Configure Google Strategy
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "/api/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails[0].value;
+        const googleId = profile.id;
 
-// Make logged-in user available everywhere if needed
+        // 1. Check if user exists by Google ID
+        let user = await findUserByGoogleId(googleId);
+
+        if (!user) {
+          // 2. If not, check if email is already registered locally
+          user = await findUserByEmail(email);
+          
+          if (!user) {
+            // 3. Brand new user: Create them
+            user = await createUser(profile.displayName, email, null, googleId);
+          } else {
+            // Optional: Link existing email account to Google ID if not already linked
+            // (Requires an update query in userModel, but this works for now)
+          }
+        }
+        return done(null, user);
+      } catch (err) {
+        return done(err, null);
+      }
+    }
+  )
+);
+
+// Tell Passport how to save the user into the session (by ID)
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+// Tell Passport how to retrieve the full user from the DB using that ID
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await findUserById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
+});
+
+// --- END OF PASSPORT CONFIGURATION ---
+
+// Make logged-in user available everywhere
 app.use((req, res, next) => {
-  res.locals.currentUser = req.session.user || null;
+  // Passport puts the user in req.user, your old code used req.session.user
+  res.locals.currentUser = req.user || req.session.user || null;
   next();
 });
+
 
 // -------------------------
 // Static Frontend

@@ -16,7 +16,8 @@ async function createUsersTable() {
       id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
       email VARCHAR(150) UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
+      password_hash TEXT,
+      google_id TEXT UNIQUE,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `;
