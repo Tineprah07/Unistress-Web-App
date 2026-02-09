@@ -359,16 +359,39 @@ document.addEventListener('DOMContentLoaded', () => {
     showForgot();
   });
 
+  // Back to login from Forgot Form
+  document.querySelector('#backToLogin')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showLogin();
+  });
+
+  // Back to login from Reset Form
+  document.querySelector('#backToLoginFromReset')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.hash = ''; // Clear the #reset token
+    showLogin();
+  });
+
+  // This ensures the links like "Sign in here" or "Create account" 
+  // embedded in paragraphs work correctly.
+  bindInlineLinks();
+
   // =========================
   // Persist view on refresh
   // =========================
+  // 1. Clear the saved tab preference immediately on load
+  localStorage.removeItem(TAB_KEY);
+
+  // 2. Check if we are specifically here to reset a password via a link
   if (window.location.hash.startsWith('#reset')) {
     showResetView();
   } else {
-    const savedTab = localStorage.getItem(TAB_KEY);
-    if (savedTab === 'register') showRegister();
-    else if (savedTab === 'forgot') showForgot();
-    else showLogin();
+    // 3. For every other case (refresh, new open, etc.), always show Login
+    showLogin();
+    // Force the hash to be empty so mobile views also reset
+    if (window.location.hash === '#auth') {
+       window.location.hash = '';
+    }
   }
 
   // =========================
@@ -378,8 +401,12 @@ document.addEventListener('DOMContentLoaded', () => {
   loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const email = loginForm.querySelector('input[name="email"]')?.value?.trim();
-    const password = document.getElementById('passwordInput')?.value;
+    // FIXED: Corrected syntax error here
+    const emailInput = loginForm.querySelector('input[name="email"]');
+    const passwordInput = loginForm.querySelector('input[name="password"]');
+
+    const email = emailInput?.value?.trim();
+    const password = passwordInput?.value;
 
     if (!email || !password) {
       showBanner('Please fill in your email and password.');
