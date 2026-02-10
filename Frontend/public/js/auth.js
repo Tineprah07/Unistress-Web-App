@@ -550,8 +550,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const restoreBtn = setBtnLoading(submitBtn, 'Updating...');
-
     try {
       const response = await fetch('/api/auth/reset', {
         method: 'POST',
@@ -566,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           window.location.hash = '';
           showLogin();
-        }, 1200);
+        }, 500);
       } else {
         showBanner(data.error || 'Failed to reset password.');
         restoreBtn();
