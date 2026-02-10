@@ -563,7 +563,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        showBanner('Password updated successfully! Redirecting...', 'success');
         setTimeout(() => {
           window.location.hash = '';
           showLogin();
