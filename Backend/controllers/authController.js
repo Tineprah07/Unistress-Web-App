@@ -20,7 +20,7 @@ import {
   markTokenUsed,
   invalidateActiveTokensForUser,
 } from "../models/passwordResetModel.js";
-
+import { sendResetEmail } from "../utils/mailer.js";
 
 // -------------------------
 // Register new user
@@ -164,33 +164,33 @@ export async function getCurrentUser(req, res) {
 export async function requestPasswordReset(req, res) {
   try {
     const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ error: "Email is required." });
-    }
+    if (!email) return res.status(400).json({ error: "Email is required." });
 
     const user = await findUserByEmail(email);
 
-    // Always return a generic success message (prevents email enumeration)
+    // Standard security: don't reveal if email exists or not
     if (!user) {
       return res.json({ message: "If the email exists, a reset link will be sent." });
     }
 
-    // Ensure we don't violate your "one active token per user" index
     await invalidateActiveTokensForUser(user.id);
 
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 10); // 10 minutes
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 10); // 10 mins
 
     await createResetToken(user.id, tokenHash, expiresAt);
 
-    // For now: return token in development so you can test without email
-    return res.json({
-      message: "If the email exists, a reset link will be sent.",
-      devToken: process.env.NODE_ENV !== "production" ? rawToken : undefined,
-      expiresAt,
-    });
+    // THE FIX: Call the actual mailer function
+    try {
+      await sendResetEmail(user.email, rawToken);
+    } catch (mailError) {
+      console.error("Mail service error:", mailError);
+      // Still tell the user success so we don't leak account info, 
+      // but log the error for yourself.
+    }
+
+    return res.json({ message: "If the email exists, a reset link will be sent." });
   } catch (error) {
     console.error("Error in requestPasswordReset:", error);
     return res.status(500).json({ error: "Something went wrong." });
