@@ -645,26 +645,31 @@ button.dot.active {
 
 /* Modern Notification Banner */
 .notification-banner {
-    position: absolute;
-    top: -4rem; /* Start hidden above the panel */
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 4rem);
-    max-width: 26rem;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    z-index: 100;
-    transition: top 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(-1rem);
+  width: calc(100% - 4rem);
+  max-width: 26rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 1000;
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.1);
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 .notification-banner.show {
-    top: 1.5rem; /* Slide down into view */
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* Banner Variants */

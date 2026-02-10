@@ -68,8 +68,6 @@ export async function registerUser(req, res) {
 // -------------------------
 // Login user
 // -------------------------
-// Backend/controllers/authController.js
-
 export async function loginUser(req, res) {
   try {
     const { email, password } = req.body;
@@ -80,14 +78,22 @@ export async function loginUser(req, res) {
 
     const user = await findUserByEmail(email);
 
-    // Specific check for point #1: "email doesnt exist"
     if (!user) {
       return res.status(404).json({ error: "Email doesn't exist" });
     }
 
+    // Check if the user has a password. Google users will have a null password_hash.
+    if (!user.password_hash) {
+      return res.status(409).json({
+        error: "This account was created using Google. To sign in with email and password, create a password using ‘Forgot password?’, or continue with Google.",
+        next: "SET_PASSWORD"
+      });
+    }
+
+    // --- CRITICAL FIX END ---
+
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
 
-    // Specific check for point #2: "incorrect password"
     if (!passwordMatch) {
       return res.status(401).json({ error: "Incorrect password" });
     }
@@ -112,13 +118,20 @@ export async function loginUser(req, res) {
 // Logout user
 // -------------------------
 export function logoutUser(req, res) {
+  // 1. Passport Logout
+  if (req.logout) {
+    req.logout((err) => {
+      if (err) console.error("Passport logout error:", err);
+    });
+  }
+
+  // 2. Manual Session Logout
   req.session.destroy((err) => {
     if (err) {
-      console.error("Error in logoutUser:", err);
+      console.error("Error in logoutUser session destroy:", err);
       return res.status(500).json({ error: "Could not log out." });
     }
-
-    // Optionally clear cookie on client later
+    res.clearCookie("connect.sid"); // Recommended: Clear the session cookie
     return res.json({ message: "Logged out successfully." });
   });
 }
@@ -127,15 +140,20 @@ export function logoutUser(req, res) {
 // Get current logged-in user
 // -------------------------
 export async function getCurrentUser(req, res) {
-  if (!req.session.user) {
+  // Passport puts user in req.user; manual login uses req.session.user
+  const user = req.user || req.session.user;
+
+  if (!user) {
     return res.status(401).json({ user: null, error: "Not logged in." });
   }
 
-  // If you ever want to fetch fresh data from DB:
-  // const userFromDb = await findUserById(req.session.user.id);
-
+  // To keep the frontend consistent, return a standard object
   return res.json({
-    user: req.session.user,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    },
   });
 }
 

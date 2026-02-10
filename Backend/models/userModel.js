@@ -69,3 +69,14 @@ export async function findUserById(id) {
   const result = await pool.query(query, [id]);
   return result.rows[0] || null;
 }
+
+export async function linkGoogleIdToUser(userId, googleId) {
+  const query = `
+    UPDATE users
+    SET google_id = $1
+    WHERE id = $2
+    RETURNING id, name, email, google_id, created_at;
+  `;
+  const res = await pool.query(query, [googleId, userId]);
+  return res.rows[0] || null;
+}

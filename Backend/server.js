@@ -36,6 +36,23 @@ app.use(
   })
 );
 
+// Middleware: The "Guard" for your private routes
+function ensureAuthenticated(req, res, next) {
+    // Modern apps check both Passport (req.isAuthenticated) and manual sessions
+    const isAuthenticated = req.isAuthenticated?.() || (req.session && req.session.user);
+    
+    if (isAuthenticated) {
+        return next();
+    }
+
+    // If it's an AJAX/Fetch request, send 401. If it's a page load, redirect.
+    if (req.headers['x-requested-with'] === 'XMLHttpRequest' || req.headers.accept.includes('json')) {
+        return res.status(401).json({ error: "Unauthorized. Please log in." });
+    }
+    
+    res.redirect('/views/auth.html');
+}
+
 // Parse JSON bodies
 app.use(express.json());
 
@@ -143,6 +160,25 @@ app.use("/views", express.static(viewsPath));
 app.get("/", (req, res) => {
   res.sendFile(path.join(viewsPath, "index.html"));
 });
+
+// 2. THE LOGIN PAGE: Must be accessible to guests
+app.get("/views/auth.html", (req, res) => {
+    // If they are ALREADY logged in, don't show the login page, go home
+    if (req.isAuthenticated?.() || req.session.user) {
+        return res.redirect("/views/homepage.html");
+    }
+    res.sendFile(path.join(viewsPath, "auth.html"));
+});
+
+// 3. PROTECTED VIEWS: Protect the entire /views folder or specific files
+// This ensures no one can "guess" the URL to homepage.html
+app.get("/views/homepage.html", ensureAuthenticated, (req, res) => {
+    res.sendFile(path.join(viewsPath, "homepage.html"));
+});
+
+// Catch-all for other views (if you want them all protected)
+app.use("/views", ensureAuthenticated, express.static(viewsPath));
+
 
 // -------------------------
 // API Routes
