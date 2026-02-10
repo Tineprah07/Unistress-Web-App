@@ -38,6 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const regPasswordInput = document.getElementById('registerPasswordInput');
   const hint = document.querySelector('.password-hint');
 
+  const resetPassInput = document.getElementById('resetPasswordInput');
+  const resetHint = document.getElementById('resetPasswordHint');
+
   // =========================
   // Helpers
   // =========================
@@ -223,6 +226,15 @@ document.addEventListener('DOMContentLoaded', () => {
     hint.textContent = `Strength: ${strength.label}`;
   });
 
+  resetPassInput?.addEventListener('input', (e) => {
+    const strength = checkStrength(e.target.value);
+    if (!resetHint) return;
+
+    resetHint.style.color = strength.color;
+    resetHint.style.fontWeight = '600';
+    resetHint.textContent = `Strength: ${strength.label}`;
+  });
+
   // =========================
   // Inline links binder (safe after innerHTML changes)
   // =========================
@@ -319,10 +331,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     localStorage.setItem(TAB_KEY, 'forgot');
     bindInlineLinks();
-
-    const savedEmail = localStorage.getItem(FORGOT_EMAIL_KEY);
-    const emailInput = forgotForm?.querySelector('input[name="email"]');
-    if (emailInput && savedEmail) emailInput.value = savedEmail;
 
     focusFirstInput(forgotForm);
   }
@@ -487,7 +495,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    localStorage.setItem(FORGOT_EMAIL_KEY, email);
 
     const restoreBtn = setBtnLoading(submitBtn, 'Sending...');
 
