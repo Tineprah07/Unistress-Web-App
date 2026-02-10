@@ -174,7 +174,7 @@ export async function requestPasswordReset(req, res) {
     }
 
     await invalidateActiveTokensForUser(user.id);
-
+    
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
     const expiresAt = new Date(Date.now() + 1000 * 60 * 10); // 10 mins

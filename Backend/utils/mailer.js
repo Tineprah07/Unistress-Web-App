@@ -16,7 +16,7 @@ export const sendResetEmail = async (email, token) => {
   
   const mailOptions = {
     // Correct format: "Display Name" <email@gmail.com>
-    from: `"UniStress Support" <${process.env.EMAIL_USER}>`, 
+    from: `"UniStress" <${process.env.EMAIL_USER}>`, 
     to: email,
     subject: "UniStress | Password Reset Request", // Updated Title
     html: `

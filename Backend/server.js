@@ -136,20 +136,20 @@ const publicPath = path.join(frontendPath, "public");
 const assetsPath = path.join(frontendPath, "assets");
 const viewsPath = path.join(frontendPath, "views");
 
-// Serve Public Assets (CSS/JS/Images) first so they are never blocked
+// 1. SERVE PUBLIC ASSETS (Must be first so CSS/JS load)
 app.use(express.static(publicPath));
 app.use("/assets", express.static(assetsPath));
 
 // -------------------------
-// Page Routes
+// Page Routes (Public)
 // -------------------------
 
-// 1. Landing Page
+// 2. Landing Page
 app.get("/", (req, res) => {
   res.sendFile(path.join(viewsPath, "index.html"));
 });
 
-// 2. Login Page (Public)
+// 3. Login Page (Public with auto-redirect if already logged in)
 app.get("/views/auth.html", (req, res) => {
     if (req.isAuthenticated?.() || req.session.user) {
         return res.redirect("/views/homepage.html");
@@ -157,17 +157,23 @@ app.get("/views/auth.html", (req, res) => {
     res.sendFile(path.join(viewsPath, "auth.html"));
 });
 
-// 3. Reset Password Page (Must be Public)
+// 4. Reset Password Page (CRITICAL: Must be above the protected catch-all)
 app.get("/views/resetPassword.html", (req, res) => {
   res.sendFile(path.join(viewsPath, "resetPassword.html"));
 });
 
-// 4. Protected Homepage
+
+// -------------------------
+// Page Routes (Protected)
+// -------------------------
+
+// 5. Protected Homepage
 app.get("/views/homepage.html", ensureAuthenticated, (req, res) => {
     res.sendFile(path.join(viewsPath, "homepage.html"));
 });
 
-// 5. Protected Views Catch-all
+// 6. Protected Views Catch-all
+// This will protect any file in /views NOT specifically handled above
 app.use("/views", ensureAuthenticated, express.static(viewsPath));
 
 // -------------------------
@@ -205,7 +211,6 @@ app.listen(PORT, () => {
   console.log(`UniStress running at http://localhost:${PORT}`);
   console.log(`-----------------------------------------------`);  
 });
-
 
 // Run commands to start the server:
 

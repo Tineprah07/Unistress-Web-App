@@ -1,46 +1,54 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
-    const form = document.getElementById("resetPasswordForm");
-    const banner = document.getElementById("messageBanner");
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('#resetPasswordForm');
+  const passwordInput = document.querySelector('input[name="newPassword"]');
+  const banner = document.querySelector('#notificationBanner');
+  const bannerMsg = document.querySelector('#bannerMessage');
 
-    // If no token is present in the URL, block the form and show error
-    if (!token) {
-        showBanner("Invalid or missing reset token.", "error");
-        if (form) form.style.display = "none";
-        return;
+  const showBanner = (msg) => {
+    if (!banner || !bannerMsg) return;
+    bannerMsg.textContent = msg;
+    banner.classList.add('show');
+    setTimeout(() => banner.classList.remove('show'), 4000);
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+
+  if (!token) {
+    showBanner('Missing reset token. Please request a new reset link.');
+    form?.querySelector('button[type="submit"]')?.setAttribute('disabled', 'true');
+    return;
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const newPassword = passwordInput?.value || '';
+    if (newPassword.length < 8) {
+      showBanner('Password must be at least 8 characters long.');
+      return;
     }
 
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const newPassword = document.getElementById("newPassword").value;
+    try {
+      const res = await fetch('/api/auth/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ token, newPassword }),
+      });
 
-        try {
-            const response = await fetch("/api/auth/reset", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token, newPassword }),
-            });
+      const data = await res.json().catch(() => ({}));
 
-            const data = await response.json();
-
-            if (response.ok) {
-                showBanner("Password updated successfully! Redirecting to login...", "success");
-                // Redirect back to login page after 3 seconds
-                setTimeout(() => window.location.href = "/views/auth.html", 3000);
-            } else {
-                showBanner(data.error || "Failed to reset password.", "error");
-            }
-        } catch (err) {
-            showBanner("Something went wrong. Please try again.", "error");
-            console.error("Reset Error:", err);
-        }
-    });
-
-    function showBanner(text, type) {
-        banner.textContent = text;
-        banner.className = `banner ${type}`;
-        banner.classList.remove("hidden");
-        banner.style.display = "flex"; // Ensure it is visible
+      if (res.ok) {
+        showBanner('Password updated. Redirecting to sign in...');
+        setTimeout(() => {
+          window.location.href = '/views/auth.html';
+        }, 1200);
+      } else {
+        showBanner(data.error || 'Reset failed. Please request a new link.');
+      }
+    } catch (err) {
+      showBanner('Server connection lost. Try again.');
     }
+  });
 });
