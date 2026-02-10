@@ -136,20 +136,17 @@ const publicPath = path.join(frontendPath, "public");
 const assetsPath = path.join(frontendPath, "assets");
 const viewsPath = path.join(frontendPath, "views");
 
-// 1. SERVE PUBLIC ASSETS (Must be first so CSS/JS load)
-app.use(express.static(publicPath));
+// 1. SERVE PUBLIC ASSETS (Move this high up)
+// This ensures /css/auth.css and /js/auth.js are served without auth checks
+app.use(express.static(publicPath)); 
 app.use("/assets", express.static(assetsPath));
 
-// -------------------------
-// Page Routes (Public)
-// -------------------------
-
-// 2. Landing Page
+// 2. PUBLIC PAGE ROUTES
+// These must be defined before the "ensureAuthenticated" middleware
 app.get("/", (req, res) => {
   res.sendFile(path.join(viewsPath, "index.html"));
 });
 
-// 3. Login Page (Public with auto-redirect if already logged in)
 app.get("/views/auth.html", (req, res) => {
     if (req.isAuthenticated?.() || req.session.user) {
         return res.redirect("/views/homepage.html");
@@ -157,24 +154,20 @@ app.get("/views/auth.html", (req, res) => {
     res.sendFile(path.join(viewsPath, "auth.html"));
 });
 
-// 4. Reset Password Page (CRITICAL: Must be above the protected catch-all)
+// Explicitly allow resetPassword.html without authentication
 app.get("/views/resetPassword.html", (req, res) => {
   res.sendFile(path.join(viewsPath, "resetPassword.html"));
 });
 
-
-// -------------------------
-// Page Routes (Protected)
-// -------------------------
-
-// 5. Protected Homepage
+// 3. PROTECTED ROUTES 
+// Only the homepage and other internal views should be under the guard
 app.get("/views/homepage.html", ensureAuthenticated, (req, res) => {
     res.sendFile(path.join(viewsPath, "homepage.html"));
 });
 
-// 6. Protected Views Catch-all
-// This will protect any file in /views NOT specifically handled above
+// This catch-all protects any OTHER file in /views
 app.use("/views", ensureAuthenticated, express.static(viewsPath));
+
 
 // -------------------------
 // API Routes
