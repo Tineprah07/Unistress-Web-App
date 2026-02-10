@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendResetEmail = async (email, token) => {
-  const resetLink = `${process.env.FRONTEND_URL}/views/reset-password.html?token=${token}`;
+  const resetLink = `${process.env.FRONTEND_URL}/views/resetPassword.html?token=${token}`;
   
   const mailOptions = {
     // Correct format: "Display Name" <email@gmail.com>
