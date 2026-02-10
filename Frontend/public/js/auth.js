@@ -578,6 +578,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // New function to show the Reset view inside auth.html
+  function showResetView() {
+      hideAllViews(); // This function already exists in your auth.js
+      showAuthBanner(false); // Hide the Login/Register toggle
+      
+      const resetPasswordForm = document.querySelector('#resetPasswordForm');
+      if (resetPasswordForm) resetPasswordForm.style.display = 'grid';
+
+      if (authTitle) authTitle.textContent = 'Set New Password';
+      if (authDescription) {
+          authDescription.textContent = 'Choose a strong, unique password to secure your account.';
+      }
+      if (authSubtitle) authSubtitle.innerHTML = '';
+  }
+
+// Logic to check for the token on page load
+const hash = window.location.hash;
+if (hash.startsWith('#reset')) {
+    showResetView();
+}
+
   // =========================
   // Mobile: Get Started flow
   // =========================

@@ -211,6 +211,24 @@
           </p>
       </form>
 
+      <!-- Reset Password -->
+      <form id="resetPasswordForm" class="form" style="display: none;">
+        <div class="field">
+          <span class="field-label">New Password</span>
+          <div class="password-wrapper">
+            <input class="field-input" type="password" id="resetPasswordInput" name="newPassword" placeholder="Min. 8 characters" required>
+            <i class="fa-solid fa-eye toggle-password" id="toggleResetPassword"></i>
+          </div>
+          <div class="password-hint" id="resetPasswordHint">Strength: Short</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Password</button>
+
+        <p class="form-footer">
+          <a href="#" class="link" id="backToLoginFromReset">Back to sign in</a>
+        </p>
+      </form>
+
       <template id="forgotSuccessTemplate">
         <div class="success-state">
           <i class="fa-solid fa-paper-plane success-icon"></i>
