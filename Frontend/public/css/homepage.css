@@ -788,8 +788,503 @@ body {
 .main-content,
 .settings-popover,
 .popover-title,
-.popover-label {
+.popover-label,
+.profile-panel {
     transition: background-color var(--transition-speed) ease,
                 color var(--transition-speed) ease,
                 border-color var(--transition-speed) ease;
+}
+
+
+/* =========================================
+   6. PROFILE PANEL (Right Sidebar)
+   ========================================= */
+.profile-panel {
+    width: 300px;
+    min-width: 300px;
+    background: var(--card-bg);
+    border-left: 1px solid var(--border-color);
+    padding: 1.5rem 1.25rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+
+/* ── Profile Card ── */
+.profile-card {
+    text-align: center;
+}
+
+.profile-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+}
+
+.profile-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.profile-edit-btn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.profile-edit-btn:hover {
+    opacity: 0.7;
+}
+
+/* Avatar */
+.profile-avatar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8e9ff, #d4d6ff);
+    display: grid;
+    place-items: center;
+    position: relative;
+    margin-bottom: 0.3rem;
+}
+
+/* Avatar wrapper for positioning decorations */
+.avatar-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 0.3rem;
+}
+
+.avatar-icon {
+    font-size: 2.2rem;
+    color: var(--primary);
+}
+
+/* Ring glow around avatar */
+.avatar-circle::before {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: var(--primary-light);
+    border-right-color: var(--primary-light);
+    opacity: 0.5;
+    animation: avatar-spin 6s linear infinite;
+}
+
+@keyframes avatar-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Decorative floating elements */
+.avatar-deco {
+    position: absolute;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    pointer-events: none;
+}
+
+/* Star ✦ — top-left area */
+.deco-star {
+    top: -2px;
+    left: -6px;
+    font-size: 0.85rem;
+    color: #f59e0b;
+    animation: deco-float-star 3s ease-in-out infinite;
+}
+
+@keyframes deco-float-star {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+    50% { transform: translateY(-5px) scale(1.2); opacity: 0.7; }
+}
+
+/* Blue dot — top-right */
+.deco-dot {
+    top: 2px;
+    right: -4px;
+    width: 10px;
+    height: 10px;
+    background: var(--primary);
+    border-radius: 50%;
+    border: 2px solid var(--card-bg);
+    animation: deco-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes deco-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.6; }
+}
+
+/* Plus + — bottom-right */
+.deco-plus {
+    bottom: 2px;
+    right: -2px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary-light);
+    animation: deco-float-plus 3.5s ease-in-out infinite;
+}
+
+@keyframes deco-float-plus {
+    0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+    50% { transform: translateY(-4px) rotate(90deg); opacity: 1; }
+}
+
+.profile-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.profile-handle {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+
+/* ── Motivation Slider ── */
+.motivation-slider {
+    background: var(--body-bg);
+    border-radius: 14px;
+    padding: 1rem 1.1rem 0.75rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.motivation-track {
+    position: relative;
+    min-height: 80px;
+}
+
+.motivation-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    transform: translateX(30px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+    margin: 0;
+    padding: 0;
+    border: none;
+    pointer-events: none;
+}
+
+.motivation-slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    position: relative;
+    pointer-events: auto;
+}
+
+.motivation-slide p {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.55;
+    font-style: italic;
+}
+
+.motivation-slide cite {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    font-style: normal;
+    margin-top: 0.45rem;
+    font-weight: 500;
+}
+
+/* Dots */
+.motivation-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 0.65rem;
+}
+
+.dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: none;
+    background: var(--border-color);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.dot.active {
+    background: var(--primary);
+    transform: scale(1.3);
+}
+
+
+/* ── Calendar Widget ── */
+.calendar-widget {
+    background: var(--card-bg);
+}
+
+.calendar-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.cal-month-year {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.cal-nav-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.cal-nav-btn:hover {
+    background: var(--primary-glow);
+    color: var(--primary);
+}
+
+/* Calendar Grid */
+.calendar-grid {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.calendar-grid th {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 0.35rem 0;
+    text-transform: uppercase;
+}
+
+.calendar-grid td {
+    text-align: center;
+    padding: 0;
+}
+
+.calendar-grid td span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.calendar-grid td span:hover {
+    background: var(--primary-glow);
+}
+
+.calendar-grid td span.today {
+    background: var(--primary);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.calendar-grid td span.other-month {
+    color: var(--border-color);
+}
+
+
+/* ── Scheduled Section ── */
+.scheduled-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.scheduled-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.1rem;
+}
+
+.scheduled-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.85rem 1rem;
+    border-radius: 14px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scheduled-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Card colour variants (pastel backgrounds like the reference) */
+.card-purple {
+    background: #ededfd;
+}
+
+.card-blue {
+    background: #e4eeff;
+}
+
+[data-theme="dark"] .card-purple {
+    background: rgba(78, 84, 200, 0.12);
+}
+
+[data-theme="dark"] .card-blue {
+    background: rgba(96, 165, 250, 0.10);
+}
+
+/* Top row: tag + 3-dot menu */
+.scheduled-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.scheduled-tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.tag-focus {
+    background: rgba(78, 84, 200, 0.15);
+    color: var(--primary);
+}
+
+.tag-exercise {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+
+.tag-breathe {
+    background: rgba(139, 92, 246, 0.15);
+    color: #7c3aed;
+}
+
+.scheduled-menu {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.2rem;
+    border-radius: 4px;
+    transition: color 0.2s ease;
+    line-height: 1;
+}
+
+.scheduled-menu:hover {
+    color: var(--text-primary);
+}
+
+/* Bottom row: name + date */
+.scheduled-card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.scheduled-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.scheduled-date {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   7. PROFILE PANEL – RESPONSIVE
+   ========================================= */
+
+@media (max-width: 1200px) {
+    .profile-panel {
+        width: 260px;
+        min-width: 260px;
+        padding: 1.25rem 1rem;
+    }
+
+    .avatar-circle {
+        width: 70px;
+        height: 70px;
+    }
+
+    .avatar-icon {
+        font-size: 1.7rem;
+    }
+
+    .profile-name {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    /* Hide profile panel on tablets — too tight */
+    .profile-panel {
+        display: none;
+    }
+}
+
+/* Profile panel scrollbar */
+.profile-panel::-webkit-scrollbar {
+    width: 3px;
+}
+
+.profile-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.profile-panel::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
 }

@@ -169,9 +169,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/auth/me', { credentials: 'include' });
             const data = await res.json();
 
-            if (data.user && userNameEl) {
-                const firstName = data.user.name.split(' ')[0];
-                userNameEl.textContent = firstName;
+            if (data.user) {
+                const fullName = data.user.name || 'Student';
+                const firstName = fullName.split(' ')[0];
+
+                // Welcome bar
+                if (userNameEl) userNameEl.textContent = firstName;
+
+                // Profile panel
+                const profileName = document.getElementById('profileName');
+                const profileHandle = document.getElementById('profileHandle');
+                const avatarCircle = document.getElementById('avatarCircle');
+
+                if (profileName) profileName.textContent = fullName;
+                if (profileHandle) profileHandle.textContent = '@' + firstName.toLowerCase();
+
+                // Show first letter in avatar instead of icon
+                if (avatarCircle) {
+                    avatarCircle.innerHTML = '<span class="avatar-letter">' + fullName.charAt(0).toUpperCase() + '</span>';
+                    // Inject the letter style
+                    const avatarStyle = document.createElement('style');
+                    avatarStyle.textContent = `
+                        .avatar-letter {
+                            font-size: 2rem;
+                            font-weight: 700;
+                            color: var(--primary);
+                            font-family: 'Poppins', sans-serif;
+                        }
+                    `;
+                    document.head.appendChild(avatarStyle);
+                }
             }
         } catch (err) {
             console.error('Failed to fetch user:', err);
@@ -257,5 +284,126 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     `;
     document.head.appendChild(mobileStyle);
+
+
+    // =========================
+    // 8. CALENDAR
+    // =========================
+    const calBody = document.getElementById('calBody');
+    const calMonthYear = document.getElementById('calMonthYear');
+    const calPrev = document.getElementById('calPrev');
+    const calNext = document.getElementById('calNext');
+
+    const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+
+    let calDate = new Date();
+
+    function renderCalendar() {
+        if (!calBody) return;
+
+        const year = calDate.getFullYear();
+        const month = calDate.getMonth();
+        const today = new Date();
+
+        calMonthYear.textContent = MONTHS[month] + ', ' + year;
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const daysInPrev = new Date(year, month, 0).getDate();
+
+        let html = '';
+        let day = 1;
+        let nextDay = 1;
+
+        for (let row = 0; row < 6; row++) {
+            html += '<tr>';
+            for (let col = 0; col < 7; col++) {
+                const cellIndex = row * 7 + col;
+
+                if (cellIndex < firstDay) {
+                    // Previous month days
+                    const prevD = daysInPrev - firstDay + col + 1;
+                    html += '<td><span class="other-month">' + prevD + '</span></td>';
+                } else if (day > daysInMonth) {
+                    // Next month days
+                    html += '<td><span class="other-month">' + nextDay + '</span></td>';
+                    nextDay++;
+                } else {
+                    const isToday = day === today.getDate() &&
+                                    month === today.getMonth() &&
+                                    year === today.getFullYear();
+                    const cls = isToday ? ' class="today"' : '';
+                    html += '<td><span' + cls + '>' + day + '</span></td>';
+                    day++;
+                }
+            }
+            html += '</tr>';
+
+            // Stop if we've rendered all days
+            if (day > daysInMonth) break;
+        }
+
+        calBody.innerHTML = html;
+    }
+
+    calPrev?.addEventListener('click', () => {
+        calDate.setMonth(calDate.getMonth() - 1);
+        renderCalendar();
+    });
+
+    calNext?.addEventListener('click', () => {
+        calDate.setMonth(calDate.getMonth() + 1);
+        renderCalendar();
+    });
+
+    renderCalendar();
+
+
+    // =========================
+    // 9. MOTIVATION SLIDER
+    // =========================
+    const slides = document.querySelectorAll('.motivation-slide');
+    const dots = document.querySelectorAll('.motivation-dots .dot');
+    let currentSlide = 0;
+    let slideInterval;
+
+    function showSlide(index) {
+        slides.forEach((s, i) => {
+            s.classList.toggle('active', i === index);
+        });
+        dots.forEach((d, i) => {
+            d.classList.toggle('active', i === index);
+        });
+        currentSlide = index;
+    }
+
+    function nextSlide() {
+        const next = (currentSlide + 1) % slides.length;
+        showSlide(next);
+    }
+
+    function startAutoSlide() {
+        slideInterval = setInterval(nextSlide, 5000);
+    }
+
+    function resetAutoSlide() {
+        clearInterval(slideInterval);
+        startAutoSlide();
+    }
+
+    // Dot click
+    dots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+            const index = parseInt(dot.dataset.index, 10);
+            showSlide(index);
+            resetAutoSlide();
+        });
+    });
+
+    // Start auto-slide
+    if (slides.length > 0) {
+        startAutoSlide();
+    }
 
 });
