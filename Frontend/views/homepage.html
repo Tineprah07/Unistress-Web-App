@@ -1,1 +1,158 @@
-Hello World
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniStress | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/homepage.css">
+</head>
+
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+
+        <!-- Sidebar Header: Logo + Toggle -->
+        <header class="sidebar-header">
+            <figure class="sidebar-brand">
+                <span class="brand-icon">U</span>
+                <figcaption class="brand-text">UniStress</figcaption>
+            </figure>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </header>
+
+        <!-- Big Home Icon (centred, like reference design) -->
+        <figure class="sidebar-home-icon" aria-hidden="true">
+            <i class="fa-solid fa-house"></i>
+        </figure>
+
+        <!-- Sidebar Navigation Links -->
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item active">
+                    <a href="/views/homepage.html" class="nav-link" data-tooltip="Dashboard">
+                        <i class="fa-solid fa-chart-line nav-icon"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tooltip="Stress Tracking">
+                        <i class="fa-solid fa-heart-pulse nav-icon"></i>
+                        <span class="nav-text">Stress Tracking</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tooltip="Exercise">
+                        <i class="fa-solid fa-dumbbell nav-icon"></i>
+                        <span class="nav-text">Exercise</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tooltip="Sleep">
+                        <i class="fa-solid fa-moon nav-icon"></i>
+                        <span class="nav-text">Sleep</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tooltip="Hydration">
+                        <i class="fa-solid fa-droplet nav-icon"></i>
+                        <span class="nav-text">Hydration</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tooltip="Focus Timer">
+                        <i class="fa-solid fa-book-open nav-icon"></i>
+                        <span class="nav-text">Focus Timer</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tooltip="Breathe Flow">
+                        <i class="fa-solid fa-wind nav-icon"></i>
+                        <span class="nav-text">Breathe Flow</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tooltip="My Notes">
+                        <i class="fa-regular fa-note-sticky nav-icon"></i>
+                        <span class="nav-text">My Notes</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tooltip="Reminders">
+                        <i class="fa-solid fa-bell nav-icon"></i>
+                        <span class="nav-text">Reminders</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tooltip="About App">
+                        <i class="fa-solid fa-circle-info nav-icon"></i>
+                        <span class="nav-text">About App</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar Footer: Settings + Logout -->
+        <footer class="sidebar-footer">
+
+            <!-- Settings (opens a popover with dark mode toggle) -->
+            <section class="settings-wrapper">
+                <button class="sidebar-footer-btn" id="settingsBtn" type="button" data-tooltip="Settings">
+                    <i class="fa-solid fa-gear nav-icon"></i>
+                    <span class="nav-text">Settings</span>
+                </button>
+
+                <!-- Settings Popover Menu -->
+                <article class="settings-popover" id="settingsPopover" role="dialog" aria-label="Settings menu">
+                    <header class="popover-header">
+                        <h3 class="popover-title">Settings</h3>
+                    </header>
+                    <ul class="popover-list">
+                        <li class="popover-item">
+                            <span class="popover-label">
+                                <i class="fa-solid fa-circle-half-stroke"></i>
+                                Dark Mode
+                            </span>
+                            <button class="theme-switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+                                <span class="switch-knob"></span>
+                            </button>
+                        </li>
+                    </ul>
+                </article>
+            </section>
+
+            <!-- Logout -->
+            <button class="sidebar-footer-btn logout-btn" id="logoutBtn" type="button" data-tooltip="Log Out">
+                <i class="fa-solid fa-right-from-bracket nav-icon"></i>
+                <span class="nav-text">Log Out</span>
+            </button>
+        </footer>
+
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- Top Bar -->
+        <header class="topbar">
+            <section class="welcome-section">
+                <h1 class="welcome-title">Welcome, <strong id="userName">Student</strong> <span class="wave">&#x1F44B;</span></h1>
+                <p class="welcome-subtitle">Here's your wellbeing summary for today.</p>
+            </section>
+        </header>
+
+        <!-- Dashboard content will go here in future steps -->
+        <section class="dashboard-grid" aria-label="Dashboard overview">
+            <p style="color: #9ca3af; font-size: 0.95rem; padding: 2rem;">Dashboard content coming next...</p>
+        </section>
+
+    </main>
+
+    <script src="/js/homepage.js"></script>
+
+</body>
+</html>
