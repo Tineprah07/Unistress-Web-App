@@ -8,10 +8,24 @@ import session from "express-session";
 import dotenv from "dotenv";
 import cors from "cors";
 import { testDbConnection } from "./db/pool.js";
-import authRoutes from "./routes/authRoutes.js";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { findUserByEmail, createUser, findUserByGoogleId, findUserById } from "./models/userModel.js";
+
+// Auth middleware
+import { requireAuth } from "./middleware/authMiddleware.js";
+
+// Route imports
+import authRoutes from "./routes/authRoutes.js";
+import stressRoutes from "./routes/stressRoutes.js";
+import exerciseRoutes from "./routes/exerciseRoutes.js";
+import sleepRoutes from "./routes/sleepRoutes.js";
+import hydrationRoutes from "./routes/hydrationRoutes.js";
+import focusRoutes from "./routes/focusRoutes.js";
+import breatheRoutes from "./routes/breatheRoutes.js";
+import notesRoutes from "./routes/notesRoutes.js";
+import remindersRoutes from "./routes/remindersRoutes.js";
+import summaryRoutes from "./routes/summaryRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -62,19 +76,19 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Auth Guard Middleware
+// Auth Guard Middleware (for view routes)
 function ensureAuthenticated(req, res, next) {
-    const isAuthenticated = req.isAuthenticated?.() || (req.session && req.session.user);
-    
-    if (isAuthenticated) {
-        return next();
-    }
+  const isAuthenticated = req.isAuthenticated?.() || (req.session && req.session.user);
 
-    if (req.headers['x-requested-with'] === 'XMLHttpRequest' || req.headers.accept.includes('json')) {
-        return res.status(401).json({ error: "Unauthorized. Please log in." });
-    }
-    
-    res.redirect('/views/auth.html');
+  if (isAuthenticated) {
+    return next();
+  }
+
+  if (req.headers["x-requested-with"] === "XMLHttpRequest" || req.headers.accept?.includes("json")) {
+    return res.status(401).json({ error: "Unauthorized. Please log in." });
+  }
+
+  res.redirect("/views/auth.html");
 }
 
 // -------------------------
@@ -138,7 +152,7 @@ const viewsPath = path.join(frontendPath, "views");
 
 // 1. SERVE PUBLIC ASSETS (Keep this high up)
 // Allows access to /js/auth.js and /css/auth.css without login
-app.use(express.static(publicPath)); 
+app.use(express.static(publicPath));
 app.use("/assets", express.static(assetsPath));
 
 // 2. PUBLIC PAGE ROUTES
@@ -148,33 +162,46 @@ app.get("/", (req, res) => {
 
 // The main hub for Login, Register, and now Reset Password
 app.get("/views/auth.html", (req, res) => {
-    // If user is already logged in, send them to the homepage
-    if (req.isAuthenticated?.() || req.session.user) {
-        return res.redirect("/views/homepage.html");
-    }
-    res.sendFile(path.join(viewsPath, "auth.html"));
+  // If user is already logged in, send them to the homepage
+  if (req.isAuthenticated?.() || req.session.user) {
+    return res.redirect("/views/homepage.html");
+  }
+  res.sendFile(path.join(viewsPath, "auth.html"));
 });
 
-// 3. PROTECTED ROUTES 
+// 3. PROTECTED ROUTES
 // Only the homepage and other internal views require the ensureAuthenticated check
 app.get("/views/homepage.html", ensureAuthenticated, (req, res) => {
-    res.sendFile(path.join(viewsPath, "homepage.html"));
+  res.sendFile(path.join(viewsPath, "homepage.html"));
 });
 
 // This catch-all protects any OTHER private file in /views
 app.use("/views", ensureAuthenticated, express.static(viewsPath));
 
-
 // -------------------------
 // API Routes
 // -------------------------
 
+// Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "UniStress backend is live" });
 });
 
+// Auth (public — no requireAuth)
 app.use("/api/auth", authRoutes);
 
+// Protected module APIs — all require login
+app.use("/api/stress",     requireAuth, stressRoutes);
+app.use("/api/exercise",   requireAuth, exerciseRoutes);
+app.use("/api/sleep",      requireAuth, sleepRoutes);
+app.use("/api/hydration",  requireAuth, hydrationRoutes);
+app.use("/api/focus",      requireAuth, focusRoutes);
+app.use("/api/breathe",    requireAuth, breatheRoutes);
+app.use("/api/notes",      requireAuth, notesRoutes);
+app.use("/api/reminders",  requireAuth, remindersRoutes);
+app.use("/api/summary",    requireAuth, summaryRoutes);
+
+// Database connection test
 app.get("/api/db-test", async (req, res) => {
   try {
     const nowRow = await testDbConnection();
@@ -197,8 +224,8 @@ app.get("/api/db-test", async (req, res) => {
 // -------------------------
 app.listen(PORT, () => {
   console.log(`-----------------------------------------------`);
-  console.log(`UniStress running at http://localhost:${PORT}`);
-  console.log(`-----------------------------------------------`);  
+  console.log(`  UniStress running at http://localhost:${PORT}`);
+  console.log(`-----------------------------------------------`);
 });
 
 // Run commands to start the server:

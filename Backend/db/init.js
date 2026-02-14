@@ -1,17 +1,16 @@
 // -------------------------
 // UniStress Database Init
 // -------------------------
-// This script creates the initial database tables that
-// UniStress needs to run. You only execute it once,
-// or again if you reset the database.
+// Creates all tables needed for UniStress.
+// Run once: node Backend/db/init.js
 
 import pool from "./pool.js";
 
 // -------------------------
-// Create Users Table
+// Users Table (existing)
 // -------------------------
 async function createUsersTable() {
-  const createTableQuery = `
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
@@ -20,21 +19,15 @@ async function createUsersTable() {
       google_id TEXT UNIQUE,
       created_at TIMESTAMP DEFAULT NOW()
     );
-  `;
-
-  try {
-    await pool.query(createTableQuery);
-    console.log("✅ users table is ready");
-  } catch (error) {
-    console.error("❌ Error creating users table:", error);
-  }
+  `);
+  console.log("✅ users table is ready");
 }
 
 // -------------------------
-// Create Password Reset Tokens Table
+// Password Reset Tokens (existing)
 // -------------------------
 async function createPasswordResetTable() {
-  const query = `
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS password_reset_tokens (
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -53,26 +46,196 @@ async function createPasswordResetTable() {
     CREATE UNIQUE INDEX IF NOT EXISTS uq_password_reset_active_token_per_user
     ON password_reset_tokens(user_id)
     WHERE used = FALSE;
-  `;
-
-  try {
-    await pool.query(query);
-    console.log("✅ password_reset_tokens table is ready");
-  } catch (error) {
-    console.error("❌ Error creating password_reset_tokens table:", error);
-  }
+  `);
+  console.log("✅ password_reset_tokens table is ready");
 }
 
+// -------------------------
+// Stress Check-ins
+// -------------------------
+async function createStressTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS stress_checkins (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      stress_level SMALLINT NOT NULL CHECK (stress_level BETWEEN 1 AND 10),
+      mood VARCHAR(30) NOT NULL,
+      mood_emoji VARCHAR(10),
+      triggers TEXT[] DEFAULT '{}',
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_stress_user ON stress_checkins(user_id);
+    CREATE INDEX IF NOT EXISTS idx_stress_date ON stress_checkins(user_id, created_at);
+  `);
+  console.log("✅ stress_checkins table is ready");
+}
 
 // -------------------------
-// Run all table initialisations
+// Exercise Logs
+// -------------------------
+async function createExerciseTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS exercise_logs (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      exercise_type VARCHAR(50) NOT NULL,
+      duration INTEGER NOT NULL CHECK (duration > 0),
+      intensity VARCHAR(20) NOT NULL DEFAULT 'Light',
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_exercise_user ON exercise_logs(user_id);
+    CREATE INDEX IF NOT EXISTS idx_exercise_date ON exercise_logs(user_id, created_at);
+  `);
+  console.log("✅ exercise_logs table is ready");
+}
+
+// -------------------------
+// Sleep Logs
+// -------------------------
+async function createSleepTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS sleep_logs (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      bedtime TIME NOT NULL,
+      wake_time TIME NOT NULL,
+      duration_hours NUMERIC(4,2) NOT NULL,
+      quality SMALLINT NOT NULL CHECK (quality BETWEEN 1 AND 5),
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_sleep_user ON sleep_logs(user_id);
+    CREATE INDEX IF NOT EXISTS idx_sleep_date ON sleep_logs(user_id, created_at);
+  `);
+  console.log("✅ sleep_logs table is ready");
+}
+
+// -------------------------
+// Hydration Logs
+// -------------------------
+async function createHydrationTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS hydration_logs (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      glasses INTEGER NOT NULL CHECK (glasses > 0),
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_hydration_user ON hydration_logs(user_id);
+    CREATE INDEX IF NOT EXISTS idx_hydration_date ON hydration_logs(user_id, created_at);
+  `);
+  console.log("✅ hydration_logs table is ready");
+}
+
+// -------------------------
+// Focus Sessions
+// -------------------------
+async function createFocusTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS focus_sessions (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
+      mode VARCHAR(20) NOT NULL DEFAULT 'focus',
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_focus_user ON focus_sessions(user_id);
+    CREATE INDEX IF NOT EXISTS idx_focus_date ON focus_sessions(user_id, created_at);
+  `);
+  console.log("✅ focus_sessions table is ready");
+}
+
+// -------------------------
+// Breathe Sessions
+// -------------------------
+async function createBreatheTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS breathe_sessions (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      technique VARCHAR(50) NOT NULL,
+      technique_name VARCHAR(100),
+      cycles INTEGER NOT NULL CHECK (cycles > 0),
+      duration_seconds INTEGER NOT NULL CHECK (duration_seconds > 0),
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_breathe_user ON breathe_sessions(user_id);
+    CREATE INDEX IF NOT EXISTS idx_breathe_date ON breathe_sessions(user_id, created_at);
+  `);
+  console.log("✅ breathe_sessions table is ready");
+}
+
+// -------------------------
+// Notes
+// -------------------------
+async function createNotesTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS notes (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title VARCHAR(100) NOT NULL,
+      body TEXT NOT NULL,
+      category VARCHAR(30) NOT NULL DEFAULT 'Reflection',
+      mood VARCHAR(10) DEFAULT '😐',
+      pinned BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_notes_user ON notes(user_id);
+    CREATE INDEX IF NOT EXISTS idx_notes_date ON notes(user_id, created_at);
+  `);
+  console.log("✅ notes table is ready");
+}
+
+// -------------------------
+// Reminders
+// -------------------------
+async function createRemindersTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS reminders (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      text VARCHAR(100) NOT NULL,
+      due_date DATE NOT NULL,
+      due_time TIME NOT NULL DEFAULT '09:00',
+      category VARCHAR(30) NOT NULL DEFAULT 'Other',
+      repeat VARCHAR(10) NOT NULL DEFAULT 'none',
+      priority VARCHAR(10) NOT NULL DEFAULT 'medium',
+      completed BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_reminders_user ON reminders(user_id);
+    CREATE INDEX IF NOT EXISTS idx_reminders_due ON reminders(user_id, due_date);
+  `);
+  console.log("✅ reminders table is ready");
+}
+
+// -------------------------
+// Run All
 // -------------------------
 async function runInit() {
   try {
     await pool.query("BEGIN");
+
+    // Existing tables
     await createUsersTable();
     await createPasswordResetTable();
+
+    // New module tables
+    await createStressTable();
+    await createExerciseTable();
+    await createSleepTable();
+    await createHydrationTable();
+    await createFocusTable();
+    await createBreatheTable();
+    await createNotesTable();
+    await createRemindersTable();
+
     await pool.query("COMMIT");
+    console.log("\n🎉 All UniStress tables initialised successfully!");
   } catch (error) {
     await pool.query("ROLLBACK");
     console.error("❌ Error running init:", error);
@@ -82,8 +245,6 @@ async function runInit() {
   }
 }
 
-
-// Execute init function
 runInit();
 
 
