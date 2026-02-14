@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniStress | My Notes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/notes.css">
+</head>
+
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+        <header class="sidebar-header">
+            <figure class="sidebar-brand"><span class="brand-icon">U</span><figcaption class="brand-text">UniStress</figcaption></figure>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar"><i class="fa-solid fa-bars"></i></button>
+        </header>
+        <figure class="sidebar-home-icon" aria-hidden="true"><i class="fa-solid fa-house"></i></figure>
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="/views/homepage.html" class="nav-link" data-tooltip="Dashboard"><i class="fa-solid fa-chart-line nav-icon"></i><span class="nav-text">Dashboard</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="Stress Tracking"><i class="fa-solid fa-heart-pulse nav-icon"></i><span class="nav-text">Stress Tracking</span></a></li>
+                <li class="nav-item"><a href="/views/exercise.html" class="nav-link" data-tooltip="Exercise"><i class="fa-solid fa-dumbbell nav-icon"></i><span class="nav-text">Exercise</span></a></li>
+                <li class="nav-item"><a href="/views/sleep.html" class="nav-link" data-tooltip="Sleep"><i class="fa-solid fa-moon nav-icon"></i><span class="nav-text">Sleep</span></a></li>
+                <li class="nav-item"><a href="/views/hydration.html" class="nav-link" data-tooltip="Hydration"><i class="fa-solid fa-droplet nav-icon"></i><span class="nav-text">Hydration</span></a></li>
+                <li class="nav-item"><a href="/views/focus.html" class="nav-link" data-tooltip="Focus Timer"><i class="fa-solid fa-book-open nav-icon"></i><span class="nav-text">Focus Timer</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="Breathe Flow"><i class="fa-solid fa-wind nav-icon"></i><span class="nav-text">Breathe Flow</span></a></li>
+                <li class="nav-item active"><a href="/views/notes.html" class="nav-link" data-tooltip="My Notes"><i class="fa-regular fa-note-sticky nav-icon"></i><span class="nav-text">My Notes</span></a></li>
+                <li class="nav-item"><a href="/views/reminders.html" class="nav-link" data-tooltip="Reminders"><i class="fa-solid fa-bell nav-icon"></i><span class="nav-text">Reminders</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="About App"><i class="fa-solid fa-circle-info nav-icon"></i><span class="nav-text">About App</span></a></li>
+            </ul>
+        </nav>
+        <footer class="sidebar-footer">
+            <section class="settings-wrapper">
+                <button class="sidebar-footer-btn" id="settingsBtn" type="button" data-tooltip="Settings"><i class="fa-solid fa-gear nav-icon"></i><span class="nav-text">Settings</span></button>
+                <article class="settings-popover" id="settingsPopover" role="dialog" aria-label="Settings menu">
+                    <header class="popover-header"><h3 class="popover-title">Settings</h3></header>
+                    <ul class="popover-list"><li class="popover-item"><span class="popover-label"><i class="fa-solid fa-circle-half-stroke"></i> Dark Mode</span><button class="theme-switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode"><span class="switch-knob"></span></button></li></ul>
+                </article>
+            </section>
+            <button class="sidebar-footer-btn logout-btn" id="logoutBtn" type="button" data-tooltip="Log Out"><i class="fa-solid fa-right-from-bracket nav-icon"></i><span class="nav-text">Log Out</span></button>
+        </footer>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- ── Hero Banner ── -->
+        <section class="notes-hero">
+            <figure class="hero-icon-bg" aria-hidden="true"><i class="fa-regular fa-note-sticky"></i></figure>
+            <span class="hero-shape shape-1" aria-hidden="true"></span>
+            <span class="hero-shape shape-2" aria-hidden="true"></span>
+            <span class="hero-shape shape-3" aria-hidden="true"></span>
+            <section class="hero-left">
+                <h1 class="hero-title">My Notes</h1>
+                <p class="hero-subtitle">Reflect, journal, and capture your thoughts.</p>
+            </section>
+            <figure class="hero-ring-wrap">
+                <svg class="hero-ring" viewBox="0 0 120 120">
+                    <circle class="ring-bg" cx="60" cy="60" r="52" />
+                    <circle class="ring-fill" cx="60" cy="60" r="52" id="heroRingFill" />
+                </svg>
+                <figcaption class="ring-text">
+                    <span class="ring-value" id="heroRingValue">0</span>
+                    <span class="ring-unit">notes</span>
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- ── Stats Row ── -->
+        <section class="stats-row">
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-notes"><i class="fa-regular fa-note-sticky"></i></span>
+                <p class="stat-value" id="totalNotes">0</p>
+                <p class="stat-label">Total Notes</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-today"><i class="fa-solid fa-calendar-day"></i></span>
+                <p class="stat-value" id="todayNotes">0</p>
+                <p class="stat-label">Today</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-fire"><i class="fa-solid fa-fire"></i></span>
+                <p class="stat-value" id="currentStreak">0</p>
+                <p class="stat-label">Day Streak</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-pin"><i class="fa-solid fa-thumbtack"></i></span>
+                <p class="stat-value" id="pinnedCount">0</p>
+                <p class="stat-label">Pinned</p>
+            </article>
+        </section>
+
+        <!-- ── Toolbar: Search + New Note ── -->
+        <section class="notes-toolbar">
+            <section class="search-wrap">
+                <i class="fa-solid fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search notes..." class="search-input">
+            </section>
+            <nav class="filter-tabs" id="filterTabs">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="Reflection">Reflection</button>
+                <button class="filter-tab" data-filter="Academic">Academic</button>
+                <button class="filter-tab" data-filter="Personal">Personal</button>
+                <button class="filter-tab" data-filter="Goals">Goals</button>
+            </nav>
+            <button class="btn-new-note" id="newNoteBtn" type="button">
+                <i class="fa-solid fa-plus"></i> New Note
+            </button>
+        </section>
+
+        <!-- ── Note Editor (hidden by default) ── -->
+        <section class="card editor-card hidden" id="editorCard">
+            <header class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-pen"></i> <span id="editorTitle">New Note</span></h2>
+                <button class="btn-close-editor" id="closeEditor" type="button"><i class="fa-solid fa-xmark"></i></button>
+            </header>
+
+            <form class="note-form" id="noteForm">
+                <input type="hidden" id="noteId" value="">
+                <input type="text" id="noteTitle" placeholder="Note title..." class="form-input title-input" maxlength="100" required>
+
+                <section class="form-row-2">
+                    <section class="form-group">
+                        <label class="form-label">Category</label>
+                        <section class="category-picker" id="categoryPicker">
+                            <button type="button" class="cat-btn active" data-cat="Reflection">Reflection</button>
+                            <button type="button" class="cat-btn" data-cat="Academic">Academic</button>
+                            <button type="button" class="cat-btn" data-cat="Personal">Personal</button>
+                            <button type="button" class="cat-btn" data-cat="Goals">Goals</button>
+                        </section>
+                        <input type="hidden" id="noteCategory" value="Reflection">
+                    </section>
+                    <section class="form-group">
+                        <label class="form-label">Mood</label>
+                        <section class="mood-picker" id="moodPicker">
+                            <button type="button" class="mood-btn" data-mood="😊" title="Happy">😊</button>
+                            <button type="button" class="mood-btn active" data-mood="😐" title="Neutral">😐</button>
+                            <button type="button" class="mood-btn" data-mood="😔" title="Sad">😔</button>
+                            <button type="button" class="mood-btn" data-mood="😤" title="Stressed">😤</button>
+                            <button type="button" class="mood-btn" data-mood="😴" title="Tired">😴</button>
+                        </section>
+                        <input type="hidden" id="noteMood" value="😐">
+                    </section>
+                </section>
+
+                <textarea id="noteBody" placeholder="Write your thoughts..." class="form-input note-textarea" rows="6" required></textarea>
+
+                <section class="editor-actions">
+                    <button type="submit" class="btn-primary"><i class="fa-solid fa-check"></i> Save Note</button>
+                    <button type="button" class="btn-secondary" id="cancelEditor">Cancel</button>
+                </section>
+            </form>
+        </section>
+
+        <!-- ── Notes Grid ── -->
+        <section class="notes-grid" id="notesGrid">
+            <article class="notes-empty" id="notesEmpty">
+                <i class="fa-regular fa-note-sticky"></i>
+                <p>No notes yet. Tap "New Note" to start journaling!</p>
+            </article>
+        </section>
+
+    </main>
+
+    <script src="/js/homepage.js"></script>
+    <script src="/js/notes.js"></script>
+
+</body>
+</html>

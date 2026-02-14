@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniStress | Exercise Tracking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/exercise.css">
+</head>
+
+<body>
+
+    <!-- ========== SIDEBAR (same as homepage) ========== -->
+    <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+        <header class="sidebar-header">
+            <figure class="sidebar-brand">
+                <span class="brand-icon">U</span>
+                <figcaption class="brand-text">UniStress</figcaption>
+            </figure>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </header>
+
+        <figure class="sidebar-home-icon" aria-hidden="true">
+            <i class="fa-solid fa-house"></i>
+        </figure>
+
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="/views/homepage.html" class="nav-link" data-tooltip="Dashboard">
+                        <i class="fa-solid fa-chart-line nav-icon"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/views/stress.html" class="nav-link" data-tooltip="Stress Tracking">
+                        <i class="fa-solid fa-heart-pulse nav-icon"></i>
+                        <span class="nav-text">Stress Tracking</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="/views/exercise.html" class="nav-link" data-tooltip="Exercise">
+                        <i class="fa-solid fa-dumbbell nav-icon"></i>
+                        <span class="nav-text">Exercise</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/views/sleep.html" class="nav-link" data-tooltip="Sleep">
+                        <i class="fa-solid fa-moon nav-icon"></i>
+                        <span class="nav-text">Sleep</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/views/hydration.html" class="nav-link" data-tooltip="Hydration">
+                        <i class="fa-solid fa-droplet nav-icon"></i>
+                        <span class="nav-text">Hydration</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/views/focus.html" class="nav-link" data-tooltip="Focus Timer">
+                        <i class="fa-solid fa-book-open nav-icon"></i>
+                        <span class="nav-text">Focus Timer</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tooltip="Breathe Flow">
+                        <i class="fa-solid fa-wind nav-icon"></i>
+                        <span class="nav-text">Breathe Flow</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/views/notes.html" class="nav-link" data-tooltip="My Notes">
+                        <i class="fa-regular fa-note-sticky nav-icon"></i>
+                        <span class="nav-text">My Notes</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/views/reminders.html" class="nav-link" data-tooltip="Reminders">
+                        <i class="fa-solid fa-bell nav-icon"></i>
+                        <span class="nav-text">Reminders</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-tooltip="About App">
+                        <i class="fa-solid fa-circle-info nav-icon"></i>
+                        <span class="nav-text">About App</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <footer class="sidebar-footer">
+            <section class="settings-wrapper">
+                <button class="sidebar-footer-btn" id="settingsBtn" type="button" data-tooltip="Settings">
+                    <i class="fa-solid fa-gear nav-icon"></i>
+                    <span class="nav-text">Settings</span>
+                </button>
+                <article class="settings-popover" id="settingsPopover" role="dialog" aria-label="Settings menu">
+                    <header class="popover-header">
+                        <h3 class="popover-title">Settings</h3>
+                    </header>
+                    <ul class="popover-list">
+                        <li class="popover-item">
+                            <span class="popover-label">
+                                <i class="fa-solid fa-circle-half-stroke"></i>
+                                Dark Mode
+                            </span>
+                            <button class="theme-switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+                                <span class="switch-knob"></span>
+                            </button>
+                        </li>
+                    </ul>
+                </article>
+            </section>
+            <button class="sidebar-footer-btn logout-btn" id="logoutBtn" type="button" data-tooltip="Log Out">
+                <i class="fa-solid fa-right-from-bracket nav-icon"></i>
+                <span class="nav-text">Log Out</span>
+            </button>
+        </footer>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- ── Hero Banner ── -->
+        <section class="exercise-hero" aria-label="Exercise overview">
+            <figure class="hero-dumbbell" aria-hidden="true">
+                <i class="fa-solid fa-dumbbell"></i>
+            </figure>
+
+            <!-- Floating decorative shapes -->
+            <span class="hero-shape shape-1" aria-hidden="true"></span>
+            <span class="hero-shape shape-2" aria-hidden="true"></span>
+            <span class="hero-shape shape-3" aria-hidden="true"></span>
+
+            <!-- Left: Stats text -->
+            <section class="hero-left">
+                <h1 class="hero-title" id="heroTitle">0 Exercises</h1>
+                <p class="hero-subtitle" id="heroSubtitle">0 minutes total</p>
+            </section>
+
+            <!-- Right: Circular progress ring -->
+            <figure class="hero-ring-wrap" aria-label="Weekly goal progress">
+                <svg class="hero-ring" viewBox="0 0 120 120">
+                    <circle class="ring-bg" cx="60" cy="60" r="52" />
+                    <circle class="ring-fill" cx="60" cy="60" r="52" id="heroRingFill" />
+                </svg>
+                <figcaption class="ring-text">
+                    <span class="ring-value" id="heroRingValue">0</span>
+                    <span class="ring-total" id="heroRingTotal">/150</span>
+                    <span class="ring-unit">min</span>
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- ── Stats Cards Row ── -->
+        <section class="stats-row" aria-label="Exercise statistics">
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-fire">
+                    <i class="fa-solid fa-fire"></i>
+                </span>
+                <p class="stat-value" id="currentStreak">0</p>
+                <p class="stat-label">Day Streak</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-trophy">
+                    <i class="fa-solid fa-trophy"></i>
+                </span>
+                <p class="stat-value" id="bestStreak">0</p>
+                <p class="stat-label">Best Streak</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-calendar">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </span>
+                <p class="stat-value" id="weekTotal">0<small>min</small></p>
+                <p class="stat-label">This Week</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-bolt">
+                    <i class="fa-solid fa-bolt"></i>
+                </span>
+                <p class="stat-value" id="totalSessions">0</p>
+                <p class="stat-label">Total Sessions</p>
+            </article>
+        </section>
+
+        <!-- ── Main Grid: Form + Chart ── -->
+        <section class="exercise-grid">
+
+            <!-- Log Exercise Form -->
+            <article class="card log-card">
+                <header class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-plus-circle"></i>
+                        Log Exercise
+                    </h2>
+                </header>
+
+                <form class="exercise-form" id="exerciseForm">
+                    <fieldset class="form-group">
+                        <label for="exerciseType" class="form-label">Exercise Type</label>
+                        <section class="type-picker" id="typePicker">
+                            <button type="button" class="type-btn active" data-type="Walking">
+                                <i class="fa-solid fa-person-walking"></i>
+                                <span>Walking</span>
+                            </button>
+                            <button type="button" class="type-btn" data-type="Running">
+                                <i class="fa-solid fa-person-running"></i>
+                                <span>Running</span>
+                            </button>
+                            <button type="button" class="type-btn" data-type="Cycling">
+                                <i class="fa-solid fa-bicycle"></i>
+                                <span>Cycling</span>
+                            </button>
+                            <button type="button" class="type-btn" data-type="Gym">
+                                <i class="fa-solid fa-dumbbell"></i>
+                                <span>Gym</span>
+                            </button>
+                            <button type="button" class="type-btn" data-type="Yoga">
+                                <i class="fa-solid fa-spa"></i>
+                                <span>Yoga</span>
+                            </button>
+                            <button type="button" class="type-btn" data-type="Swimming">
+                                <i class="fa-solid fa-water-ladder"></i>
+                                <span>Swimming</span>
+                            </button>
+                            <button type="button" class="type-btn" data-type="Other">
+                                <i class="fa-solid fa-ellipsis"></i>
+                                <span>Other</span>
+                            </button>
+                        </section>
+                        <input type="hidden" name="exerciseType" id="exerciseType" value="Walking">
+                    </fieldset>
+
+                    <fieldset class="form-row-2">
+                        <section class="form-group">
+                            <label for="duration" class="form-label">Duration (minutes)</label>
+                            <input type="number" id="duration" name="duration" min="1" max="300" placeholder="e.g. 30" required class="form-input">
+                        </section>
+                        <section class="form-group">
+                            <label for="intensity" class="form-label">Intensity</label>
+                            <section class="intensity-picker" id="intensityPicker">
+                                <button type="button" class="intensity-btn active" data-intensity="Light">Light</button>
+                                <button type="button" class="intensity-btn" data-intensity="Moderate">Moderate</button>
+                                <button type="button" class="intensity-btn" data-intensity="Intense">Intense</button>
+                            </section>
+                            <input type="hidden" name="intensity" id="intensity" value="Light">
+                        </section>
+                    </fieldset>
+
+                    <fieldset class="form-group">
+                        <label for="notes" class="form-label">Notes <span class="optional">(optional)</span></label>
+                        <textarea id="notes" name="notes" rows="2" placeholder="How did it feel?" class="form-input form-textarea"></textarea>
+                    </fieldset>
+
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        Log Exercise
+                    </button>
+                </form>
+
+                <!-- Success Toast -->
+                <aside class="toast" id="toast" role="status" aria-live="polite">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Exercise logged successfully!</span>
+                </aside>
+            </article>
+
+            <!-- Weekly Chart -->
+            <article class="card chart-card">
+                <header class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-chart-column"></i>
+                        Weekly Overview
+                    </h2>
+                    <span class="card-badge" id="weekLabel">This Week</span>
+                </header>
+
+                <figure class="chart-container" aria-label="Weekly exercise bar chart">
+                    <section class="chart-bars" id="chartBars">
+                        <!-- Generated by JS -->
+                    </section>
+                    <figcaption class="chart-labels" id="chartLabels">
+                        <!-- Generated by JS -->
+                    </figcaption>
+                </figure>
+
+                <!-- Weekly Goal Progress -->
+                <section class="weekly-goal">
+                    <header class="goal-header">
+                        <span class="goal-label">Weekly Goal</span>
+                        <span class="goal-value" id="goalProgress">0 / 150 min</span>
+                    </header>
+                    <progress class="goal-bar" id="goalBar" value="0" max="150"></progress>
+                </section>
+
+                <aside class="exercise-tip">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <p>Regular exercise significantly reduces anxiety in students. Even 30 minutes of moderate activity boosts mood and focus.</p>
+                </aside>
+            </article>
+
+        </section>
+
+        <!-- ── Exercise History ── -->
+        <section class="card history-card">
+            <header class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    Exercise History
+                </h2>
+                <button class="btn-text" id="clearHistoryBtn" type="button">Clear All</button>
+            </header>
+
+            <section class="history-list" id="historyList">
+                <!-- Generated by JS -->
+                <article class="history-empty" id="historyEmpty">
+                    <i class="fa-solid fa-shoe-prints"></i>
+                    <p>No exercises logged yet. Start by logging your first workout above!</p>
+                </article>
+            </section>
+        </section>
+
+    </main>
+
+    <script src="/js/homepage.js"></script>
+    <script src="/js/exercise.js"></script>
+
+</body>
+</html>

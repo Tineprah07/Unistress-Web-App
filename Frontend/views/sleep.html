@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniStress | Sleep Tracking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/sleep.css">
+</head>
+
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+        <header class="sidebar-header">
+            <figure class="sidebar-brand">
+                <span class="brand-icon">U</span>
+                <figcaption class="brand-text">UniStress</figcaption>
+            </figure>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </header>
+        <figure class="sidebar-home-icon" aria-hidden="true">
+            <i class="fa-solid fa-house"></i>
+        </figure>
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="/views/homepage.html" class="nav-link" data-tooltip="Dashboard"><i class="fa-solid fa-chart-line nav-icon"></i><span class="nav-text">Dashboard</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="Stress Tracking"><i class="fa-solid fa-heart-pulse nav-icon"></i><span class="nav-text">Stress Tracking</span></a></li>
+                <li class="nav-item"><a href="/views/exercise.html" class="nav-link" data-tooltip="Exercise"><i class="fa-solid fa-dumbbell nav-icon"></i><span class="nav-text">Exercise</span></a></li>
+                <li class="nav-item active"><a href="/views/sleep.html" class="nav-link" data-tooltip="Sleep"><i class="fa-solid fa-moon nav-icon"></i><span class="nav-text">Sleep</span></a></li>
+                <li class="nav-item"><a href="/views/hydration.html" class="nav-link" data-tooltip="Hydration"><i class="fa-solid fa-droplet nav-icon"></i><span class="nav-text">Hydration</span></a></li>
+                <li class="nav-item"><a href="/views/focus.html" class="nav-link" data-tooltip="Focus Timer"><i class="fa-solid fa-book-open nav-icon"></i><span class="nav-text">Focus Timer</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="Breathe Flow"><i class="fa-solid fa-wind nav-icon"></i><span class="nav-text">Breathe Flow</span></a></li>
+                <li class="nav-item"><a href="/views/notes.html" class="nav-link" data-tooltip="My Notes"><i class="fa-regular fa-note-sticky nav-icon"></i><span class="nav-text">My Notes</span></a></li>
+                <li class="nav-item"><a href="/views/reminders.html" class="nav-link" data-tooltip="Reminders"><i class="fa-solid fa-bell nav-icon"></i><span class="nav-text">Reminders</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="About App"><i class="fa-solid fa-circle-info nav-icon"></i><span class="nav-text">About App</span></a></li>
+            </ul>
+        </nav>
+        <footer class="sidebar-footer">
+            <section class="settings-wrapper">
+                <button class="sidebar-footer-btn" id="settingsBtn" type="button" data-tooltip="Settings"><i class="fa-solid fa-gear nav-icon"></i><span class="nav-text">Settings</span></button>
+                <article class="settings-popover" id="settingsPopover" role="dialog" aria-label="Settings menu">
+                    <header class="popover-header"><h3 class="popover-title">Settings</h3></header>
+                    <ul class="popover-list">
+                        <li class="popover-item">
+                            <span class="popover-label"><i class="fa-solid fa-circle-half-stroke"></i> Dark Mode</span>
+                            <button class="theme-switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode"><span class="switch-knob"></span></button>
+                        </li>
+                    </ul>
+                </article>
+            </section>
+            <button class="sidebar-footer-btn logout-btn" id="logoutBtn" type="button" data-tooltip="Log Out"><i class="fa-solid fa-right-from-bracket nav-icon"></i><span class="nav-text">Log Out</span></button>
+        </footer>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- ── Hero Banner ── -->
+        <section class="sleep-hero" aria-label="Sleep overview">
+            <figure class="hero-moon" aria-hidden="true"><i class="fa-solid fa-moon"></i></figure>
+            <span class="hero-shape shape-1" aria-hidden="true"></span>
+            <span class="hero-shape shape-2" aria-hidden="true"></span>
+            <span class="hero-shape shape-3" aria-hidden="true"></span>
+            <span class="hero-star star-1" aria-hidden="true">✦</span>
+            <span class="hero-star star-2" aria-hidden="true">✦</span>
+            <span class="hero-star star-3" aria-hidden="true">·</span>
+
+            <section class="hero-left">
+                <h1 class="hero-title">Sleep Tracker</h1>
+                <p class="hero-subtitle" id="heroSubtitle">Track your rest, improve your focus.</p>
+            </section>
+
+            <figure class="hero-ring-wrap" aria-label="Sleep goal progress">
+                <svg class="hero-ring" viewBox="0 0 120 120">
+                    <circle class="ring-bg" cx="60" cy="60" r="52" />
+                    <circle class="ring-fill" cx="60" cy="60" r="52" id="heroRingFill" />
+                </svg>
+                <figcaption class="ring-text">
+                    <span class="ring-value" id="heroRingValue">0</span>
+                    <span class="ring-total" id="heroRingTotal">/8</span>
+                    <span class="ring-unit">hrs avg</span>
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- ── Stats Cards ── -->
+        <section class="stats-row" aria-label="Sleep statistics">
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-moon"><i class="fa-solid fa-bed"></i></span>
+                <p class="stat-value" id="lastSleep">—</p>
+                <p class="stat-label">Last Night</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-avg"><i class="fa-solid fa-chart-simple"></i></span>
+                <p class="stat-value" id="weekAvg">0<small>hrs</small></p>
+                <p class="stat-label">Weekly Avg</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-fire"><i class="fa-solid fa-fire"></i></span>
+                <p class="stat-value" id="currentStreak">0</p>
+                <p class="stat-label">Day Streak</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-trophy"><i class="fa-solid fa-trophy"></i></span>
+                <p class="stat-value" id="bestStreak">0</p>
+                <p class="stat-label">Best Streak</p>
+            </article>
+        </section>
+
+        <!-- ── Main Grid: Form + Chart ── -->
+        <section class="sleep-grid">
+
+            <!-- Log Sleep Form -->
+            <article class="card log-card">
+                <header class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-plus-circle"></i> Log Sleep</h2>
+                </header>
+
+                <form class="sleep-form" id="sleepForm">
+                    <fieldset class="form-row-2">
+                        <section class="form-group">
+                            <label for="bedtime" class="form-label">Bedtime</label>
+                            <input type="time" id="bedtime" name="bedtime" value="23:00" required class="form-input">
+                        </section>
+                        <section class="form-group">
+                            <label for="wakeTime" class="form-label">Wake Time</label>
+                            <input type="time" id="wakeTime" name="wakeTime" value="07:00" required class="form-input">
+                        </section>
+                    </fieldset>
+
+                    <fieldset class="form-group">
+                        <label class="form-label">Sleep Quality</label>
+                        <section class="quality-picker" id="qualityPicker">
+                            <button type="button" class="quality-btn" data-quality="1" title="Very Poor">
+                                <span class="quality-emoji">😫</span>
+                                <span>Very Poor</span>
+                            </button>
+                            <button type="button" class="quality-btn" data-quality="2" title="Poor">
+                                <span class="quality-emoji">😕</span>
+                                <span>Poor</span>
+                            </button>
+                            <button type="button" class="quality-btn active" data-quality="3" title="Okay">
+                                <span class="quality-emoji">😐</span>
+                                <span>Okay</span>
+                            </button>
+                            <button type="button" class="quality-btn" data-quality="4" title="Good">
+                                <span class="quality-emoji">😊</span>
+                                <span>Good</span>
+                            </button>
+                            <button type="button" class="quality-btn" data-quality="5" title="Excellent">
+                                <span class="quality-emoji">😴</span>
+                                <span>Excellent</span>
+                            </button>
+                        </section>
+                        <input type="hidden" name="quality" id="quality" value="3">
+                    </fieldset>
+
+                    <fieldset class="form-group">
+                        <label for="sleepNotes" class="form-label">Notes <span class="optional">(optional)</span></label>
+                        <textarea id="sleepNotes" name="notes" rows="2" placeholder="Any dreams? How did you feel waking up?" class="form-input form-textarea"></textarea>
+                    </fieldset>
+
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        <i class="fa-solid fa-moon"></i> Log Sleep
+                    </button>
+                </form>
+
+                <aside class="toast" id="toast" role="status" aria-live="polite">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Sleep logged successfully!</span>
+                </aside>
+            </article>
+
+            <!-- Weekly Chart -->
+            <article class="card chart-card">
+                <header class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-chart-column"></i> Weekly Overview</h2>
+                    <span class="card-badge">This Week</span>
+                </header>
+
+                <figure class="chart-container" aria-label="Weekly sleep bar chart">
+                    <section class="chart-bars" id="chartBars"></section>
+                    <figcaption class="chart-labels" id="chartLabels"></figcaption>
+                </figure>
+
+                <!-- Goal line reference -->
+                <section class="weekly-goal">
+                    <header class="goal-header">
+                        <span class="goal-label">Recommended: 7-9 hours</span>
+                        <span class="goal-value" id="goalText">Avg: 0 hrs</span>
+                    </header>
+                    <progress class="goal-bar" id="goalBar" value="0" max="8"></progress>
+                </section>
+
+                <aside class="sleep-tip">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <p>Insufficient sleep reduces attention and memory by up to 40%. Aim for 7-9 hours consistently.</p>
+                </aside>
+            </article>
+
+        </section>
+
+        <!-- ── Sleep History ── -->
+        <section class="card history-card">
+            <header class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Sleep History</h2>
+                <button class="btn-text" id="clearHistoryBtn" type="button">Clear All</button>
+            </header>
+            <section class="history-list" id="historyList">
+                <article class="history-empty" id="historyEmpty">
+                    <i class="fa-solid fa-moon"></i>
+                    <p>No sleep logged yet. Start by logging last night's sleep above!</p>
+                </article>
+            </section>
+        </section>
+
+    </main>
+
+    <script src="/js/homepage.js"></script>
+    <script src="/js/sleep.js"></script>
+
+</body>
+</html>

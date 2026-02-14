@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniStress | Focus Timer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/focus.css">
+</head>
+
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+        <header class="sidebar-header">
+            <figure class="sidebar-brand"><span class="brand-icon">U</span><figcaption class="brand-text">UniStress</figcaption></figure>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar"><i class="fa-solid fa-bars"></i></button>
+        </header>
+        <figure class="sidebar-home-icon" aria-hidden="true"><i class="fa-solid fa-house"></i></figure>
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="/views/homepage.html" class="nav-link" data-tooltip="Dashboard"><i class="fa-solid fa-chart-line nav-icon"></i><span class="nav-text">Dashboard</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="Stress Tracking"><i class="fa-solid fa-heart-pulse nav-icon"></i><span class="nav-text">Stress Tracking</span></a></li>
+                <li class="nav-item"><a href="/views/exercise.html" class="nav-link" data-tooltip="Exercise"><i class="fa-solid fa-dumbbell nav-icon"></i><span class="nav-text">Exercise</span></a></li>
+                <li class="nav-item"><a href="/views/sleep.html" class="nav-link" data-tooltip="Sleep"><i class="fa-solid fa-moon nav-icon"></i><span class="nav-text">Sleep</span></a></li>
+                <li class="nav-item"><a href="/views/hydration.html" class="nav-link" data-tooltip="Hydration"><i class="fa-solid fa-droplet nav-icon"></i><span class="nav-text">Hydration</span></a></li>
+                <li class="nav-item active"><a href="/views/focus.html" class="nav-link" data-tooltip="Focus Timer"><i class="fa-solid fa-book-open nav-icon"></i><span class="nav-text">Focus Timer</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="Breathe Flow"><i class="fa-solid fa-wind nav-icon"></i><span class="nav-text">Breathe Flow</span></a></li>
+                <li class="nav-item"><a href="/views/notes.html" class="nav-link" data-tooltip="My Notes"><i class="fa-regular fa-note-sticky nav-icon"></i><span class="nav-text">My Notes</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="Reminders"><i class="fa-solid fa-bell nav-icon"></i><span class="nav-text">Reminders</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="About App"><i class="fa-solid fa-circle-info nav-icon"></i><span class="nav-text">About App</span></a></li>
+            </ul>
+        </nav>
+        <footer class="sidebar-footer">
+            <section class="settings-wrapper">
+                <button class="sidebar-footer-btn" id="settingsBtn" type="button" data-tooltip="Settings"><i class="fa-solid fa-gear nav-icon"></i><span class="nav-text">Settings</span></button>
+                <article class="settings-popover" id="settingsPopover" role="dialog" aria-label="Settings menu">
+                    <header class="popover-header"><h3 class="popover-title">Settings</h3></header>
+                    <ul class="popover-list"><li class="popover-item"><span class="popover-label"><i class="fa-solid fa-circle-half-stroke"></i> Dark Mode</span><button class="theme-switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode"><span class="switch-knob"></span></button></li></ul>
+                </article>
+            </section>
+            <button class="sidebar-footer-btn logout-btn" id="logoutBtn" type="button" data-tooltip="Log Out"><i class="fa-solid fa-right-from-bracket nav-icon"></i><span class="nav-text">Log Out</span></button>
+        </footer>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- ── Hero Banner ── -->
+        <section class="focus-hero" aria-label="Focus overview">
+            <figure class="hero-icon-bg" aria-hidden="true"><i class="fa-solid fa-book-open"></i></figure>
+            <span class="hero-shape shape-1" aria-hidden="true"></span>
+            <span class="hero-shape shape-2" aria-hidden="true"></span>
+            <span class="hero-shape shape-3" aria-hidden="true"></span>
+
+            <section class="hero-left">
+                <h1 class="hero-title">Focus Timer</h1>
+                <p class="hero-subtitle" id="heroSubtitle">Structure your study, boost your productivity.</p>
+            </section>
+
+            <figure class="hero-ring-wrap" aria-label="Today's focus progress">
+                <svg class="hero-ring" viewBox="0 0 120 120">
+                    <circle class="ring-bg" cx="60" cy="60" r="52" />
+                    <circle class="ring-fill" cx="60" cy="60" r="52" id="heroRingFill" />
+                </svg>
+                <figcaption class="ring-text">
+                    <span class="ring-value" id="heroRingValue">0</span>
+                    <span class="ring-total">/4</span>
+                    <span class="ring-unit">sessions</span>
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- ── Stats Cards ── -->
+        <section class="stats-row" aria-label="Focus statistics">
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-clock"><i class="fa-solid fa-stopwatch"></i></span>
+                <p class="stat-value" id="todayMinutes">0<small>min</small></p>
+                <p class="stat-label">Today's Focus</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-sessions"><i class="fa-solid fa-layer-group"></i></span>
+                <p class="stat-value" id="todaySessions">0</p>
+                <p class="stat-label">Sessions Today</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-fire"><i class="fa-solid fa-fire"></i></span>
+                <p class="stat-value" id="currentStreak">0</p>
+                <p class="stat-label">Day Streak</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-trophy"><i class="fa-solid fa-trophy"></i></span>
+                <p class="stat-value" id="totalSessions">0</p>
+                <p class="stat-label">Total Sessions</p>
+            </article>
+        </section>
+
+        <!-- ── Main Grid: Timer + Chart ── -->
+        <section class="focus-grid">
+
+            <!-- Timer Card -->
+            <article class="card timer-card">
+                <header class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-clock"></i> Pomodoro Timer</h2>
+                </header>
+
+                <!-- Mode Tabs -->
+                <nav class="mode-tabs" id="modeTabs" aria-label="Timer modes">
+                    <button class="mode-tab active" data-mode="focus" data-time="25">Focus</button>
+                    <button class="mode-tab" data-mode="short" data-time="5">Short Break</button>
+                    <button class="mode-tab" data-mode="long" data-time="15">Long Break</button>
+                </nav>
+
+                <!-- Custom Time Editor -->
+                <section class="custom-time" id="customTime">
+                    <button class="time-adjust" id="timeDown" type="button" aria-label="Decrease time">
+                        <i class="fa-solid fa-minus"></i>
+                    </button>
+                    <input type="number" class="time-input" id="timeInput" min="1" max="120" value="25" aria-label="Minutes">
+                    <span class="time-unit">min</span>
+                    <button class="time-adjust" id="timeUp" type="button" aria-label="Increase time">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </section>
+
+                <!-- Timer Display -->
+                <figure class="timer-display">
+                    <svg class="timer-ring" viewBox="0 0 220 220">
+                        <circle class="timer-ring-bg" cx="110" cy="110" r="100" />
+                        <circle class="timer-ring-fill" cx="110" cy="110" r="100" id="timerRingFill" />
+                    </svg>
+                    <figcaption class="timer-text">
+                        <span class="timer-digits" id="timerDigits">25:00</span>
+                        <span class="timer-label" id="timerLabel">Focus Time</span>
+                    </figcaption>
+                </figure>
+
+                <!-- Controls -->
+                <section class="timer-controls">
+                    <button class="timer-btn btn-start" id="startBtn" type="button">
+                        <i class="fa-solid fa-play"></i> Start
+                    </button>
+                    <button class="timer-btn btn-pause hidden" id="pauseBtn" type="button">
+                        <i class="fa-solid fa-pause"></i> Pause
+                    </button>
+                    <button class="timer-btn btn-reset" id="resetBtn" type="button">
+                        <i class="fa-solid fa-rotate-right"></i> Reset
+                    </button>
+                </section>
+
+                <!-- Session counter -->
+                <p class="pomodoro-count">
+                    <i class="fa-solid fa-circle" id="pom1"></i>
+                    <i class="fa-solid fa-circle" id="pom2"></i>
+                    <i class="fa-solid fa-circle" id="pom3"></i>
+                    <i class="fa-solid fa-circle" id="pom4"></i>
+                    <span id="pomLabel">0 / 4 pomodoros</span>
+                </p>
+
+                <!-- Tip -->
+                <aside class="focus-tip">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <p>Focus tools that ignore wellbeing miss the bigger picture. Pair study sessions with hydration and movement breaks.</p>
+                </aside>
+            </article>
+
+            <!-- Weekly Chart + Tasks -->
+            <section class="right-col">
+                <!-- Weekly Chart -->
+                <article class="card chart-card">
+                    <header class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-chart-column"></i> Weekly Overview</h2>
+                        <span class="card-badge">This Week</span>
+                    </header>
+                    <figure class="chart-container" aria-label="Weekly focus bar chart">
+                        <section class="chart-bars" id="chartBars"></section>
+                        <figcaption class="chart-labels" id="chartLabels"></figcaption>
+                    </figure>
+                    <section class="weekly-goal">
+                        <header class="goal-header">
+                            <span class="goal-label">Weekly Goal</span>
+                            <span class="goal-value" id="goalText">0 / 120 min</span>
+                        </header>
+                        <progress class="goal-bar" id="goalBar" value="0" max="120"></progress>
+                    </section>
+                </article>
+
+                <!-- Tasks -->
+                <article class="card tasks-card">
+                    <header class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-list-check"></i> Tasks</h2>
+                    </header>
+                    <form class="task-form" id="taskForm">
+                        <input type="text" id="taskInput" placeholder="What are you working on?" class="form-input" maxlength="80">
+                        <button type="submit" class="btn-add-task"><i class="fa-solid fa-plus"></i></button>
+                    </form>
+                    <ul class="task-list" id="taskList">
+                        <li class="task-empty" id="taskEmpty"><i class="fa-solid fa-clipboard-list"></i> Add a task to stay organised</li>
+                    </ul>
+                </article>
+            </section>
+
+        </section>
+
+        <!-- ── Session History ── -->
+        <section class="card history-card">
+            <header class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Session History</h2>
+                <button class="btn-text" id="clearHistoryBtn" type="button">Clear All</button>
+            </header>
+            <section class="history-list" id="historyList">
+                <article class="history-empty" id="historyEmpty">
+                    <i class="fa-solid fa-book-open"></i>
+                    <p>No focus sessions yet. Start a Pomodoro to get going!</p>
+                </article>
+            </section>
+        </section>
+
+    </main>
+
+    <script src="/js/homepage.js"></script>
+    <script src="/js/focus.js"></script>
+
+</body>
+</html>

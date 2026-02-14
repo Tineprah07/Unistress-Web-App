@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniStress | Reminders</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/reminders.css">
+</head>
+
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+        <header class="sidebar-header">
+            <figure class="sidebar-brand"><span class="brand-icon">U</span><figcaption class="brand-text">UniStress</figcaption></figure>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar"><i class="fa-solid fa-bars"></i></button>
+        </header>
+        <figure class="sidebar-home-icon" aria-hidden="true"><i class="fa-solid fa-house"></i></figure>
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="/views/homepage.html" class="nav-link" data-tooltip="Dashboard"><i class="fa-solid fa-chart-line nav-icon"></i><span class="nav-text">Dashboard</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="Stress Tracking"><i class="fa-solid fa-heart-pulse nav-icon"></i><span class="nav-text">Stress Tracking</span></a></li>
+                <li class="nav-item"><a href="/views/exercise.html" class="nav-link" data-tooltip="Exercise"><i class="fa-solid fa-dumbbell nav-icon"></i><span class="nav-text">Exercise</span></a></li>
+                <li class="nav-item"><a href="/views/sleep.html" class="nav-link" data-tooltip="Sleep"><i class="fa-solid fa-moon nav-icon"></i><span class="nav-text">Sleep</span></a></li>
+                <li class="nav-item"><a href="/views/hydration.html" class="nav-link" data-tooltip="Hydration"><i class="fa-solid fa-droplet nav-icon"></i><span class="nav-text">Hydration</span></a></li>
+                <li class="nav-item"><a href="/views/focus.html" class="nav-link" data-tooltip="Focus Timer"><i class="fa-solid fa-book-open nav-icon"></i><span class="nav-text">Focus Timer</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="Breathe Flow"><i class="fa-solid fa-wind nav-icon"></i><span class="nav-text">Breathe Flow</span></a></li>
+                <li class="nav-item"><a href="/views/notes.html" class="nav-link" data-tooltip="My Notes"><i class="fa-regular fa-note-sticky nav-icon"></i><span class="nav-text">My Notes</span></a></li>
+                <li class="nav-item active"><a href="/views/reminders.html" class="nav-link" data-tooltip="Reminders"><i class="fa-solid fa-bell nav-icon"></i><span class="nav-text">Reminders</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="About App"><i class="fa-solid fa-circle-info nav-icon"></i><span class="nav-text">About App</span></a></li>
+            </ul>
+        </nav>
+        <footer class="sidebar-footer">
+            <section class="settings-wrapper">
+                <button class="sidebar-footer-btn" id="settingsBtn" type="button" data-tooltip="Settings"><i class="fa-solid fa-gear nav-icon"></i><span class="nav-text">Settings</span></button>
+                <article class="settings-popover" id="settingsPopover" role="dialog" aria-label="Settings menu">
+                    <header class="popover-header"><h3 class="popover-title">Settings</h3></header>
+                    <ul class="popover-list"><li class="popover-item"><span class="popover-label"><i class="fa-solid fa-circle-half-stroke"></i> Dark Mode</span><button class="theme-switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode"><span class="switch-knob"></span></button></li></ul>
+                </article>
+            </section>
+            <button class="sidebar-footer-btn logout-btn" id="logoutBtn" type="button" data-tooltip="Log Out"><i class="fa-solid fa-right-from-bracket nav-icon"></i><span class="nav-text">Log Out</span></button>
+        </footer>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- ── Hero Banner ── -->
+        <section class="reminders-hero">
+            <figure class="hero-icon-bg" aria-hidden="true"><i class="fa-solid fa-bell"></i></figure>
+            <span class="hero-shape shape-1" aria-hidden="true"></span>
+            <span class="hero-shape shape-2" aria-hidden="true"></span>
+            <span class="hero-shape shape-3" aria-hidden="true"></span>
+            <section class="hero-left">
+                <h1 class="hero-title">Reminders</h1>
+                <p class="hero-subtitle" id="heroSubtitle">Stay on track with your wellbeing habits.</p>
+            </section>
+            <figure class="hero-ring-wrap">
+                <svg class="hero-ring" viewBox="0 0 120 120">
+                    <circle class="ring-bg" cx="60" cy="60" r="52" />
+                    <circle class="ring-fill" cx="60" cy="60" r="52" id="heroRingFill" />
+                </svg>
+                <figcaption class="ring-text">
+                    <span class="ring-value" id="heroRingValue">0</span>
+                    <span class="ring-unit">active</span>
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- ── Stats Row ── -->
+        <section class="stats-row">
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-bell"><i class="fa-solid fa-bell"></i></span>
+                <p class="stat-value" id="activeCount">0</p>
+                <p class="stat-label">Active</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-check"><i class="fa-solid fa-circle-check"></i></span>
+                <p class="stat-value" id="completedCount">0</p>
+                <p class="stat-label">Completed</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-today"><i class="fa-solid fa-calendar-day"></i></span>
+                <p class="stat-value" id="todayCount">0</p>
+                <p class="stat-label">Due Today</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-repeat"><i class="fa-solid fa-repeat"></i></span>
+                <p class="stat-value" id="recurringCount">0</p>
+                <p class="stat-label">Recurring</p>
+            </article>
+        </section>
+
+        <!-- ── Main Grid: Form + Active List ── -->
+        <section class="reminders-grid">
+
+            <!-- Create Reminder -->
+            <article class="card form-card">
+                <header class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-plus-circle"></i> <span id="formTitle">New Reminder</span></h2>
+                </header>
+
+                <form class="reminder-form" id="reminderForm">
+                    <input type="hidden" id="reminderId" value="">
+
+                    <section class="form-group">
+                        <label for="reminderText" class="form-label">Reminder</label>
+                        <input type="text" id="reminderText" placeholder="e.g. Drink water, Take a walk, Go to bed..." class="form-input" maxlength="100" required>
+                    </section>
+
+                    <section class="form-row-2">
+                        <section class="form-group">
+                            <label for="reminderDate" class="form-label">Date</label>
+                            <input type="date" id="reminderDate" class="form-input" required>
+                        </section>
+                        <section class="form-group">
+                            <label for="reminderTime" class="form-label">Time</label>
+                            <input type="time" id="reminderTime" class="form-input" value="09:00" required>
+                        </section>
+                    </section>
+
+                    <section class="form-row-2">
+                        <section class="form-group">
+                            <label class="form-label">Category</label>
+                            <section class="category-picker" id="categoryPicker">
+                                <button type="button" class="cat-btn active" data-cat="Hydration"><i class="fa-solid fa-droplet"></i> Hydration</button>
+                                <button type="button" class="cat-btn" data-cat="Exercise"><i class="fa-solid fa-dumbbell"></i> Exercise</button>
+                                <button type="button" class="cat-btn" data-cat="Sleep"><i class="fa-solid fa-moon"></i> Sleep</button>
+                                <button type="button" class="cat-btn" data-cat="Study"><i class="fa-solid fa-book-open"></i> Study</button>
+                                <button type="button" class="cat-btn" data-cat="Stress"><i class="fa-solid fa-heart-pulse"></i> Stress</button>
+                                <button type="button" class="cat-btn" data-cat="Other"><i class="fa-solid fa-ellipsis"></i> Other</button>
+                            </section>
+                            <input type="hidden" id="reminderCategory" value="Hydration">
+                        </section>
+                        <section class="form-group">
+                            <label class="form-label">Repeat</label>
+                            <section class="repeat-picker" id="repeatPicker">
+                                <button type="button" class="repeat-btn active" data-repeat="none">None</button>
+                                <button type="button" class="repeat-btn" data-repeat="daily">Daily</button>
+                                <button type="button" class="repeat-btn" data-repeat="weekly">Weekly</button>
+                            </section>
+                            <input type="hidden" id="reminderRepeat" value="none">
+                        </section>
+                    </section>
+
+                    <section class="form-group">
+                        <label class="form-label">Priority</label>
+                        <section class="priority-picker" id="priorityPicker">
+                            <button type="button" class="priority-btn" data-priority="low">Low</button>
+                            <button type="button" class="priority-btn active" data-priority="medium">Medium</button>
+                            <button type="button" class="priority-btn" data-priority="high">High</button>
+                        </section>
+                        <input type="hidden" id="reminderPriority" value="medium">
+                    </section>
+
+                    <section class="editor-actions">
+                        <button type="submit" class="btn-primary"><i class="fa-solid fa-bell"></i> Save Reminder</button>
+                        <button type="button" class="btn-secondary hidden" id="cancelEdit">Cancel</button>
+                    </section>
+                </form>
+            </article>
+
+            <!-- Active Reminders -->
+            <article class="card list-card">
+                <header class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-list-check"></i> Active Reminders</h2>
+                    <span class="card-badge" id="activeBadge">0</span>
+                </header>
+                <section class="reminder-list" id="activeList">
+                    <article class="list-empty" id="activeEmpty">
+                        <i class="fa-solid fa-bell-slash"></i>
+                        <p>No active reminders. Create one to stay on track!</p>
+                    </article>
+                </section>
+            </article>
+
+        </section>
+
+        <!-- ── Completed Reminders ── -->
+        <section class="card completed-card">
+            <header class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-circle-check"></i> Completed</h2>
+                <button class="btn-text" id="clearCompletedBtn" type="button">Clear All</button>
+            </header>
+            <section class="reminder-list" id="completedList">
+                <article class="list-empty" id="completedEmpty">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <p>Completed reminders will appear here.</p>
+                </article>
+            </section>
+        </section>
+
+        <!-- ── Tip ── -->
+        <aside class="reminders-tip">
+            <i class="fa-solid fa-lightbulb"></i>
+            <p>Students who set regular wellbeing reminders build stronger habits. Try linking reminders to existing routines like meals or lectures.</p>
+        </aside>
+
+    </main>
+
+    <script src="/js/homepage.js"></script>
+    <script src="/js/reminders.js"></script>
+
+</body>
+</html>
