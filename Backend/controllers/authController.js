@@ -118,20 +118,12 @@ export async function loginUser(req, res) {
 // Logout user
 // -------------------------
 export function logoutUser(req, res) {
-  // 1. Passport Logout
-  if (req.logout) {
-    req.logout((err) => {
-      if (err) console.error("Passport logout error:", err);
-    });
-  }
-
-  // 2. Manual Session Logout
   req.session.destroy((err) => {
     if (err) {
       console.error("Error in logoutUser session destroy:", err);
       return res.status(500).json({ error: "Could not log out." });
     }
-    res.clearCookie("connect.sid"); // Recommended: Clear the session cookie
+    res.clearCookie("connect.sid");
     return res.json({ message: "Logged out successfully." });
   });
 }
