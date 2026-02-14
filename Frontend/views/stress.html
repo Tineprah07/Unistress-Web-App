@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniStress | Stress Tracking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/stress.css">
+</head>
+
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+        <header class="sidebar-header">
+            <figure class="sidebar-brand"><span class="brand-icon">U</span><figcaption class="brand-text">UniStress</figcaption></figure>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar"><i class="fa-solid fa-bars"></i></button>
+        </header>
+        <figure class="sidebar-home-icon" aria-hidden="true"><i class="fa-solid fa-house"></i></figure>
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="/views/homepage.html" class="nav-link" data-tooltip="Dashboard"><i class="fa-solid fa-chart-line nav-icon"></i><span class="nav-text">Dashboard</span></a></li>
+                <li class="nav-item active"><a href="/views/stress.html" class="nav-link" data-tooltip="Stress Tracking"><i class="fa-solid fa-heart-pulse nav-icon"></i><span class="nav-text">Stress Tracking</span></a></li>
+                <li class="nav-item"><a href="/views/exercise.html" class="nav-link" data-tooltip="Exercise"><i class="fa-solid fa-dumbbell nav-icon"></i><span class="nav-text">Exercise</span></a></li>
+                <li class="nav-item"><a href="/views/sleep.html" class="nav-link" data-tooltip="Sleep"><i class="fa-solid fa-moon nav-icon"></i><span class="nav-text">Sleep</span></a></li>
+                <li class="nav-item"><a href="/views/hydration.html" class="nav-link" data-tooltip="Hydration"><i class="fa-solid fa-droplet nav-icon"></i><span class="nav-text">Hydration</span></a></li>
+                <li class="nav-item"><a href="/views/focus.html" class="nav-link" data-tooltip="Focus Timer"><i class="fa-solid fa-book-open nav-icon"></i><span class="nav-text">Focus Timer</span></a></li>
+                <li class="nav-item"><a href="/views/breathe.html" class="nav-link" data-tooltip="Breathe Flow"><i class="fa-solid fa-wind nav-icon"></i><span class="nav-text">Breathe Flow</span></a></li>
+                <li class="nav-item"><a href="/views/notes.html" class="nav-link" data-tooltip="My Notes"><i class="fa-regular fa-note-sticky nav-icon"></i><span class="nav-text">My Notes</span></a></li>
+                <li class="nav-item"><a href="/views/reminders.html" class="nav-link" data-tooltip="Reminders"><i class="fa-solid fa-bell nav-icon"></i><span class="nav-text">Reminders</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="About App"><i class="fa-solid fa-circle-info nav-icon"></i><span class="nav-text">About App</span></a></li>
+            </ul>
+        </nav>
+        <footer class="sidebar-footer">
+            <section class="settings-wrapper">
+                <button class="sidebar-footer-btn" id="settingsBtn" type="button" data-tooltip="Settings"><i class="fa-solid fa-gear nav-icon"></i><span class="nav-text">Settings</span></button>
+                <article class="settings-popover" id="settingsPopover" role="dialog" aria-label="Settings menu">
+                    <header class="popover-header"><h3 class="popover-title">Settings</h3></header>
+                    <ul class="popover-list"><li class="popover-item"><span class="popover-label"><i class="fa-solid fa-circle-half-stroke"></i> Dark Mode</span><button class="theme-switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode"><span class="switch-knob"></span></button></li></ul>
+                </article>
+            </section>
+            <button class="sidebar-footer-btn logout-btn" id="logoutBtn" type="button" data-tooltip="Log Out"><i class="fa-solid fa-right-from-bracket nav-icon"></i><span class="nav-text">Log Out</span></button>
+        </footer>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- ── Hero Banner ── -->
+        <section class="stress-hero">
+            <figure class="hero-icon-bg" aria-hidden="true"><i class="fa-solid fa-heart-pulse"></i></figure>
+            <span class="hero-shape shape-1" aria-hidden="true"></span>
+            <span class="hero-shape shape-2" aria-hidden="true"></span>
+            <span class="hero-shape shape-3" aria-hidden="true"></span>
+            <span class="hero-pulse pulse-1" aria-hidden="true"></span>
+            <span class="hero-pulse pulse-2" aria-hidden="true"></span>
+            <section class="hero-left">
+                <h1 class="hero-title">Stress Tracker</h1>
+                <p class="hero-subtitle" id="heroSubtitle">Understand your stress, take back control.</p>
+            </section>
+            <figure class="hero-ring-wrap">
+                <svg class="hero-ring" viewBox="0 0 120 120">
+                    <circle class="ring-bg" cx="60" cy="60" r="52" />
+                    <circle class="ring-fill" cx="60" cy="60" r="52" id="heroRingFill" />
+                </svg>
+                <figcaption class="ring-text">
+                    <span class="ring-value" id="heroRingValue">0</span>
+                    <span class="ring-unit">check-ins</span>
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- ── Stats Row ── -->
+        <section class="stats-row">
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-heart"><i class="fa-solid fa-heart-pulse"></i></span>
+                <p class="stat-value" id="avgStress">0</p>
+                <p class="stat-label">Avg Stress</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-today"><i class="fa-solid fa-calendar-day"></i></span>
+                <p class="stat-value" id="todayCheckins">0</p>
+                <p class="stat-label">Today</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-fire"><i class="fa-solid fa-fire"></i></span>
+                <p class="stat-value" id="currentStreak">0</p>
+                <p class="stat-label">Day Streak</p>
+            </article>
+            <article class="stat-card">
+                <span class="stat-icon-wrap icon-total"><i class="fa-solid fa-layer-group"></i></span>
+                <p class="stat-value" id="totalCheckins">0</p>
+                <p class="stat-label">Total Check-ins</p>
+            </article>
+        </section>
+
+        <!-- ── Check-in Card ── -->
+        <section class="card checkin-card">
+            <header class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-face-smile"></i> How are you feeling?</h2>
+                <span class="checkin-time" id="checkinTime"></span>
+            </header>
+            <form class="checkin-form" id="checkinForm">
+                <!-- Mood Face -->
+                <figure class="mood-display">
+                    <span class="mood-face" id="moodFace">😐</span>
+                    <p class="mood-word" id="moodWord">Neutral</p>
+                </figure>
+
+                <!-- Stress Slider -->
+                <section class="slider-wrap">
+                    <span class="slider-label-left">😌 Calm</span>
+                    <input type="range" id="stressSlider" min="1" max="10" value="5" class="stress-slider">
+                    <span class="slider-label-right">😰 Stressed</span>
+                </section>
+                <p class="slider-value">Stress Level: <strong id="sliderValue">5</strong> / 10</p>
+
+                <!-- Mood Picker -->
+                <section class="mood-row">
+                    <label class="form-label">Mood</label>
+                    <section class="mood-picker" id="moodPicker">
+                        <button type="button" class="mood-btn" data-mood="Happy" data-emoji="😊"><span>😊</span><small>Happy</small></button>
+                        <button type="button" class="mood-btn" data-mood="Calm" data-emoji="😌"><span>😌</span><small>Calm</small></button>
+                        <button type="button" class="mood-btn active" data-mood="Neutral" data-emoji="😐"><span>😐</span><small>Neutral</small></button>
+                        <button type="button" class="mood-btn" data-mood="Anxious" data-emoji="😟"><span>😟</span><small>Anxious</small></button>
+                        <button type="button" class="mood-btn" data-mood="Stressed" data-emoji="😤"><span>😤</span><small>Stressed</small></button>
+                        <button type="button" class="mood-btn" data-mood="Sad" data-emoji="😔"><span>😔</span><small>Sad</small></button>
+                        <button type="button" class="mood-btn" data-mood="Tired" data-emoji="😴"><span>😴</span><small>Tired</small></button>
+                        <button type="button" class="mood-btn" data-mood="Angry" data-emoji="😠"><span>😠</span><small>Angry</small></button>
+                    </section>
+                    <input type="hidden" id="moodInput" value="Neutral">
+                </section>
+
+                <!-- Triggers -->
+                <section class="triggers-row">
+                    <label class="form-label">What's causing it? <span class="optional">(select any)</span></label>
+                    <section class="trigger-picker" id="triggerPicker">
+                        <button type="button" class="trigger-btn" data-trigger="Exams"><i class="fa-solid fa-file-lines"></i> Exams</button>
+                        <button type="button" class="trigger-btn" data-trigger="Deadlines"><i class="fa-solid fa-clock"></i> Deadlines</button>
+                        <button type="button" class="trigger-btn" data-trigger="Workload"><i class="fa-solid fa-layer-group"></i> Workload</button>
+                        <button type="button" class="trigger-btn" data-trigger="Social"><i class="fa-solid fa-users"></i> Social</button>
+                        <button type="button" class="trigger-btn" data-trigger="Money"><i class="fa-solid fa-coins"></i> Money</button>
+                        <button type="button" class="trigger-btn" data-trigger="Sleep"><i class="fa-solid fa-moon"></i> Sleep</button>
+                        <button type="button" class="trigger-btn" data-trigger="Health"><i class="fa-solid fa-heart"></i> Health</button>
+                        <button type="button" class="trigger-btn" data-trigger="Loneliness"><i class="fa-solid fa-person"></i> Loneliness</button>
+                        <button type="button" class="trigger-btn" data-trigger="Family"><i class="fa-solid fa-house-chimney"></i> Family</button>
+                        <button type="button" class="trigger-btn" data-trigger="Other"><i class="fa-solid fa-ellipsis"></i> Other</button>
+                    </section>
+                </section>
+
+                <!-- Notes -->
+                <section class="form-group">
+                    <label for="checkinNotes" class="form-label">Anything on your mind? <span class="optional">(optional)</span></label>
+                    <textarea id="checkinNotes" rows="2" placeholder="A short reflection helps you spot patterns over time..." class="form-input form-textarea"></textarea>
+                </section>
+
+                <button type="submit" class="btn-checkin"><i class="fa-solid fa-heart-pulse"></i> Log Check-in</button>
+            </form>
+            <aside class="toast hidden" id="toast"><i class="fa-solid fa-check-circle"></i> <span>Check-in logged!</span></aside>
+        </section>
+
+        <!-- ── Grid: Chart + Right Col ── -->
+        <section class="stress-grid">
+
+            <!-- Weekly Stress Chart -->
+            <article class="card chart-card">
+                <header class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-chart-line"></i> Weekly Stress Levels</h2>
+                    <span class="card-badge">This Week</span>
+                </header>
+                <figure class="chart-container">
+                    <section class="chart-bars" id="chartBars"></section>
+                    <figcaption class="chart-labels" id="chartLabels"></figcaption>
+                </figure>
+                <section class="weekly-goal">
+                    <header class="goal-header">
+                        <span class="goal-label">Weekly Average</span>
+                        <span class="goal-value" id="weekAvgText">0 / 10</span>
+                    </header>
+                    <progress class="goal-bar" id="goalBar" value="0" max="10"></progress>
+                </section>
+                <aside class="stress-tip">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <p>About 36% of university students experience significant stress symptoms. Regular check-ins help you recognise patterns and take action early.</p>
+                </aside>
+            </article>
+
+            <!-- Right Column -->
+            <section class="right-col">
+
+                <!-- Affirmation Card -->
+                <article class="card affirmation-card">
+                    <span class="affirmation-glow" aria-hidden="true"></span>
+                    <span class="affirmation-icon">✨</span>
+                    <p class="affirmation-text" id="affirmationText">You're doing better than you think. One step at a time.</p>
+                    <button class="affirmation-refresh" id="refreshAffirmation" type="button" title="New affirmation"><i class="fa-solid fa-shuffle"></i></button>
+                </article>
+
+                <!-- Top Triggers -->
+                <article class="card triggers-summary-card">
+                    <header class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-bolt"></i> Your Top Triggers</h2>
+                    </header>
+                    <section class="triggers-bars" id="triggersBars">
+                        <p class="triggers-empty" id="triggersEmpty">Log a few check-ins to see your trigger patterns here.</p>
+                    </section>
+                </article>
+
+                <!-- Mood Calendar Heatmap -->
+                <article class="card calendar-card">
+                    <header class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-calendar"></i> Mood Calendar</h2>
+                        <span class="card-badge" id="calendarMonth"></span>
+                    </header>
+                    <section class="cal-header" id="calHeader"></section>
+                    <section class="mood-calendar" id="moodCalendar"></section>
+                    <section class="calendar-legend">
+                        <span class="legend-item"><span class="legend-dot dot-none"></span>No data</span>
+                        <span class="legend-item"><span class="legend-dot dot-low"></span>Low</span>
+                        <span class="legend-item"><span class="legend-dot dot-mid"></span>Medium</span>
+                        <span class="legend-item"><span class="legend-dot dot-high"></span>High</span>
+                    </section>
+                </article>
+            </section>
+        </section>
+
+        <!-- ── History ── -->
+        <section class="card history-card">
+            <header class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Check-in History</h2>
+                <button class="btn-text" id="clearHistoryBtn" type="button">Clear All</button>
+            </header>
+            <section class="history-list" id="historyList">
+                <article class="history-empty" id="historyEmpty">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                    <p>No check-ins yet. How are you feeling right now?</p>
+                </article>
+            </section>
+        </section>
+
+    </main>
+
+    <script src="/js/homepage.js"></script>
+    <script src="/js/stress.js"></script>
+</body>
+</html>

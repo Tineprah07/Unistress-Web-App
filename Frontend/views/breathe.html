@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniStress | Breathe Flow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/breathe.css">
+</head>
+
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+        <header class="sidebar-header">
+            <figure class="sidebar-brand"><span class="brand-icon">U</span><figcaption class="brand-text">UniStress</figcaption></figure>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar"><i class="fa-solid fa-bars"></i></button>
+        </header>
+        <figure class="sidebar-home-icon" aria-hidden="true"><i class="fa-solid fa-house"></i></figure>
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="/views/homepage.html" class="nav-link" data-tooltip="Dashboard"><i class="fa-solid fa-chart-line nav-icon"></i><span class="nav-text">Dashboard</span></a></li>
+                <li class="nav-item"><a href="/views/stress.html" class="nav-link" data-tooltip="Stress Tracking"><i class="fa-solid fa-heart-pulse nav-icon"></i><span class="nav-text">Stress Tracking</span></a></li>
+                <li class="nav-item"><a href="/views/exercise.html" class="nav-link" data-tooltip="Exercise"><i class="fa-solid fa-dumbbell nav-icon"></i><span class="nav-text">Exercise</span></a></li>
+                <li class="nav-item"><a href="/views/sleep.html" class="nav-link" data-tooltip="Sleep"><i class="fa-solid fa-moon nav-icon"></i><span class="nav-text">Sleep</span></a></li>
+                <li class="nav-item"><a href="/views/hydration.html" class="nav-link" data-tooltip="Hydration"><i class="fa-solid fa-droplet nav-icon"></i><span class="nav-text">Hydration</span></a></li>
+                <li class="nav-item"><a href="/views/focus.html" class="nav-link" data-tooltip="Focus Timer"><i class="fa-solid fa-book-open nav-icon"></i><span class="nav-text">Focus Timer</span></a></li>
+                <li class="nav-item active"><a href="/views/breathe.html" class="nav-link" data-tooltip="Breathe Flow"><i class="fa-solid fa-wind nav-icon"></i><span class="nav-text">Breathe Flow</span></a></li>
+                <li class="nav-item"><a href="/views/notes.html" class="nav-link" data-tooltip="My Notes"><i class="fa-regular fa-note-sticky nav-icon"></i><span class="nav-text">My Notes</span></a></li>
+                <li class="nav-item"><a href="/views/reminders.html" class="nav-link" data-tooltip="Reminders"><i class="fa-solid fa-bell nav-icon"></i><span class="nav-text">Reminders</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-tooltip="About App"><i class="fa-solid fa-circle-info nav-icon"></i><span class="nav-text">About App</span></a></li>
+            </ul>
+        </nav>
+        <footer class="sidebar-footer">
+            <section class="settings-wrapper">
+                <button class="sidebar-footer-btn" id="settingsBtn" type="button" data-tooltip="Settings"><i class="fa-solid fa-gear nav-icon"></i><span class="nav-text">Settings</span></button>
+                <article class="settings-popover" id="settingsPopover" role="dialog" aria-label="Settings menu">
+                    <header class="popover-header"><h3 class="popover-title">Settings</h3></header>
+                    <ul class="popover-list"><li class="popover-item"><span class="popover-label"><i class="fa-solid fa-circle-half-stroke"></i> Dark Mode</span><button class="theme-switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode"><span class="switch-knob"></span></button></li></ul>
+                </article>
+            </section>
+            <button class="sidebar-footer-btn logout-btn" id="logoutBtn" type="button" data-tooltip="Log Out"><i class="fa-solid fa-right-from-bracket nav-icon"></i><span class="nav-text">Log Out</span></button>
+        </footer>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- ── Hero Banner ── -->
+        <section class="breathe-hero">
+            <figure class="hero-icon-bg" aria-hidden="true"><i class="fa-solid fa-wind"></i></figure>
+            <span class="hero-shape shape-1" aria-hidden="true"></span>
+            <span class="hero-shape shape-2" aria-hidden="true"></span>
+            <span class="hero-shape shape-3" aria-hidden="true"></span>
+            <section class="hero-left">
+                <h1 class="hero-title">Breathe Flow</h1>
+                <p class="hero-subtitle" id="heroSubtitle">Calm your mind, one breath at a time.</p>
+            </section>
+            <figure class="hero-ring-wrap">
+                <svg class="hero-ring" viewBox="0 0 120 120">
+                    <circle class="ring-bg" cx="60" cy="60" r="52" />
+                    <circle class="ring-fill" cx="60" cy="60" r="52" id="heroRingFill" />
+                </svg>
+                <figcaption class="ring-text">
+                    <span class="ring-value" id="heroRingValue">0</span>
+                    <span class="ring-unit">sessions</span>
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- ── Stats Row ── -->
+        <section class="stats-row">
+            <article class="stat-card"><span class="stat-icon-wrap icon-wind"><i class="fa-solid fa-wind"></i></span><p class="stat-value" id="totalSessions">0</p><p class="stat-label">Total Sessions</p></article>
+            <article class="stat-card"><span class="stat-icon-wrap icon-clock"><i class="fa-solid fa-stopwatch"></i></span><p class="stat-value" id="totalMinutes">0<small>min</small></p><p class="stat-label">Total Minutes</p></article>
+            <article class="stat-card"><span class="stat-icon-wrap icon-fire"><i class="fa-solid fa-fire"></i></span><p class="stat-value" id="currentStreak">0</p><p class="stat-label">Day Streak</p></article>
+            <article class="stat-card"><span class="stat-icon-wrap icon-today"><i class="fa-solid fa-calendar-day"></i></span><p class="stat-value" id="todaySessions">0</p><p class="stat-label">Today</p></article>
+        </section>
+
+        <!-- ── Main Grid ── -->
+        <section class="breathe-grid">
+
+            <!-- Breathing Exercise -->
+            <article class="card exercise-card">
+                <header class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-lungs"></i> Breathing Exercise</h2>
+                    <span class="card-badge" id="techniqueBadge">4-7-8</span>
+                </header>
+
+                <figure class="breathe-visual">
+                    <section class="breathe-circle" id="breatheCircle">
+                        <span class="breathe-ring ring-outer"></span>
+                        <span class="breathe-ring ring-inner"></span>
+                        <figcaption class="breathe-label" id="breatheLabel">Ready</figcaption>
+                        <span class="breathe-timer" id="breatheTimer"></span>
+                    </section>
+                </figure>
+
+                <p class="cycle-count" id="cycleCount">0 / 4 cycles</p>
+
+                <section class="duration-row">
+                    <label class="form-label">Cycles</label>
+                    <section class="duration-picker" id="cyclePicker">
+                        <button type="button" class="dur-btn" data-cycles="2">2</button>
+                        <button type="button" class="dur-btn active" data-cycles="4">4</button>
+                        <button type="button" class="dur-btn" data-cycles="6">6</button>
+                        <button type="button" class="dur-btn" data-cycles="8">8</button>
+                    </section>
+                </section>
+
+                <section class="breathe-controls">
+                    <button class="breathe-btn btn-start" id="startBtn" type="button"><i class="fa-solid fa-play"></i> Start</button>
+                    <button class="breathe-btn btn-stop hidden" id="stopBtn" type="button"><i class="fa-solid fa-stop"></i> Stop</button>
+                </section>
+
+                <aside class="breathe-tip">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <p>Controlled breathing activates the parasympathetic nervous system, reducing stress hormones and lowering heart rate within minutes.</p>
+                </aside>
+            </article>
+
+            <!-- Techniques -->
+            <article class="card techniques-card">
+                <header class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-list"></i> Choose Technique</h2>
+                </header>
+                <section class="technique-list" id="techniqueList">
+                    <button class="technique-item active" data-technique="478">
+                        <span class="tech-icon">🌙</span>
+                        <section class="tech-info"><h3>4-7-8 Relaxing Breath</h3><p>Inhale 4s · Hold 7s · Exhale 8s</p></section>
+                        <span class="tech-tag tag-calm">Calming</span>
+                    </button>
+                    <button class="technique-item" data-technique="box">
+                        <span class="tech-icon">📦</span>
+                        <section class="tech-info"><h3>Box Breathing</h3><p>Inhale 4s · Hold 4s · Exhale 4s · Hold 4s</p></section>
+                        <span class="tech-tag tag-focus">Focus</span>
+                    </button>
+                    <button class="technique-item" data-technique="deep">
+                        <span class="tech-icon">🌊</span>
+                        <section class="tech-info"><h3>Deep Breathing</h3><p>Inhale 5s · Exhale 5s</p></section>
+                        <span class="tech-tag tag-simple">Simple</span>
+                    </button>
+                    <button class="technique-item" data-technique="energise">
+                        <span class="tech-icon">⚡</span>
+                        <section class="tech-info"><h3>Energising Breath</h3><p>Inhale 3s · Exhale 3s (quick)</p></section>
+                        <span class="tech-tag tag-energy">Energy</span>
+                    </button>
+                    <button class="technique-item" data-technique="calm">
+                        <span class="tech-icon">🍃</span>
+                        <section class="tech-info"><h3>Calm Exhale</h3><p>Inhale 4s · Exhale 8s</p></section>
+                        <span class="tech-tag tag-calm">Calming</span>
+                    </button>
+                </section>
+            </article>
+
+        </section>
+
+        <!-- ── History ── -->
+        <section class="card history-card">
+            <header class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Session History</h2>
+                <button class="btn-text" id="clearHistoryBtn" type="button">Clear All</button>
+            </header>
+            <section class="history-list" id="historyList">
+                <article class="history-empty" id="historyEmpty">
+                    <i class="fa-solid fa-wind"></i>
+                    <p>No breathing sessions yet. Choose a technique and start!</p>
+                </article>
+            </section>
+        </section>
+
+    </main>
+
+    <script src="/js/homepage.js"></script>
+    <script src="/js/breathe.js"></script>
+</body>
+</html>
