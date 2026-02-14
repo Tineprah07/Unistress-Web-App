@@ -1,4 +1,4 @@
-import * as Breathe from "../models/breatheModel.js"
+import * as Breathe from "../models/breatheModel.js";
 
 export async function create(req, res) {
   try {
