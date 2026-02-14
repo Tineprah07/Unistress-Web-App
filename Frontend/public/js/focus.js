@@ -1,8 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const STORAGE_KEY = 'unistress_focus';
-    const TASKS_KEY   = 'unistress_tasks';
-    const WEEKLY_GOAL = 120; // minutes
+    // =========================
+    // API HELPERS
+    // =========================
+    async function apiGet(url) {
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPost(url, body) {
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiDelete(url) {
+        const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPatch(url) {
+        const res = await fetch(url, { method: 'PATCH', credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+
+    // In-memory cache for focus sessions (from API)
+    let entries = [];
+
+    // In-memory cache for tasks (from API)
+    let tasks = [];
+    const WEEKLY_GOAL = 120;
     const DAILY_GOAL_SESSIONS = 4;
 
     // Timer state
@@ -10,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let timeLeft = 25 * 60;
     let totalTime = 25 * 60;
     let isRunning = false;
-    let currentMode = 'focus'; // focus | short | long
+    let currentMode = 'focus';
     let pomodoroCount = 0;
 
     // Elements
@@ -56,10 +83,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatDate(d) { const dt = new Date(d); return dt.getDate() + ' ' + MONTHS[dt.getMonth()]; }
     function formatTime(d) { const dt = new Date(d); return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
 
-    function getEntries() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
-    function saveEntries(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
-    function getTasks() { try { return JSON.parse(localStorage.getItem(TASKS_KEY)) || []; } catch { return []; } }
-    function saveTasks(d) { localStorage.setItem(TASKS_KEY, JSON.stringify(d)); }
+    function mapEntry(e) {
+        return {
+            id: String(e.id),
+            mode: e.mode || 'focus',
+            duration: e.duration_minutes,
+            date: e.created_at
+        };
+    }
 
     // =============================
     // 1. TIMER
@@ -69,12 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const s = timeLeft % 60;
         timerDigits.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
 
-        // Ring progress (circumference = 2*PI*100 = 628.32)
         const circumference = 628.32;
         const pct = 1 - (timeLeft / totalTime);
         timerRing.style.strokeDashoffset = circumference * (1 - pct);
 
-        // Update title
         document.title = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + ' — UniStress Focus';
     }
 
@@ -121,15 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
         timeLeft = totalTime;
         timerLabel.textContent = MODE_LABELS[mode];
 
-        // Sync custom time input
         if (timeInput) timeInput.value = MODE_TIMES[mode];
 
-        // Update ring colour
         timerRing.classList.remove('short-break', 'long-break');
         if (mode === 'short') timerRing.classList.add('short-break');
         if (mode === 'long') timerRing.classList.add('long-break');
 
-        // Update tabs
         modeTabs.querySelectorAll('.mode-tab').forEach(t => {
             t.classList.toggle('active', t.dataset.mode === mode);
         });
@@ -137,8 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDisplay();
     }
 
-    function onTimerComplete() {
-        // Play a subtle notification
+    async function onTimerComplete() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = ctx.createOscillator();
@@ -150,22 +175,20 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch {}
 
         if (currentMode === 'focus') {
-            // Log focus session
-            const entry = {
-                id: Date.now().toString(),
-                mode: 'focus',
-                duration: MODE_TIMES.focus,
-                date: new Date().toISOString()
-            };
-            const entries = getEntries();
-            entries.unshift(entry);
-            saveEntries(entries);
+            // Log focus session to API
+            const result = await apiPost('/api/focus', {
+                duration_minutes: MODE_TIMES.focus,
+                mode: 'focus'
+            });
+
+            if (result && !result.error) {
+                entries.unshift(mapEntry(result));
+            }
 
             pomodoroCount++;
             updatePomDots();
             renderAll();
 
-            // Auto switch to break
             if (pomodoroCount >= 4) {
                 pomodoroCount = 0;
                 updatePomDots();
@@ -174,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 setMode('short');
             }
         } else {
-            // Break complete — back to focus
             setMode('focus');
         }
     }
@@ -194,18 +216,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tab.addEventListener('click', () => setMode(tab.dataset.mode));
     });
 
-    // Custom time controls
-    function updateTimeInput() {
-        if (timeInput) timeInput.value = Math.round(totalTime / 60);
-    }
-
     function setCustomTime(minutes) {
-        if (isRunning) return; // don't change while running
+        if (isRunning) return;
         minutes = Math.max(1, Math.min(120, minutes));
         totalTime = minutes * 60;
         timeLeft = totalTime;
         if (timeInput) timeInput.value = minutes;
-        // Update the MODE_TIMES for the current mode so it logs correctly
         MODE_TIMES[currentMode] = minutes;
         updateDisplay();
     }
@@ -226,17 +242,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     timeInput?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            timeInput.blur();
-        }
+        if (e.key === 'Enter') { e.preventDefault(); timeInput.blur(); }
     });
 
     // =============================
     // 2. STATS
     // =============================
     function renderStats() {
-        const entries = getEntries();
         const today = todayStr();
         const todayEntries = entries.filter(e => e.date.split('T')[0] === today && e.mode === 'focus');
         const todayMin = todayEntries.reduce((s, e) => s + e.duration, 0);
@@ -246,7 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (todaySessEl) todaySessEl.textContent = todaySess;
         if (totalSessionsEl) totalSessionsEl.textContent = entries.filter(e => e.mode === 'focus').length;
 
-        // Hero ring
         if (heroRingFill) {
             const circ = 326.73;
             const pct = Math.min(todaySess / DAILY_GOAL_SESSIONS, 1);
@@ -260,17 +271,15 @@ document.addEventListener('DOMContentLoaded', () => {
             else heroSubtitle.textContent = "Structure your study, boost your productivity.";
         }
 
-        // Streak
-        const { current } = calcStreaks(entries);
+        const { current } = calcStreaks();
         if (currentStreakEl) currentStreakEl.textContent = current;
 
-        // Weekly goal
-        const weekMin = getWeekData(entries).reduce((s, d) => s + d, 0);
+        const weekMin = getWeekData().reduce((s, d) => s + d, 0);
         if (goalText) goalText.textContent = weekMin + ' / ' + WEEKLY_GOAL + ' min';
         if (goalBar) { goalBar.max = WEEKLY_GOAL; goalBar.value = Math.min(weekMin, WEEKLY_GOAL); }
     }
 
-    function calcStreaks(entries) {
+    function calcStreaks() {
         const focusEntries = entries.filter(e => e.mode === 'focus');
         if (focusEntries.length === 0) return { current: 0 };
         const uniqueDates = [...new Set(focusEntries.map(e => e.date.split('T')[0]))].sort().reverse();
@@ -292,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =============================
     // 3. CHART
     // =============================
-    function getWeekData(entries) {
+    function getWeekData() {
         const now = new Date();
         const dow = now.getDay();
         const data = [];
@@ -306,10 +315,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderChart() {
-        const entries = getEntries();
         const now = new Date();
         const dow = now.getDay();
-        const weekData = getWeekData(entries);
+        const weekData = getWeekData();
         const maxVal = Math.max(...weekData, 30);
 
         if (chartBars) {
@@ -325,10 +333,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =============================
-    // 4. TASKS
+    // 4. TASKS (API-backed)
     // =============================
+    function mapTask(t) {
+        return { id: String(t.id), name: t.name, done: t.done || false };
+    }
+
     function renderTasks() {
-        const tasks = getTasks();
         taskList?.querySelectorAll('.task-item').forEach(el => el.remove());
 
         if (tasks.length === 0) {
@@ -349,33 +360,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    taskForm?.addEventListener('submit', (e) => {
+    taskForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = taskInput.value.trim();
         if (!name) return;
-        const tasks = getTasks();
-        tasks.push({ id: Date.now().toString(), name, done: false });
-        saveTasks(tasks);
+        const result = await apiPost('/api/tasks', { name });
+        if (result && !result.error) {
+            tasks.push(mapTask(result));
+        }
         taskInput.value = '';
         renderTasks();
     });
 
-    taskList?.addEventListener('click', (e) => {
+    taskList?.addEventListener('click', async (e) => {
         const checkBtn = e.target.closest('.task-check');
         const deleteBtn = e.target.closest('.task-delete');
 
         if (checkBtn) {
-            let tasks = getTasks();
-            const t = tasks.find(t => t.id === checkBtn.dataset.id);
-            if (t) t.done = !t.done;
-            saveTasks(tasks);
+            const result = await apiPatch('/api/tasks/' + checkBtn.dataset.id + '/toggle');
+            if (result && !result.error) {
+                const idx = tasks.findIndex(t => t.id === checkBtn.dataset.id);
+                if (idx !== -1) tasks[idx] = mapTask(result);
+            }
             renderTasks();
         }
 
         if (deleteBtn) {
-            let tasks = getTasks();
+            await apiDelete('/api/tasks/' + deleteBtn.dataset.id);
             tasks = tasks.filter(t => t.id !== deleteBtn.dataset.id);
-            saveTasks(tasks);
             renderTasks();
         }
     });
@@ -384,7 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 5. HISTORY
     // =============================
     function renderHistory() {
-        const entries = getEntries();
         historyList?.querySelectorAll('.history-item').forEach(el => el.remove());
 
         if (entries.length === 0) {
@@ -412,26 +423,43 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    historyList?.addEventListener('click', (e) => {
+    historyList?.addEventListener('click', async (e) => {
         const btn = e.target.closest('.history-delete');
         if (!btn) return;
-        let entries = getEntries();
+        await apiDelete('/api/focus/' + btn.dataset.id);
         entries = entries.filter(en => en.id !== btn.dataset.id);
-        saveEntries(entries);
         renderAll();
     });
 
-    clearHistoryBtn?.addEventListener('click', () => {
-        if (confirm('Clear all focus session history?')) { saveEntries([]); renderAll(); }
+    clearHistoryBtn?.addEventListener('click', async () => {
+        if (confirm('Clear all focus session history?')) {
+            await apiDelete('/api/focus');
+            entries = [];
+            renderAll();
+        }
     });
 
     // =============================
-    // 6. RENDER ALL
+    // 6. RENDER ALL & INIT
     // =============================
     function renderAll() { renderStats(); renderChart(); renderHistory(); renderTasks(); }
 
-    updateDisplay();
-    updatePomDots();
-    renderAll();
+    async function init() {
+        const [focusData, tasksData] = await Promise.all([
+            apiGet('/api/focus?limit=200'),
+            apiGet('/api/tasks')
+        ]);
+        if (focusData && Array.isArray(focusData)) {
+            entries = focusData.map(mapEntry);
+        }
+        if (tasksData && Array.isArray(tasksData)) {
+            tasks = tasksData.map(mapTask);
+        }
+        updateDisplay();
+        updatePomDots();
+        renderAll();
+    }
+
+    init();
 
 });

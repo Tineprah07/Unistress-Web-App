@@ -1,7 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const STORAGE_KEY = 'unistress_sleep';
-    const SLEEP_GOAL  = 8; // hours
+    // =========================
+    // API HELPERS
+    // =========================
+    async function apiGet(url) {
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPost(url, body) {
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiDelete(url) {
+        const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+
+    // In-memory cache
+    let entries = [];
+
+    const SLEEP_GOAL  = 8;
 
     const form          = document.getElementById('sleepForm');
     const qualityPicker = document.getElementById('qualityPicker');
@@ -35,18 +56,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function todayStr() { return new Date().toISOString().split('T')[0]; }
     function formatDate(d) { const dt = new Date(d); return dt.getDate() + ' ' + MONTHS[dt.getMonth()]; }
 
-    function getEntries() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-        catch { return []; }
+    function mapEntry(e) {
+        return {
+            id: String(e.id),
+            bedtime: e.bedtime,
+            wakeTime: e.wake_time,
+            duration: parseFloat(e.duration_hours),
+            quality: parseInt(e.quality, 10),
+            notes: e.notes || '',
+            date: e.created_at
+        };
     }
-    function saveEntries(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
 
     function calcDuration(bedtime, wakeTime) {
         const [bh, bm] = bedtime.split(':').map(Number);
         const [wh, wm] = wakeTime.split(':').map(Number);
         let bedMin = bh * 60 + bm;
         let wakeMin = wh * 60 + wm;
-        if (wakeMin <= bedMin) wakeMin += 24 * 60; // crossed midnight
+        if (wakeMin <= bedMin) wakeMin += 24 * 60;
         return (wakeMin - bedMin) / 60;
     }
 
@@ -72,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Submit
-    form?.addEventListener('submit', (e) => {
+    form?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const bedtime = bedtimeInput.value;
         const wakeTime = wakeTimeInput.value;
@@ -81,20 +108,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const duration = calcDuration(bedtime, wakeTime);
         if (duration <= 0 || duration > 24) return;
 
-        const entry = {
-            id: Date.now().toString(),
+        const body = {
             bedtime: bedtime,
-            wakeTime: wakeTime,
-            duration: Math.round(duration * 100) / 100,
+            wake_time: wakeTime,
+            duration_hours: Math.round(duration * 100) / 100,
             quality: parseInt(qualityInput.value, 10),
-            notes: notesInput.value.trim(),
-            date: new Date().toISOString()
+            notes: notesInput.value.trim()
         };
 
-        const entries = getEntries();
-        entries.unshift(entry);
-        saveEntries(entries);
+        const result = await apiPost('/api/sleep', body);
+        if (!result || result.error) return;
 
+        entries.unshift(mapEntry(result));
         notesInput.value = '';
         showToast();
         renderAll();
@@ -102,8 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Stats
     function renderStats() {
-        const entries = getEntries();
-
         // Last night
         if (lastSleepEl) {
             if (entries.length > 0) {
@@ -114,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Weekly average
-        const weekData = getWeekData(entries);
+        const weekData = getWeekData();
         const daysWithData = weekData.filter(d => d > 0).length || 1;
         const weekTotal = weekData.reduce((s, d) => s + d, 0);
         const avg = Math.round((weekTotal / daysWithData) * 10) / 10;
@@ -131,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (heroRingValue) heroRingValue.textContent = avg;
 
-        // Hero subtitle
         if (heroSubtitle) {
             if (avg >= 7 && avg <= 9) heroSubtitle.textContent = "Great! You're in the healthy sleep range.";
             else if (avg > 0 && avg < 7) heroSubtitle.textContent = "Try to get more sleep — aim for 7-9 hours.";
@@ -139,13 +161,12 @@ document.addEventListener('DOMContentLoaded', () => {
             else heroSubtitle.textContent = "Track your rest, improve your focus.";
         }
 
-        // Streaks (days where sleep >= 7 hours)
-        const { current, best } = calcStreaks(entries);
+        const { current, best } = calcStreaks();
         if (currentStreakEl) currentStreakEl.textContent = current;
         if (bestStreakEl) bestStreakEl.textContent = best;
     }
 
-    function calcStreaks(entries) {
+    function calcStreaks() {
         if (entries.length === 0) return { current: 0, best: 0 };
 
         const dateDuration = {};
@@ -182,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Weekly chart
-    function getWeekData(entries) {
+    function getWeekData() {
         const now = new Date();
         const dow = now.getDay();
         const data = [];
@@ -196,10 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderChart() {
-        const entries = getEntries();
         const now = new Date();
         const dow = now.getDay();
-        const weekData = getWeekData(entries);
+        const weekData = getWeekData();
         const maxVal = Math.max(...weekData, SLEEP_GOAL);
 
         if (chartBars) {
@@ -217,7 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // History
     function renderHistory() {
-        const entries = getEntries();
         historyList?.querySelectorAll('.history-item').forEach(el => el.remove());
 
         if (entries.length === 0) {
@@ -247,20 +266,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    historyList?.addEventListener('click', (e) => {
+    historyList?.addEventListener('click', async (e) => {
         const btn = e.target.closest('.history-delete');
         if (!btn) return;
-        let entries = getEntries();
+        await apiDelete('/api/sleep/' + btn.dataset.id);
         entries = entries.filter(en => en.id !== btn.dataset.id);
-        saveEntries(entries);
         renderAll();
     });
 
-    clearHistoryBtn?.addEventListener('click', () => {
-        if (confirm('Clear all sleep history?')) { saveEntries([]); renderAll(); }
+    clearHistoryBtn?.addEventListener('click', async () => {
+        if (confirm('Clear all sleep history?')) {
+            await apiDelete('/api/sleep');
+            entries = [];
+            renderAll();
+        }
     });
 
     function renderAll() { renderStats(); renderChart(); renderHistory(); }
-    renderAll();
+
+    async function init() {
+        const data = await apiGet('/api/sleep?limit=200');
+        if (data && Array.isArray(data)) {
+            entries = data.map(mapEntry);
+        }
+        renderAll();
+    }
+
+    init();
 
 });

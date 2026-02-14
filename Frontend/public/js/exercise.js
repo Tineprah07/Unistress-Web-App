@@ -1,11 +1,31 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // =========================
+    // API HELPERS
+    // =========================
+    async function apiGet(url) {
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPost(url, body) {
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiDelete(url) {
+        const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+
+    // In-memory cache
+    let exercises = [];
+
+    // =========================
     // CONSTANTS & ELEMENTS
     // =========================
-    const STORAGE_KEY  = 'unistress_exercises';
-    const GOAL_KEY     = 'unistress_exercise_goal';
-    const WEEKLY_GOAL  = 150; // minutes per week (WHO recommendation)
+    const WEEKLY_GOAL  = 150;
 
     const form           = document.getElementById('exerciseForm');
     const typePicker     = document.getElementById('typePicker');
@@ -33,50 +53,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const pageDateEl     = document.getElementById('pageDate');
 
-    // =========================
-    // HELPERS
-    // =========================
     const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    function todayStr() {
-        return new Date().toISOString().split('T')[0];
-    }
+    function todayStr() { return new Date().toISOString().split('T')[0]; }
+    function formatDate(dateStr) { const d = new Date(dateStr); return d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+    function formatTime(dateStr) { const d = new Date(dateStr); return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
 
-    function formatDate(dateStr) {
-        const d = new Date(dateStr);
-        return d.getDate() + ' ' + MONTHS[d.getMonth()];
-    }
-
-    function formatTime(dateStr) {
-        const d = new Date(dateStr);
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function getExercises() {
-        try {
-            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        } catch { return []; }
-    }
-
-    function saveExercises(data) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
-
-    // Icon map for exercise types
     function typeIcon(type) {
-        const map = {
-            Walking: 'fa-person-walking',
-            Running: 'fa-person-running',
-            Cycling: 'fa-bicycle',
-            Gym: 'fa-dumbbell',
-            Yoga: 'fa-spa',
-            Swimming: 'fa-water-ladder',
-            Other: 'fa-ellipsis'
-        };
+        const map = { Walking: 'fa-person-walking', Running: 'fa-person-running', Cycling: 'fa-bicycle', Gym: 'fa-dumbbell', Yoga: 'fa-spa', Swimming: 'fa-water-ladder', Other: 'fa-ellipsis' };
         return map[type] || 'fa-dumbbell';
     }
 
+    // Map API response to UI format
+    function mapEntry(e) {
+        return {
+            id: String(e.id),
+            type: e.exercise_type,
+            duration: e.duration,
+            intensity: e.intensity || 'Light',
+            notes: e.notes || '',
+            date: e.created_at
+        };
+    }
 
     // =========================
     // 1. SET PAGE DATE
@@ -85,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         pageDateEl.textContent = DAYS[now.getDay()] + ', ' + now.getDate() + ' ' + MONTHS[now.getMonth()] + ' ' + now.getFullYear();
     }
-
 
     // =========================
     // 2. TYPE & INTENSITY PICKERS
@@ -106,37 +104,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-
     // =========================
     // 3. SUBMIT EXERCISE
     // =========================
-    form?.addEventListener('submit', (e) => {
+    form?.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const duration = parseInt(durationInput.value, 10);
         if (!duration || duration < 1) return;
 
-        const entry = {
-            id: Date.now().toString(),
-            type: exerciseTypeInput.value,
+        const body = {
+            exercise_type: exerciseTypeInput.value,
             duration: duration,
             intensity: intensityInput.value,
-            notes: notesInput.value.trim(),
-            date: new Date().toISOString()
+            notes: notesInput.value.trim()
         };
 
-        const exercises = getExercises();
-        exercises.unshift(entry);
-        saveExercises(exercises);
+        const result = await apiPost('/api/exercise', body);
+        if (!result || result.error) return;
 
-        // Reset form
+        exercises.unshift(mapEntry(result));
+
         durationInput.value = '';
         notesInput.value = '';
-
-        // Show toast
         showToast();
-
-        // Refresh UI
         renderAll();
     });
 
@@ -145,42 +136,27 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => toast?.classList.remove('show'), 2500);
     }
 
-
     // =========================
     // 4. RENDER STATS
     // =========================
     function renderStats() {
-        const exercises = getExercises();
-
-        // Total sessions
         if (totalSessionsEl) totalSessionsEl.textContent = exercises.length;
 
-        // This week's total minutes
         const weekMinutes = getWeekMinutes(exercises);
         if (weekTotalEl) weekTotalEl.innerHTML = weekMinutes + '<small>min</small>';
 
-        // Streaks
         const { current, best } = calculateStreaks(exercises);
         if (currentStreakEl) currentStreakEl.textContent = current;
         if (bestStreakEl) bestStreakEl.textContent = best;
 
-        // Weekly goal (in chart card)
         if (goalProgress) goalProgress.textContent = weekMinutes + ' / ' + WEEKLY_GOAL + ' min';
-        if (goalBar) {
-            goalBar.max = WEEKLY_GOAL;
-            goalBar.value = Math.min(weekMinutes, WEEKLY_GOAL);
-        }
+        if (goalBar) { goalBar.max = WEEKLY_GOAL; goalBar.value = Math.min(weekMinutes, WEEKLY_GOAL); }
 
-        // Hero banner
         const heroTitle = document.getElementById('heroTitle');
         const heroSubtitle = document.getElementById('heroSubtitle');
         const heroRingFill = document.getElementById('heroRingFill');
         const heroRingValue = document.getElementById('heroRingValue');
         const heroRingTotal = document.getElementById('heroRingTotal');
-
-        const totalMinutes = exercises.reduce((sum, e) => sum + e.duration, 0);
-        const hours = Math.floor(totalMinutes / 60);
-        const mins = totalMinutes % 60;
 
         if (heroTitle) heroTitle.textContent = exercises.length + ' Exercise' + (exercises.length !== 1 ? 's' : '');
 
@@ -190,166 +166,98 @@ document.addEventListener('DOMContentLoaded', () => {
             else heroSubtitle.textContent = "Stay active, stay sharp. Track your exercise this week.";
         }
 
-        // Ring progress (circumference = 2 * PI * 52 = 326.73)
         if (heroRingFill) {
             const circumference = 326.73;
             const pct = Math.min(weekMinutes / WEEKLY_GOAL, 1);
-            const offset = circumference - (pct * circumference);
-            heroRingFill.style.strokeDashoffset = offset;
+            heroRingFill.style.strokeDashoffset = circumference - (pct * circumference);
         }
-
         if (heroRingValue) heroRingValue.textContent = weekMinutes;
         if (heroRingTotal) heroRingTotal.textContent = '/' + WEEKLY_GOAL;
     }
 
-    function getWeekMinutes(exercises) {
+    function getWeekMinutes(exs) {
         const now = new Date();
-        const dayOfWeek = now.getDay();
         const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - dayOfWeek);
+        startOfWeek.setDate(now.getDate() - now.getDay());
         startOfWeek.setHours(0, 0, 0, 0);
-
-        return exercises
-            .filter(e => new Date(e.date) >= startOfWeek)
-            .reduce((sum, e) => sum + e.duration, 0);
+        return exs.filter(e => new Date(e.date) >= startOfWeek).reduce((sum, e) => sum + e.duration, 0);
     }
 
-    function calculateStreaks(exercises) {
-        if (exercises.length === 0) return { current: 0, best: 0 };
-
-        // Get unique dates (sorted newest first)
-        const uniqueDates = [...new Set(exercises.map(e => e.date.split('T')[0]))].sort().reverse();
-
+    function calculateStreaks(exs) {
+        if (exs.length === 0) return { current: 0, best: 0 };
+        const uniqueDates = [...new Set(exs.map(e => e.date.split('T')[0]))].sort().reverse();
         let current = 0;
-        let best = 0;
-        let streak = 0;
         const today = todayStr();
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-        // Check if streak includes today or yesterday
         if (uniqueDates[0] === today || uniqueDates[0] === yesterdayStr) {
             for (let i = 0; i < uniqueDates.length; i++) {
                 const expected = new Date();
                 expected.setDate(expected.getDate() - (uniqueDates[0] === today ? i : i + 1));
-                const expectedStr = expected.toISOString().split('T')[0];
-
-                if (uniqueDates[i] === expectedStr) {
-                    streak++;
-                } else {
-                    break;
-                }
+                if (uniqueDates[i] === expected.toISOString().split('T')[0]) current++;
+                else break;
             }
-            current = streak;
         }
 
-        // Calculate best streak from all dates
-        const allDates = [...new Set(exercises.map(e => e.date.split('T')[0]))].sort();
-        let tempStreak = 1;
-        best = 1;
-
+        const allDates = [...new Set(exs.map(e => e.date.split('T')[0]))].sort();
+        let tempStreak = 1, best = 1;
         for (let i = 1; i < allDates.length; i++) {
-            const prev = new Date(allDates[i - 1]);
-            const curr = new Date(allDates[i]);
-            const diff = (curr - prev) / (1000 * 60 * 60 * 24);
-
-            if (diff === 1) {
-                tempStreak++;
-                best = Math.max(best, tempStreak);
-            } else {
-                tempStreak = 1;
-            }
+            const diff = (new Date(allDates[i]) - new Date(allDates[i - 1])) / (1000 * 60 * 60 * 24);
+            if (diff === 1) { tempStreak++; best = Math.max(best, tempStreak); }
+            else tempStreak = 1;
         }
-
         best = Math.max(best, current);
         return { current, best };
     }
-
 
     // =========================
     // 5. RENDER WEEKLY CHART
     // =========================
     function renderChart() {
-        const exercises = getExercises();
         const now = new Date();
         const dayOfWeek = now.getDay();
-
-        // Build array of 7 days (Sun–Sat)
         const weekData = [];
         for (let i = 0; i < 7; i++) {
-            const d = new Date(now);
-            d.setDate(now.getDate() - dayOfWeek + i);
+            const d = new Date(now); d.setDate(now.getDate() - dayOfWeek + i);
             const dateStr = d.toISOString().split('T')[0];
-            const minutes = exercises
-                .filter(e => e.date.split('T')[0] === dateStr)
-                .reduce((sum, e) => sum + e.duration, 0);
-
-            weekData.push({
-                day: DAYS[i],
-                minutes: minutes,
-                isToday: i === dayOfWeek
-            });
+            const minutes = exercises.filter(e => e.date.split('T')[0] === dateStr).reduce((sum, e) => sum + e.duration, 0);
+            weekData.push({ day: DAYS[i], minutes, isToday: i === dayOfWeek });
         }
-
         const maxMin = Math.max(...weekData.map(d => d.minutes), 30);
 
-        // Bars
         if (chartBars) {
             chartBars.innerHTML = weekData.map(d => {
                 const heightPct = d.minutes > 0 ? Math.max((d.minutes / maxMin) * 100, 5) : 5;
                 const emptyClass = d.minutes === 0 ? ' empty' : '';
-                return `
-                    <section class="chart-bar-wrap">
-                        <span class="chart-bar-value">${d.minutes > 0 ? d.minutes : ''}</span>
-                        <span class="chart-bar${emptyClass}" style="height: ${heightPct}%" title="${d.minutes} min"></span>
-                    </section>
-                `;
+                return `<section class="chart-bar-wrap"><span class="chart-bar-value">${d.minutes > 0 ? d.minutes : ''}</span><span class="chart-bar${emptyClass}" style="height: ${heightPct}%" title="${d.minutes} min"></span></section>`;
             }).join('');
         }
-
-        // Labels
         if (chartLabels) {
-            chartLabels.innerHTML = weekData.map(d => {
-                const todayClass = d.isToday ? ' today' : '';
-                return `<span class="chart-label${todayClass}">${d.day}</span>`;
-            }).join('');
+            chartLabels.innerHTML = weekData.map(d => `<span class="chart-label${d.isToday ? ' today' : ''}">${d.day}</span>`).join('');
         }
     }
-
 
     // =========================
     // 6. RENDER HISTORY
     // =========================
     function renderHistory() {
-        const exercises = getExercises();
-
         if (exercises.length === 0) {
             if (historyEmpty) historyEmpty.style.display = 'flex';
-            // Remove all history items
             historyList?.querySelectorAll('.history-item').forEach(el => el.remove());
             return;
         }
-
         if (historyEmpty) historyEmpty.style.display = 'none';
-
-        // Remove old items
         historyList?.querySelectorAll('.history-item').forEach(el => el.remove());
 
-        // Render latest 20
-        const recent = exercises.slice(0, 20);
-        recent.forEach(entry => {
+        exercises.slice(0, 20).forEach(entry => {
             const item = document.createElement('article');
             item.className = 'history-item';
             item.dataset.id = entry.id;
-
-            const badgeClass = entry.intensity === 'Light' ? 'badge-light' :
-                               entry.intensity === 'Moderate' ? 'badge-moderate' : 'badge-intense';
+            const badgeClass = entry.intensity === 'Light' ? 'badge-light' : entry.intensity === 'Moderate' ? 'badge-moderate' : 'badge-intense';
 
             item.innerHTML = `
-                <span class="history-icon-wrap">
-                    <i class="fa-solid ${typeIcon(entry.type)}"></i>
-                </span>
+                <span class="history-icon-wrap"><i class="fa-solid ${typeIcon(entry.type)}"></i></span>
                 <section class="history-details">
                     <p class="history-type">${entry.type}</p>
                     <section class="history-meta">
@@ -359,45 +267,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     </section>
                 </section>
                 <time class="history-date">${formatDate(entry.date)}<br>${formatTime(entry.date)}</time>
-                <button class="history-delete" type="button" aria-label="Delete" data-id="${entry.id}">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
+                <button class="history-delete" type="button" aria-label="Delete" data-id="${entry.id}"><i class="fa-solid fa-trash-can"></i></button>
             `;
-
             historyList?.insertBefore(item, historyEmpty);
         });
     }
 
-    // Delete single entry
-    historyList?.addEventListener('click', (e) => {
+    historyList?.addEventListener('click', async (e) => {
         const deleteBtn = e.target.closest('.history-delete');
         if (!deleteBtn) return;
-
-        const id = deleteBtn.dataset.id;
-        let exercises = getExercises();
-        exercises = exercises.filter(ex => ex.id !== id);
-        saveExercises(exercises);
+        await apiDelete('/api/exercise/' + deleteBtn.dataset.id);
+        exercises = exercises.filter(ex => ex.id !== deleteBtn.dataset.id);
         renderAll();
     });
 
-    // Clear all
-    clearHistoryBtn?.addEventListener('click', () => {
+    clearHistoryBtn?.addEventListener('click', async () => {
         if (confirm('Are you sure you want to clear all exercise history?')) {
-            saveExercises([]);
+            await apiDelete('/api/exercise');
+            exercises = [];
             renderAll();
         }
     });
 
+    // =========================
+    // 7. RENDER ALL & INIT
+    // =========================
+    function renderAll() { renderStats(); renderChart(); renderHistory(); }
 
-    // =========================
-    // 7. RENDER ALL
-    // =========================
-    function renderAll() {
-        renderStats();
-        renderChart();
-        renderHistory();
+    async function init() {
+        const data = await apiGet('/api/exercise?limit=200');
+        if (data && Array.isArray(data)) {
+            exercises = data.map(mapEntry);
+        }
+        renderAll();
     }
 
-    renderAll();
+    init();
 
 });

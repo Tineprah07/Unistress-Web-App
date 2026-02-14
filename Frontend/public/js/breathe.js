@@ -1,8 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const STORAGE_KEY = 'unistress_breathe';
+    // =========================
+    // API HELPERS
+    // =========================
+    async function apiGet(url) {
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPost(url, body) {
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiDelete(url) {
+        const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
 
-    // Techniques: arrays of {phase, seconds}
+    // In-memory cache
+    let entries = [];
+
+    // Techniques
     const TECHNIQUES = {
         '478':      { name: '4-7-8 Relaxing Breath', badge: '4-7-8', steps: [{phase:'inhale',s:4},{phase:'hold',s:7},{phase:'exhale',s:8}] },
         'box':      { name: 'Box Breathing', badge: 'Box', steps: [{phase:'inhale',s:4},{phase:'hold',s:4},{phase:'exhale',s:4},{phase:'hold',s:4}] },
@@ -45,8 +65,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function todayStr() { return new Date().toISOString().split('T')[0]; }
     function formatDate(d) { const dt = new Date(d); return dt.getDate() + ' ' + MONTHS[dt.getMonth()]; }
     function formatTime(d) { const dt = new Date(d); return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
-    function getEntries() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
-    function saveEntries(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+
+    function mapEntry(e) {
+        return {
+            id: String(e.id),
+            technique: e.technique,
+            techniqueName: e.technique_name || TECHNIQUES[e.technique]?.name || 'Breathing',
+            cycles: e.cycles,
+            durationSec: e.duration_seconds,
+            date: e.created_at
+        };
+    }
 
     // =============================
     // TECHNIQUE SELECTION
@@ -61,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Cycle picker
     cyclePicker?.querySelectorAll('.dur-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             if (isRunning) return;
@@ -105,7 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
         function runStep() {
             if (!isRunning) return;
             if (stepIndex >= tech.steps.length) {
-                // Cycle complete
                 currentCycle++;
                 updateCycleCount();
                 if (currentCycle >= targetCycles) {
@@ -118,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const step = tech.steps[stepIndex];
             circle.className = 'breathe-circle ' + step.phase;
 
-            // Adjust ring transition to match phase duration
             circle.querySelectorAll('.breathe-ring').forEach(ring => {
                 ring.style.transitionDuration = step.s + 's';
             });
@@ -145,25 +171,22 @@ document.addEventListener('DOMContentLoaded', () => {
         runStep();
     }
 
-    function onComplete() {
+    async function onComplete() {
         stopBreathing();
 
         const elapsed = Math.round((Date.now() - sessionStartTime) / 1000);
-        const durationMin = Math.round(elapsed / 60 * 10) / 10;
         const tech = TECHNIQUES[currentTechnique];
 
-        const entry = {
-            id: Date.now().toString(),
+        const result = await apiPost('/api/breathe', {
             technique: currentTechnique,
-            techniqueName: tech.name,
+            technique_name: tech.name,
             cycles: targetCycles,
-            durationSec: elapsed,
-            date: new Date().toISOString()
-        };
+            duration_seconds: elapsed
+        });
 
-        const entries = getEntries();
-        entries.unshift(entry);
-        saveEntries(entries);
+        if (result && !result.error) {
+            entries.unshift(mapEntry(result));
+        }
 
         label.textContent = 'Done ✓';
         setTimeout(() => { label.textContent = 'Ready'; }, 2500);
@@ -182,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // STATS
     // =============================
     function renderStats() {
-        const entries = getEntries();
         const today = todayStr();
         const todayEntries = entries.filter(e => e.date.split('T')[0] === today);
         const totalMin = Math.round(entries.reduce((s, e) => s + (e.durationSec || 0), 0) / 60);
@@ -191,7 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (totalMinutesEl) totalMinutesEl.innerHTML = totalMin + '<small>min</small>';
         if (todaySessionsEl) todaySessionsEl.textContent = todayEntries.length;
 
-        // Hero ring (based on today's sessions, goal = 3)
         if (heroRingFill) {
             const circ = 326.73;
             const pct = Math.min(todayEntries.length / 3, 1);
@@ -227,7 +248,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // HISTORY
     // =============================
     function renderHistory() {
-        const entries = getEntries();
         historyList?.querySelectorAll('.history-item').forEach(el => el.remove());
 
         if (entries.length === 0) {
@@ -253,23 +273,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    historyList?.addEventListener('click', (e) => {
+    historyList?.addEventListener('click', async (e) => {
         const btn = e.target.closest('.history-delete');
         if (!btn) return;
-        let entries = getEntries();
+        await apiDelete('/api/breathe/' + btn.dataset.id);
         entries = entries.filter(en => en.id !== btn.dataset.id);
-        saveEntries(entries);
         renderAll();
     });
 
-    clearHistoryBtn?.addEventListener('click', () => {
-        if (confirm('Clear all breathing session history?')) { saveEntries([]); renderAll(); }
+    clearHistoryBtn?.addEventListener('click', async () => {
+        if (confirm('Clear all breathing session history?')) {
+            await apiDelete('/api/breathe');
+            entries = [];
+            renderAll();
+        }
     });
 
     // =============================
-    // RENDER ALL
+    // RENDER ALL & INIT
     // =============================
     function renderAll() { renderStats(); renderHistory(); }
-    renderAll();
+
+    async function init() {
+        const data = await apiGet('/api/breathe?limit=200');
+        if (data && Array.isArray(data)) {
+            entries = data.map(mapEntry);
+        }
+        renderAll();
+    }
+
+    init();
 
 });

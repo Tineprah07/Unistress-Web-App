@@ -1,6 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const STORAGE_KEY = 'unistress_reminders';
+    // =========================
+    // API HELPERS
+    // =========================
+    async function apiGet(url) {
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPost(url, body) {
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPut(url, body) {
+        const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPatch(url) {
+        const res = await fetch(url, { method: 'PATCH', credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiDelete(url) {
+        const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+
+    // In-memory cache
+    let reminders = [];
 
     const form          = document.getElementById('reminderForm');
     const formTitle     = document.getElementById('formTitle');
@@ -37,12 +67,23 @@ document.addEventListener('DOMContentLoaded', () => {
         Study: 'fa-book-open', Stress: 'fa-heart-pulse', Other: 'fa-ellipsis'
     };
 
-    // Set default date to today
     const today = new Date().toISOString().split('T')[0];
     if (reminderDateIn) reminderDateIn.value = today;
 
-    function getReminders() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
-    function saveReminders(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+    function mapEntry(e) {
+        return {
+            id: String(e.id),
+            text: e.text,
+            date: e.due_date ? e.due_date.split('T')[0] : today,
+            time: e.due_time || '09:00',
+            category: e.category || 'Other',
+            repeat: e.repeat || 'none',
+            priority: e.priority || 'medium',
+            completed: e.completed || false,
+            createdAt: e.created_at,
+            updatedAt: e.updated_at
+        };
+    }
 
     function formatDate(d) { const dt = new Date(d); return dt.getDate() + ' ' + MONTHS[dt.getMonth()]; }
     function formatTime12(t) {
@@ -72,37 +113,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // =============================
     // FORM SUBMIT
     // =============================
-    form?.addEventListener('submit', (e) => {
+    form?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const text = reminderTextIn.value.trim();
         if (!text) return;
 
-        const reminders = getReminders();
         const id = reminderIdIn.value;
 
-        const data = {
+        const payload = {
             text,
-            date: reminderDateIn.value,
-            time: reminderTimeIn.value,
+            due_date: reminderDateIn.value,
+            due_time: reminderTimeIn.value,
             category: reminderCatIn.value,
             repeat: reminderRepIn.value,
             priority: reminderPriIn.value,
         };
 
         if (id) {
-            const rem = reminders.find(r => r.id === id);
-            if (rem) Object.assign(rem, data, { updatedAt: new Date().toISOString() });
+            const result = await apiPut('/api/reminders/' + id, payload);
+            if (result && !result.error) {
+                const idx = reminders.findIndex(r => r.id === id);
+                if (idx !== -1) reminders[idx] = mapEntry(result);
+            }
         } else {
-            reminders.unshift({
-                id: Date.now().toString(),
-                ...data,
-                completed: false,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            });
+            const result = await apiPost('/api/reminders', payload);
+            if (result && !result.error) {
+                reminders.unshift(mapEntry(result));
+            }
         }
 
-        saveReminders(reminders);
         resetForm();
         renderAll();
     });
@@ -176,11 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderLists() {
-        const reminders = getReminders();
         const active = reminders.filter(r => !r.completed);
         const completed = reminders.filter(r => r.completed);
 
-        // Sort active: high priority first, then by date
         const priorityOrder = { high: 0, medium: 1, low: 2 };
         active.sort((a, b) => {
             if (priorityOrder[a.priority] !== priorityOrder[b.priority])
@@ -212,29 +249,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // =============================
     // LIST ACTIONS
     // =============================
-    function handleListClick(e) {
+    async function handleListClick(e) {
         const checkBtn = e.target.closest('.reminder-check');
         const editBtn = e.target.closest('.edit-btn');
         const deleteBtn = e.target.closest('.delete-btn');
 
         if (checkBtn) {
-            const reminders = getReminders();
-            const rem = reminders.find(r => r.id === checkBtn.dataset.id);
-            if (rem) rem.completed = !rem.completed;
-            saveReminders(reminders);
+            const result = await apiPatch('/api/reminders/' + checkBtn.dataset.id + '/complete');
+            if (result && !result.error) {
+                const idx = reminders.findIndex(r => r.id === checkBtn.dataset.id);
+                if (idx !== -1) reminders[idx] = mapEntry(result);
+            }
             renderAll();
             return;
         }
         if (editBtn) {
-            const reminders = getReminders();
             const rem = reminders.find(r => r.id === editBtn.dataset.id);
             if (rem) editReminder(rem);
             return;
         }
         if (deleteBtn) {
-            let reminders = getReminders();
+            await apiDelete('/api/reminders/' + deleteBtn.dataset.id);
             reminders = reminders.filter(r => r.id !== deleteBtn.dataset.id);
-            saveReminders(reminders);
             renderAll();
             return;
         }
@@ -243,11 +279,10 @@ document.addEventListener('DOMContentLoaded', () => {
     activeList?.addEventListener('click', handleListClick);
     completedList?.addEventListener('click', handleListClick);
 
-    clearCompletedBtn?.addEventListener('click', () => {
+    clearCompletedBtn?.addEventListener('click', async () => {
         if (!confirm('Clear all completed reminders?')) return;
-        let reminders = getReminders();
+        await apiDelete('/api/reminders/completed');
         reminders = reminders.filter(r => !r.completed);
-        saveReminders(reminders);
         renderAll();
     });
 
@@ -255,7 +290,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // STATS
     // =============================
     function renderStats() {
-        const reminders = getReminders();
         const active = reminders.filter(r => !r.completed);
         const completed = reminders.filter(r => r.completed);
         const dueToday = active.filter(r => r.date === today);
@@ -267,7 +301,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (recurringCountEl) recurringCountEl.textContent = recurring.length;
         if (activeBadge) activeBadge.textContent = active.length;
 
-        // Hero ring
         if (heroRingFill) {
             const circ = 326.73;
             const maxRing = Math.max(active.length + completed.length, 1);
@@ -284,9 +317,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =============================
-    // RENDER ALL
+    // RENDER ALL & INIT
     // =============================
     function renderAll() { renderStats(); renderLists(); }
-    renderAll();
+
+    async function init() {
+        const data = await apiGet('/api/reminders');
+        if (data && Array.isArray(data)) {
+            reminders = data.map(mapEntry);
+        }
+        renderAll();
+    }
+
+    init();
 
 });

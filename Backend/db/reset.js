@@ -20,6 +20,7 @@ async function resetDatabase() {
       DROP TABLE IF EXISTS notes CASCADE;
       DROP TABLE IF EXISTS reminders CASCADE;
       DROP TABLE IF EXISTS users CASCADE;
+      DROP TABLE IF EXISTS tasks CASCADE;
     `);
     console.log("✅ All tables dropped.\n");
     console.log("Now run: node Backend/db/init.js to recreate them.");

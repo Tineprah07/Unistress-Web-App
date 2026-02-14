@@ -26,6 +26,7 @@ import breatheRoutes from "./routes/breatheRoutes.js";
 import notesRoutes from "./routes/notesRoutes.js";
 import remindersRoutes from "./routes/remindersRoutes.js";
 import summaryRoutes from "./routes/summaryRoutes.js";
+import tasksRoutes from "./routes/tasksRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -200,6 +201,7 @@ app.use("/api/breathe",    requireAuth, breatheRoutes);
 app.use("/api/notes",      requireAuth, notesRoutes);
 app.use("/api/reminders",  requireAuth, remindersRoutes);
 app.use("/api/summary",    requireAuth, summaryRoutes);
+app.use("/api/tasks", requireAuth, tasksRoutes);
 
 // Database connection test
 app.get("/api/db-test", async (req, res) => {

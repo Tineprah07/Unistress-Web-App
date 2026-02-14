@@ -1,6 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const STORAGE_KEY = 'unistress_stress';
+    // =============================
+    // API HELPERS
+    // =============================
+    async function apiGet(url) {
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPost(url, body) {
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiDelete(url) {
+        const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+
+    // In-memory cache of entries (loaded from API)
+    let entries = [];
 
     const checkinForm = document.getElementById('checkinForm');
     const stressSlider = document.getElementById('stressSlider');
@@ -68,8 +88,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function todayStr() { return new Date().toISOString().split('T')[0]; }
     function formatDate(d) { const dt = new Date(d); return dt.getDate() + ' ' + MONTHS[dt.getMonth()]; }
     function formatTime(d) { const dt = new Date(d); return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
-    function getEntries() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
-    function saveEntries(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+
+    // Map API response fields to what the UI expects
+    function mapEntry(e) {
+        return {
+            id: String(e.id),
+            stress: e.stress_level,
+            mood: e.mood,
+            moodEmoji: e.mood_emoji || '😐',
+            triggers: e.triggers || [],
+            notes: e.notes || '',
+            date: e.created_at
+        };
+    }
 
     // Show current time
     function updateClock() {
@@ -113,20 +144,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // =============================
     // FORM SUBMIT
     // =============================
-    checkinForm?.addEventListener('submit', (e) => {
+    checkinForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const entry = {
-            id: Date.now().toString(),
-            stress: parseInt(stressSlider.value, 10),
+
+        const body = {
+            stress_level: parseInt(stressSlider.value, 10),
             mood: moodInput.value,
-            moodEmoji: moodPicker.querySelector('.mood-btn.active')?.dataset.emoji || '😐',
+            mood_emoji: moodPicker.querySelector('.mood-btn.active')?.dataset.emoji || '😐',
             triggers: getSelectedTriggers(),
-            notes: checkinNotes.value.trim(),
-            date: new Date().toISOString()
+            notes: checkinNotes.value.trim()
         };
-        const entries = getEntries();
-        entries.unshift(entry);
-        saveEntries(entries);
+
+        const result = await apiPost('/api/stress', body);
+        if (!result || result.error) return;
+
+        // Add to local cache
+        entries.unshift(mapEntry(result));
 
         // Reset form
         stressSlider.value = 5; sliderValue.textContent = '5';
@@ -157,7 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // STATS
     // =============================
     function renderStats() {
-        const entries = getEntries();
         const today = todayStr();
         const todayEntries = entries.filter(e => e.date.split('T')[0] === today);
 
@@ -214,7 +246,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderChart() {
-        const entries = getEntries();
         const now = new Date();
         const dow = now.getDay();
         const weekData = [];
@@ -248,7 +279,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // TOP TRIGGERS
     // =============================
     function renderTriggers() {
-        const entries = getEntries();
         const counts = {};
         entries.forEach(e => { (e.triggers || []).forEach(t => { counts[t] = (counts[t] || 0) + 1; }); });
 
@@ -284,7 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const month = now.getMonth();
         if (calendarMonth) calendarMonth.textContent = MONTHS_FULL[month] + ' ' + year;
 
-        // Header (day names)
         if (calHeader) {
             calHeader.innerHTML = DAY_SHORT.map(d => `<span class="cal-header-day">${d}</span>`).join('');
         }
@@ -292,9 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const todayDate = now.getDate();
-        const entries = getEntries();
 
-        // Build day averages
         const dayAvg = {};
         for (let d = 1; d <= daysInMonth; d++) {
             const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -306,7 +333,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (moodCalendar) {
             let cells = '';
-            // Empty cells before first day
             for (let i = 0; i < firstDay; i++) cells += '<span class="cal-cell"></span>';
             for (let d = 1; d <= daysInMonth; d++) {
                 const isToday = d === todayDate;
@@ -326,7 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // HISTORY
     // =============================
     function renderHistory() {
-        const entries = getEntries();
         historyList?.querySelectorAll('.history-item').forEach(el => el.remove());
 
         if (entries.length === 0) {
@@ -357,23 +382,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    historyList?.addEventListener('click', (e) => {
+    historyList?.addEventListener('click', async (e) => {
         const btn = e.target.closest('.history-delete');
         if (!btn) return;
-        let entries = getEntries();
+        await apiDelete('/api/stress/' + btn.dataset.id);
         entries = entries.filter(en => en.id !== btn.dataset.id);
-        saveEntries(entries);
         renderAll();
     });
 
-    clearHistoryBtn?.addEventListener('click', () => {
-        if (confirm('Clear all stress check-in history?')) { saveEntries([]); renderAll(); }
+    clearHistoryBtn?.addEventListener('click', async () => {
+        if (confirm('Clear all stress check-in history?')) {
+            await apiDelete('/api/stress');
+            entries = [];
+            renderAll();
+        }
     });
 
     // =============================
     // RENDER ALL
     // =============================
     function renderAll() { renderStats(); renderChart(); renderTriggers(); renderCalendar(); renderHistory(); }
-    renderAll();
+
+    // =============================
+    // INITIAL LOAD FROM API
+    // =============================
+    async function init() {
+        const data = await apiGet('/api/stress?limit=200');
+        if (data && Array.isArray(data)) {
+            entries = data.map(mapEntry);
+        }
+        renderAll();
+    }
+
+    init();
 
 });

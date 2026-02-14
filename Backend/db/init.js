@@ -213,6 +213,20 @@ async function createRemindersTable() {
   console.log("✅ reminders table is ready");
 }
 
+async function createTasksTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS tasks (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name VARCHAR(200) NOT NULL,
+      done BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id);
+  `);
+  console.log("✅ tasks table is ready");
+}
+
 // -------------------------
 // Run All
 // -------------------------
@@ -233,6 +247,7 @@ async function runInit() {
     await createBreatheTable();
     await createNotesTable();
     await createRemindersTable();
+    await createTasksTable();
 
     await pool.query("COMMIT");
     console.log("\n🎉 All UniStress tables initialised successfully!");

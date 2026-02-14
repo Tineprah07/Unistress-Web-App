@@ -1,6 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const STORAGE_KEY = 'unistress_notes';
+    // =========================
+    // API HELPERS
+    // =========================
+    async function apiGet(url) {
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPost(url, body) {
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPut(url, body) {
+        const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPatch(url) {
+        const res = await fetch(url, { method: 'PATCH', credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiDelete(url) {
+        const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+
+    // In-memory cache
+    let notes = [];
 
     const editorCard   = document.getElementById('editorCard');
     const editorTitle  = document.getElementById('editorTitle');
@@ -35,8 +65,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function todayStr() { return new Date().toISOString().split('T')[0]; }
     function formatDate(d) { const dt = new Date(d); return dt.getDate() + ' ' + MONTHS[dt.getMonth()] + ' ' + dt.getFullYear(); }
 
-    function getNotes() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
-    function saveNotes(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+    function mapEntry(e) {
+        return {
+            id: String(e.id),
+            title: e.title,
+            body: e.body,
+            category: e.category || 'Reflection',
+            mood: e.mood || '😐',
+            pinned: e.pinned || false,
+            createdAt: e.created_at,
+            updatedAt: e.updated_at
+        };
+    }
 
     // =============================
     // EDITOR
@@ -50,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
             noteBodyIn.value = note.body;
             noteCatIn.value = note.category;
             noteMoodIn.value = note.mood;
-            // Sync pickers
             categoryPicker.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === note.category));
             moodPicker.querySelectorAll('.mood-btn').forEach(b => b.classList.toggle('active', b.dataset.mood === note.mood));
         } else {
@@ -91,39 +130,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Save
-    noteForm?.addEventListener('submit', (e) => {
+    noteForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const title = noteTitleIn.value.trim();
         const body = noteBodyIn.value.trim();
         if (!title || !body) return;
 
-        const notes = getNotes();
         const id = noteIdInput.value;
+        const payload = {
+            title, body,
+            category: noteCatIn.value,
+            mood: noteMoodIn.value
+        };
 
         if (id) {
             // Edit existing
-            const note = notes.find(n => n.id === id);
-            if (note) {
-                note.title = title;
-                note.body = body;
-                note.category = noteCatIn.value;
-                note.mood = noteMoodIn.value;
-                note.updatedAt = new Date().toISOString();
+            const result = await apiPut('/api/notes/' + id, payload);
+            if (result && !result.error) {
+                const idx = notes.findIndex(n => n.id === id);
+                if (idx !== -1) notes[idx] = mapEntry(result);
             }
         } else {
             // New note
-            notes.unshift({
-                id: Date.now().toString(),
-                title, body,
-                category: noteCatIn.value,
-                mood: noteMoodIn.value,
-                pinned: false,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            });
+            const result = await apiPost('/api/notes', payload);
+            if (result && !result.error) {
+                notes.unshift(mapEntry(result));
+            }
         }
 
-        saveNotes(notes);
         closeEditorFn();
         renderAll();
     });
@@ -149,38 +183,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // RENDER NOTES
     // =============================
     function renderNotes() {
-        let notes = getNotes();
+        let filtered = [...notes];
 
-        // Filter
         if (currentFilter !== 'all') {
-            notes = notes.filter(n => n.category === currentFilter);
+            filtered = filtered.filter(n => n.category === currentFilter);
         }
 
-        // Search
         if (currentSearch) {
-            notes = notes.filter(n =>
+            filtered = filtered.filter(n =>
                 n.title.toLowerCase().includes(currentSearch) ||
                 n.body.toLowerCase().includes(currentSearch)
             );
         }
 
-        // Sort: pinned first, then by date
-        notes.sort((a, b) => {
+        filtered.sort((a, b) => {
             if (a.pinned && !b.pinned) return -1;
             if (!a.pinned && b.pinned) return 1;
             return new Date(b.createdAt) - new Date(a.createdAt);
         });
 
-        // Clear existing
         notesGrid?.querySelectorAll('.note-card').forEach(el => el.remove());
 
-        if (notes.length === 0) {
+        if (filtered.length === 0) {
             if (notesEmpty) notesEmpty.style.display = 'flex';
             return;
         }
         if (notesEmpty) notesEmpty.style.display = 'none';
 
-        notes.forEach(note => {
+        filtered.forEach(note => {
             const card = document.createElement('article');
             card.className = 'note-card' + (note.pinned ? ' pinned' : '');
             card.dataset.id = note.id;
@@ -219,23 +249,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return div.innerHTML;
     }
 
-    // Note actions (pin, edit, delete)
-    notesGrid?.addEventListener('click', (e) => {
+    // Note actions
+    notesGrid?.addEventListener('click', async (e) => {
         const pinBtn = e.target.closest('.pin-btn');
         const editBtn = e.target.closest('.edit-btn');
         const deleteBtn = e.target.closest('.delete-btn');
 
         if (pinBtn) {
-            const notes = getNotes();
-            const note = notes.find(n => n.id === pinBtn.dataset.id);
-            if (note) note.pinned = !note.pinned;
-            saveNotes(notes);
+            const result = await apiPatch('/api/notes/' + pinBtn.dataset.id + '/pin');
+            if (result && !result.error) {
+                const idx = notes.findIndex(n => n.id === pinBtn.dataset.id);
+                if (idx !== -1) notes[idx] = mapEntry(result);
+            }
             renderAll();
             return;
         }
 
         if (editBtn) {
-            const notes = getNotes();
             const note = notes.find(n => n.id === editBtn.dataset.id);
             if (note) openEditor(note);
             return;
@@ -243,9 +273,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (deleteBtn) {
             if (!confirm('Delete this note?')) return;
-            let notes = getNotes();
+            await apiDelete('/api/notes/' + deleteBtn.dataset.id);
             notes = notes.filter(n => n.id !== deleteBtn.dataset.id);
-            saveNotes(notes);
             renderAll();
             return;
         }
@@ -255,14 +284,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // STATS
     // =============================
     function renderStats() {
-        const notes = getNotes();
         const today = todayStr();
 
         if (totalNotesEl) totalNotesEl.textContent = notes.length;
         if (todayNotesEl) todayNotesEl.textContent = notes.filter(n => n.createdAt.split('T')[0] === today).length;
         if (pinnedCountEl) pinnedCountEl.textContent = notes.filter(n => n.pinned).length;
 
-        // Hero ring (based on total, max 50 for full ring)
         if (heroRingFill) {
             const circ = 326.73;
             const pct = Math.min(notes.length / 50, 1);
@@ -270,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (heroRingValue) heroRingValue.textContent = notes.length;
 
-        // Streak (consecutive days with at least 1 note)
+        // Streak
         const uniqueDates = [...new Set(notes.map(n => n.createdAt.split('T')[0]))].sort().reverse();
         let current = 0;
         if (uniqueDates.length > 0) {
@@ -289,9 +316,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =============================
-    // RENDER ALL
+    // RENDER ALL & INIT
     // =============================
     function renderAll() { renderStats(); renderNotes(); }
-    renderAll();
+
+    async function init() {
+        const data = await apiGet('/api/notes?limit=200');
+        if (data && Array.isArray(data)) {
+            notes = data.map(mapEntry);
+        }
+        renderAll();
+    }
+
+    init();
 
 });

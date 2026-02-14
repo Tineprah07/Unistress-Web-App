@@ -1,10 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // =========================
-    // CONSTANTS & ELEMENTS
+    // API HELPERS
     // =========================
-    const STORAGE_KEY = 'unistress_hydration';
-    const DAILY_GOAL  = 8; // glasses per day
+    async function apiGet(url) {
+        const res = await fetch(url, { credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiPost(url, body) {
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+    async function apiDelete(url) {
+        const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+        if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        return res.json();
+    }
+
+    // In-memory cache
+    let entries = [];
+
+    const DAILY_GOAL  = 8;
     const ML_PER_GLASS = 250;
 
     const glassCountEl   = document.getElementById('glassCount');
@@ -35,33 +53,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    // =========================
-    // HELPERS
-    // =========================
-    function todayStr() {
-        return new Date().toISOString().split('T')[0];
+    function todayStr() { return new Date().toISOString().split('T')[0]; }
+    function formatDate(dateStr) { const d = new Date(dateStr); return d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+    function formatTime(dateStr) { const d = new Date(dateStr); return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+
+    function mapEntry(e) {
+        return {
+            id: String(e.id),
+            glasses: e.glasses,
+            ml: e.glasses * ML_PER_GLASS,
+            date: e.created_at
+        };
     }
 
-    function formatDate(dateStr) {
-        const d = new Date(dateStr);
-        return d.getDate() + ' ' + MONTHS[d.getMonth()];
-    }
-
-    function formatTime(dateStr) {
-        const d = new Date(dateStr);
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function getEntries() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-        catch { return []; }
-    }
-
-    function saveEntries(data) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
-
-    function getTodayGlasses(entries) {
+    function getTodayGlasses() {
         const today = todayStr();
         return entries
             .filter(e => e.date.split('T')[0] === today)
@@ -79,30 +84,21 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => waterGlassBig?.classList.remove('animate'), 400);
     }
 
-
     // =========================
     // 1. ADD WATER
     // =========================
-    function addWater(glasses) {
+    async function addWater(glasses) {
         if (!glasses || glasses < 1) return;
 
-        const entry = {
-            id: Date.now().toString(),
-            glasses: glasses,
-            ml: glasses * ML_PER_GLASS,
-            date: new Date().toISOString()
-        };
+        const result = await apiPost('/api/hydration', { glasses: glasses });
+        if (!result || result.error) return;
 
-        const entries = getEntries();
-        entries.unshift(entry);
-        saveEntries(entries);
-
+        entries.unshift(mapEntry(result));
         animateGlass();
         showToast('+' + glasses + ' glass' + (glasses > 1 ? 'es' : '') + ' added!');
         renderAll();
     }
 
-    // Quick-add buttons
     document.querySelectorAll('.quick-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const amount = parseInt(btn.dataset.amount, 10);
@@ -110,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Custom add
     customForm?.addEventListener('submit', (e) => {
         e.preventDefault();
         const val = parseInt(customAmount.value, 10);
@@ -120,38 +115,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Undo last
-    undoBtn?.addEventListener('click', () => {
-        const entries = getEntries();
+    undoBtn?.addEventListener('click', async () => {
         if (entries.length === 0) return;
+        const lastEntry = entries[0];
+        await apiDelete('/api/hydration/' + lastEntry.id);
         entries.shift();
-        saveEntries(entries);
         showToast('Last entry undone');
         renderAll();
     });
-
 
     // =========================
     // 2. RENDER STATS
     // =========================
     function renderStats() {
-        const entries = getEntries();
-        const todayGlasses = getTodayGlasses(entries);
+        const todayGlasses = getTodayGlasses();
 
-        // Today's count
         if (glassCountEl) glassCountEl.textContent = todayGlasses;
         if (glassGoalEl) glassGoalEl.textContent = DAILY_GOAL;
         if (waterMlEl) waterMlEl.textContent = (todayGlasses * ML_PER_GLASS) + ' ml';
         if (todayGlassesEl) todayGlassesEl.textContent = todayGlasses;
 
-        // Goal progress
         if (goalText) goalText.textContent = todayGlasses + ' / ' + DAILY_GOAL + ' glasses';
         if (goalBar) {
             goalBar.max = DAILY_GOAL;
             goalBar.value = Math.min(todayGlasses, DAILY_GOAL);
         }
 
-        // Hero ring
         if (heroRingFill) {
             const circumference = 326.73;
             const pct = Math.min(todayGlasses / DAILY_GOAL, 1);
@@ -160,7 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (heroRingValue) heroRingValue.textContent = todayGlasses;
         if (heroRingTotal) heroRingTotal.textContent = '/' + DAILY_GOAL;
 
-        // Hero subtitle
         if (heroSubtitle) {
             if (todayGlasses >= DAILY_GOAL) {
                 heroSubtitle.textContent = "Goal reached! Keep it up!";
@@ -170,22 +158,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Streaks
-        const { current, best } = calculateStreaks(entries);
+        const { current, best } = calculateStreaks();
         if (currentStreakEl) currentStreakEl.textContent = current;
         if (bestStreakEl) bestStreakEl.textContent = best;
 
-        // Weekly average
-        const weekData = getWeekData(entries);
+        const weekData = getWeekData();
         const daysWithData = weekData.filter(d => d > 0).length || 1;
         const weekTotal = weekData.reduce((s, d) => s + d, 0);
         if (weekAvgEl) weekAvgEl.textContent = Math.round(weekTotal / daysWithData);
     }
 
-    function calculateStreaks(entries) {
+    function calculateStreaks() {
         if (entries.length === 0) return { current: 0, best: 0 };
 
-        // Get unique dates where goal was met
         const dateGlasses = {};
         entries.forEach(e => {
             const d = e.date.split('T')[0];
@@ -227,15 +212,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return { current, best };
     }
 
-
     // =========================
     // 3. RENDER WEEKLY CHART
     // =========================
-    function getWeekData(entries) {
+    function getWeekData() {
         const now = new Date();
         const dayOfWeek = now.getDay();
         const data = [];
-
         for (let i = 0; i < 7; i++) {
             const d = new Date(now);
             d.setDate(now.getDate() - dayOfWeek + i);
@@ -249,10 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderChart() {
-        const entries = getEntries();
         const now = new Date();
         const dayOfWeek = now.getDay();
-        const weekData = getWeekData(entries);
+        const weekData = getWeekData();
         const maxVal = Math.max(...weekData, DAILY_GOAL);
 
         if (chartBars) {
@@ -276,13 +258,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
     // =========================
     // 4. RENDER HISTORY
     // =========================
     function renderHistory() {
-        const entries = getEntries();
-
         if (entries.length === 0) {
             if (historyEmpty) historyEmpty.style.display = 'flex';
             historyList?.querySelectorAll('.history-item').forEach(el => el.remove());
@@ -292,8 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (historyEmpty) historyEmpty.style.display = 'none';
         historyList?.querySelectorAll('.history-item').forEach(el => el.remove());
 
-        const recent = entries.slice(0, 20);
-        recent.forEach(entry => {
+        entries.slice(0, 20).forEach(entry => {
             const item = document.createElement('article');
             item.className = 'history-item';
 
@@ -310,39 +288,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             `;
-
             historyList?.insertBefore(item, historyEmpty);
         });
     }
 
-    // Delete single entry
-    historyList?.addEventListener('click', (e) => {
+    historyList?.addEventListener('click', async (e) => {
         const deleteBtn = e.target.closest('.history-delete');
         if (!deleteBtn) return;
-        let entries = getEntries();
+        await apiDelete('/api/hydration/' + deleteBtn.dataset.id);
         entries = entries.filter(en => en.id !== deleteBtn.dataset.id);
-        saveEntries(entries);
         renderAll();
     });
 
-    // Clear all
-    clearHistoryBtn?.addEventListener('click', () => {
+    clearHistoryBtn?.addEventListener('click', async () => {
         if (confirm('Clear all hydration history?')) {
-            saveEntries([]);
+            await apiDelete('/api/hydration');
+            entries = [];
             renderAll();
         }
     });
 
+    // =========================
+    // 5. RENDER ALL & INIT
+    // =========================
+    function renderAll() { renderStats(); renderChart(); renderHistory(); }
 
-    // =========================
-    // 5. RENDER ALL
-    // =========================
-    function renderAll() {
-        renderStats();
-        renderChart();
-        renderHistory();
+    async function init() {
+        const data = await apiGet('/api/hydration?limit=200');
+        if (data && Array.isArray(data)) {
+            entries = data.map(mapEntry);
+        }
+        renderAll();
     }
 
-    renderAll();
+    init();
 
 });
