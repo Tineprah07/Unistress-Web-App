@@ -181,10 +181,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalMinutes = exercises.reduce((sum, e) => sum + e.duration, 0);
         const hours = Math.floor(totalMinutes / 60);
         const mins = totalMinutes % 60;
-        const timeStr = hours > 0 ? hours + ' hour' + (hours > 1 ? 's ' : ' ') + mins + ' min' : totalMinutes + ' minutes total';
 
         if (heroTitle) heroTitle.textContent = exercises.length + ' Exercise' + (exercises.length !== 1 ? 's' : '');
-        if (heroSubtitle) heroSubtitle.textContent = timeStr;
+
+        if (heroSubtitle) {
+            if (weekMinutes >= WEEKLY_GOAL) heroSubtitle.textContent = "Amazing! You've hit your weekly goal of " + WEEKLY_GOAL + " min!";
+            else if (weekMinutes > 0) heroSubtitle.textContent = (WEEKLY_GOAL - weekMinutes) + " min left to reach your " + WEEKLY_GOAL + " min weekly goal.";
+            else heroSubtitle.textContent = "Stay active, stay sharp. Track your exercise this week.";
+        }
 
         // Ring progress (circumference = 2 * PI * 52 = 326.73)
         if (heroRingFill) {
