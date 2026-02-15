@@ -270,27 +270,52 @@ body {
 /* Quick Actions */
 .quick-actions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
 .qa-btn {
-    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-    padding: 1.1rem 0.5rem; border-radius: 16px; text-decoration: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 1.4rem 0.5rem; border-radius: 16px; text-decoration: none;
     font-size: 0.78rem; font-weight: 600;
     transition: transform 0.22s, box-shadow 0.22s;
     border: 1px solid var(--border-color); position: relative; overflow: hidden;
-}
-.qa-btn::before {
-    content: ""; position: absolute; inset: 0; opacity: 0;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.3), transparent 70%);
-    transition: opacity 0.3s;
+    min-height: 100px;
+    background-size: cover; background-position: center; background-repeat: no-repeat;
 }
 .qa-btn:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-.qa-btn:hover::before { opacity: 1; }
-.qa-btn i { font-size: 1.3rem; position: relative; z-index: 1; }
-.qa-btn span { color: var(--text-primary); position: relative; z-index: 1; }
+.qa-btn i { font-size: 1.5rem; position: relative; z-index: 2; }
+.qa-btn span { color: var(--text-primary); position: relative; z-index: 2; font-weight: 600; }
+
+/* Background image layer — user can set via inline style or JS */
+.qa-btn::before {
+    content: ""; position: absolute; inset: 0; z-index: 0;
+    background-size: cover; background-position: center; background-repeat: no-repeat;
+    opacity: 0.12; transition: opacity 0.3s;
+    border-radius: 16px;
+}
+.qa-btn:hover::before { opacity: 0.2; }
+
+/* Decorative animated shapes per card */
+.qa-btn::after {
+    content: ""; position: absolute; border-radius: 50%; z-index: 1;
+    opacity: 0.08; pointer-events: none;
+    animation: qa-float 5s ease-in-out infinite;
+}
+@keyframes qa-float { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-4px,-6px) scale(1.15)} }
+
 .qa-stress { background: var(--accent-stress-bg); color: var(--accent-stress); }
+.qa-stress::after { width: 50px; height: 50px; background: var(--accent-stress); top: -10px; right: -10px; animation-delay: 0s; }
+
 .qa-exercise { background: var(--accent-exercise-bg); color: var(--accent-exercise); }
+.qa-exercise::after { width: 40px; height: 40px; background: var(--accent-exercise); bottom: -8px; left: -8px; animation-delay: 0.5s; }
+
 .qa-hydration { background: var(--accent-hydration-bg); color: var(--accent-hydration); }
+.qa-hydration::after { width: 45px; height: 45px; background: var(--accent-hydration); top: -8px; left: 50%; animation-delay: 1s; }
+
 .qa-focus { background: var(--accent-focus-bg); color: var(--accent-focus); }
+.qa-focus::after { width: 35px; height: 35px; background: var(--accent-focus); bottom: -6px; right: -6px; animation-delay: 1.5s; }
+
 .qa-breathe { background: var(--accent-breathe-bg); color: var(--accent-breathe); }
+.qa-breathe::after { width: 55px; height: 55px; background: var(--accent-breathe); top: -12px; right: -12px; animation-delay: 2s; }
+
 .qa-notes { background: var(--accent-notes-bg); color: var(--accent-notes); }
+.qa-notes::after { width: 42px; height: 42px; background: var(--accent-notes); bottom: -10px; left: -10px; animation-delay: 2.5s; }
 
 /* Activity Feed */
 .activity-list { display: flex; flex-direction: column; gap: 0.6rem; max-height: 260px; overflow-y: auto; }
