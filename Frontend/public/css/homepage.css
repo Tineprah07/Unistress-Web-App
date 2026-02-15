@@ -318,7 +318,7 @@ body {
 .qa-notes::after { width: 42px; height: 42px; background: var(--accent-notes); bottom: -10px; left: -10px; animation-delay: 2.5s; }
 
 /* Activity Feed */
-.activity-list { display: flex; flex-direction: column; gap: 0.6rem; max-height: 260px; overflow-y: auto; }
+.activity-list { display: flex; flex-direction: column; gap: 0.6rem; max-height: 260px; overflow-y: auto; overflow-x: hidden; }
 .activity-list::-webkit-scrollbar { width: 3px; }
 .activity-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 .activity-item {
