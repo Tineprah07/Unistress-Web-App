@@ -523,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (scheduledList) {
             if (upcoming.length === 0) {
-                scheduledList.innerHTML = '<p class="scheduled-empty">No upcoming schedules. Tap + to add one!</p>';
+                scheduledList.innerHTML = '<p class="scheduled-empty">No upcoming schedules.</p>';
             } else {
                 const catConfig = {
                     hydration: { tag: 'tag-hydration', card: 'card-blue' },
