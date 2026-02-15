@@ -143,12 +143,180 @@
                 <h1 class="welcome-title">Welcome, <strong id="userName">Student</strong> <span class="wave">&#x1F44B;</span></h1>
                 <p class="welcome-subtitle">Here's your wellbeing summary for today.</p>
             </section>
+            <span class="topbar-date" id="topbarDate"></span>
         </header>
 
-        <!-- Dashboard content will go here in future steps -->
+        <!-- Dashboard Content -->
         <section class="dashboard-grid" aria-label="Dashboard overview">
-            <p style="color: #9ca3af; font-size: 0.95rem; padding: 2rem;">Dashboard content coming next...</p>
+
+            <!-- ── Wellbeing Banner ── -->
+            <section class="wellbeing-banner">
+                <!-- Decorative floating shapes -->
+                <span class="wb-deco wb-deco-1" aria-hidden="true"></span>
+                <span class="wb-deco wb-deco-2" aria-hidden="true"></span>
+                <span class="wb-deco wb-deco-3" aria-hidden="true"></span>
+
+                <div class="wb-left">
+                    <p class="wb-label">Today's Wellbeing Score</p>
+                    <p class="wb-score" id="wbScore">0/100</p>
+                    <p class="wb-message" id="wbMessage">Start tracking to build your score!</p>
+                </div>
+                <div class="wb-ring-wrap">
+                    <svg class="wb-ring" width="120" height="120" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="10"/>
+                        <circle id="wbRingFill" cx="60" cy="60" r="52" fill="none" stroke="#fff" stroke-width="10"
+                            stroke-dasharray="326.73" stroke-dashoffset="326.73" stroke-linecap="round"
+                            transform="rotate(-90 60 60)" style="transition: stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1);"/>
+                    </svg>
+                    <span class="wb-ring-pct" id="wbRingPct">0%</span>
+                </div>
+
+                <!-- Decorative illustration: meditating figure SVG -->
+                <div class="wb-illustration" aria-hidden="true">
+                    <svg viewBox="0 0 120 120" width="100" height="100" opacity="0.13">
+                        <circle cx="60" cy="28" r="12" fill="#fff"/>
+                        <path d="M60 42 C45 42 35 60 35 72 Q35 84 48 88 L60 90 L72 88 Q85 84 85 72 C85 60 75 42 60 42Z" fill="#fff"/>
+                        <path d="M35 72 Q20 65 15 75" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        <path d="M85 72 Q100 65 105 75" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        <ellipse cx="60" cy="95" rx="30" ry="5" fill="#fff" opacity="0.3"/>
+                    </svg>
+                </div>
+            </section>
+
+            <!-- ── Stat Cards ── -->
+            <section class="stat-cards" aria-label="Today's stats">
+                <article class="stat-card stat-stress">
+                    <div class="stat-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <div class="stat-info">
+                        <p class="stat-value" id="statStress">0</p>
+                        <p class="stat-label">Stress Level</p>
+                    </div>
+                    <div class="stat-sparkline" id="sparkStress" aria-hidden="true"></div>
+                </article>
+                <article class="stat-card stat-exercise">
+                    <div class="stat-icon"><i class="fa-solid fa-dumbbell"></i></div>
+                    <div class="stat-info">
+                        <p class="stat-value" id="statExercise">0<small>min</small></p>
+                        <p class="stat-label">Exercise</p>
+                    </div>
+                    <div class="stat-sparkline" id="sparkExercise" aria-hidden="true"></div>
+                </article>
+                <article class="stat-card stat-sleep">
+                    <div class="stat-icon"><i class="fa-solid fa-moon"></i></div>
+                    <div class="stat-info">
+                        <p class="stat-value" id="statSleep">0<small>hrs</small></p>
+                        <p class="stat-label">Sleep</p>
+                    </div>
+                    <div class="stat-sparkline" id="sparkSleep" aria-hidden="true"></div>
+                </article>
+                <article class="stat-card stat-hydration">
+                    <div class="stat-icon"><i class="fa-solid fa-droplet"></i></div>
+                    <div class="stat-info">
+                        <p class="stat-value" id="statHydration">0</p>
+                        <p class="stat-label">Glasses</p>
+                    </div>
+                    <div class="stat-sparkline" id="sparkHydration" aria-hidden="true"></div>
+                </article>
+                <article class="stat-card stat-focus">
+                    <div class="stat-icon"><i class="fa-solid fa-book-open"></i></div>
+                    <div class="stat-info">
+                        <p class="stat-value" id="statFocus">0<small>min</small></p>
+                        <p class="stat-label">Focus</p>
+                    </div>
+                    <div class="stat-sparkline" id="sparkFocus" aria-hidden="true"></div>
+                </article>
+                <article class="stat-card stat-breathe">
+                    <div class="stat-icon"><i class="fa-solid fa-wind"></i></div>
+                    <div class="stat-info">
+                        <p class="stat-value" id="statBreathe">0</p>
+                        <p class="stat-label">Sessions</p>
+                    </div>
+                    <div class="stat-sparkline" id="sparkBreathe" aria-hidden="true"></div>
+                </article>
+            </section>
+
+            <!-- ── Main 2-Column Grid ── -->
+            <section class="dash-grid">
+
+                <!-- Weekly Overview Chart -->
+                <article class="dash-card">
+                    <header class="dash-card-header">
+                        <h2 class="dash-card-title">Weekly Overview</h2>
+                        <span class="dash-card-badge">This Week</span>
+                    </header>
+                    <div class="dash-chart-area">
+                        <div class="dash-chart-bars" id="dashChartBars"></div>
+                        <div class="dash-chart-labels" id="dashChartLabels"></div>
+                    </div>
+                    <div class="dash-chart-legend">
+                        <span><span class="legend-dot legend-stress"></span>Stress</span>
+                        <span><span class="legend-dot legend-exercise"></span>Exercise</span>
+                        <span><span class="legend-dot legend-sleep"></span>Sleep</span>
+                    </div>
+                </article>
+
+                <!-- Quick Actions -->
+                <article class="dash-card">
+                    <header class="dash-card-header">
+                        <h2 class="dash-card-title">Quick Actions</h2>
+                        <span class="dash-card-badge">Jump In</span>
+                    </header>
+                    <nav class="quick-actions-grid" aria-label="Quick actions">
+                        <a href="/views/stress.html" class="qa-btn qa-stress"><i class="fa-solid fa-heart-pulse"></i><span>Stress</span></a>
+                        <a href="/views/exercise.html" class="qa-btn qa-exercise"><i class="fa-solid fa-dumbbell"></i><span>Exercise</span></a>
+                        <a href="/views/hydration.html" class="qa-btn qa-hydration"><i class="fa-solid fa-droplet"></i><span>Hydration</span></a>
+                        <a href="/views/focus.html" class="qa-btn qa-focus"><i class="fa-solid fa-book-open"></i><span>Focus</span></a>
+                        <a href="/views/breathe.html" class="qa-btn qa-breathe"><i class="fa-solid fa-wind"></i><span>Breathe</span></a>
+                        <a href="/views/notes.html" class="qa-btn qa-notes"><i class="fa-regular fa-note-sticky"></i><span>Notes</span></a>
+                    </nav>
+                </article>
+
+                <!-- Recent Activity -->
+                <article class="dash-card">
+                    <header class="dash-card-header">
+                        <h2 class="dash-card-title">Recent Activity</h2>
+                        <span class="dash-card-badge">Today</span>
+                    </header>
+                    <div class="activity-list" id="activityList">
+                        <p class="activity-empty" id="activityEmpty">No activity yet today. Start tracking!</p>
+                    </div>
+                </article>
+
+                <!-- Weekly Summary -->
+                <article class="dash-card">
+                    <header class="dash-card-header">
+                        <h2 class="dash-card-title">Weekly Summary</h2>
+                        <span class="dash-card-badge">Avg / Total</span>
+                    </header>
+                    <div class="weekly-stats">
+                        <div class="ws-item">
+                            <div class="ws-icon ws-icon-exercise"><i class="fa-solid fa-dumbbell"></i></div>
+                            <div class="ws-info"><p class="ws-value" id="weekExercise">0 min</p><p class="ws-label">Exercise (total)</p></div>
+                        </div>
+                        <div class="ws-item">
+                            <div class="ws-icon ws-icon-stress"><i class="fa-solid fa-heart-pulse"></i></div>
+                            <div class="ws-info"><p class="ws-value" id="weekStress">0/10</p><p class="ws-label">Avg Stress</p></div>
+                        </div>
+                        <div class="ws-item">
+                            <div class="ws-icon ws-icon-sleep"><i class="fa-solid fa-moon"></i></div>
+                            <div class="ws-info"><p class="ws-value" id="weekSleep">0 hrs</p><p class="ws-label">Avg Sleep / Night</p></div>
+                        </div>
+                        <div class="ws-item">
+                            <div class="ws-icon ws-icon-hydration"><i class="fa-solid fa-droplet"></i></div>
+                            <div class="ws-info"><p class="ws-value" id="weekHydration">0 glasses</p><p class="ws-label">Avg Daily Hydration</p></div>
+                        </div>
+                        <div class="ws-item">
+                            <div class="ws-icon ws-icon-focus"><i class="fa-solid fa-book-open"></i></div>
+                            <div class="ws-info"><p class="ws-value" id="weekFocus">0 min</p><p class="ws-label">Focus (total)</p></div>
+                        </div>
+                    </div>
+                </article>
+
+            </section>
+            <!-- end dash-grid -->
+
         </section>
+        <!-- end dashboard-grid -->
 
     </main>
 
@@ -169,7 +337,7 @@
                         <i class="fa-solid fa-user avatar-icon"></i>
                     </span>
                     <!-- Decorative elements around avatar -->
-                    <span class="avatar-deco deco-star" aria-hidden="true">✦</span>
+                    <span class="avatar-deco deco-star" aria-hidden="true">&#10022;</span>
                     <span class="avatar-deco deco-dot" aria-hidden="true"></span>
                     <span class="avatar-deco deco-plus" aria-hidden="true">+</span>
                 </span>
@@ -178,7 +346,7 @@
             </figure>
         </section>
 
-        <!-- Motivation Slider (replaces weight/height/age) -->
+        <!-- Motivation Slider -->
         <section class="motivation-slider" aria-label="Motivational quotes">
             <article class="motivation-track" id="motivationTrack">
                 <blockquote class="motivation-slide active">
@@ -241,48 +409,15 @@
             </table>
         </section>
 
-        <!-- Scheduled -->
+        <!-- Scheduled Section with "+" Add Button -->
         <section class="scheduled-section" aria-label="Scheduled activities">
-            <h3 class="scheduled-title">Scheduled</h3>
-
-            <article class="scheduled-card card-purple">
-                <header class="scheduled-card-top">
-                    <span class="scheduled-tag tag-focus">Focus</span>
-                    <button class="scheduled-menu" type="button" aria-label="More options">
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </button>
-                </header>
-                <footer class="scheduled-card-bottom">
-                    <p class="scheduled-name">Study Session</p>
-                    <time class="scheduled-date">12 Feb</time>
-                </footer>
-            </article>
-
-            <article class="scheduled-card card-blue">
-                <header class="scheduled-card-top">
-                    <span class="scheduled-tag tag-exercise">Exercise</span>
-                    <button class="scheduled-menu" type="button" aria-label="More options">
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </button>
-                </header>
-                <footer class="scheduled-card-bottom">
-                    <p class="scheduled-name">Morning Walk</p>
-                    <time class="scheduled-date">13 Feb</time>
-                </footer>
-            </article>
-
-            <article class="scheduled-card card-purple">
-                <header class="scheduled-card-top">
-                    <span class="scheduled-tag tag-breathe">Breathe</span>
-                    <button class="scheduled-menu" type="button" aria-label="More options">
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </button>
-                </header>
-                <footer class="scheduled-card-bottom">
-                    <p class="scheduled-name">Breathing Exercise</p>
-                    <time class="scheduled-date">14 Feb</time>
-                </footer>
-            </article>
+            <header class="scheduled-header">
+                <h3 class="scheduled-title">Scheduled</h3>
+                <a href="/views/reminders.html" class="scheduled-link" title="Manage reminders"><i class="fa-solid fa-arrow-right"></i></a>
+            </header>
+            <div class="scheduled-list" id="scheduledList">
+                <p class="scheduled-empty">No upcoming reminders.</p>
+            </div>
         </section>
 
     </aside>
