@@ -139,7 +139,7 @@ export function logoutUser(req, res) {
 export async function getCurrentUser(req, res) {
   try {
     // Passport puts user in req.user; manual login uses req.session.user
-    const user = req.user || req.session.user;
+    const user = req.user || req.session?.user;
 
     if (!user) {
       return res.status(401).json({ user: null, error: "Not logged in." });
@@ -167,7 +167,7 @@ export async function getCurrentUser(req, res) {
 
 export async function updateCurrentUserProfile(req, res) {
   try {
-    const current = req.user || req.session.user;
+    const current = req.user || req.session?.user;
     if (!current) {
       return res.status(401).json({ error: "Not logged in." });
     }

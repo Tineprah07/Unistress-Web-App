@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "UniStress – student wellbeing tracking web application",
   "type": "module",
-  "main": "backend/server.js",
+  "main": "Backend/server.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node Backend/server.js",
+    "dev": "nodemon Backend/server.js",
+    "test": "node --test Backend/tests/**/*.test.js"
   },
   "repository": {
     "type": "git",

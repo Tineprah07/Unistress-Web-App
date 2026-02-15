@@ -47,6 +47,20 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch { return []; }
     }
 
+    function showToast(message, iconClass = 'fa-circle-info') {
+        if (!message) return;
+        let toast = document.querySelector('.toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.className = 'toast';
+            document.body.appendChild(toast);
+        }
+        toast.innerHTML = '<i class="fa-solid ' + iconClass + '"></i><span>' + message + '</span>';
+        toast.classList.add('show');
+        clearTimeout(showToast._timer);
+        showToast._timer = setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
     // =========================
     // 1. SIDEBAR TOGGLE
     // =========================
@@ -242,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                alert(data.error || 'Failed to update profile.');
+                showToast(data.error || 'Failed to update profile.', 'fa-triangle-exclamation');
                 return;
             }
             if (data.user) {
@@ -257,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             closeProfileEditor();
         } catch {
-            alert('Failed to update profile.');
+            showToast('Failed to update profile.', 'fa-triangle-exclamation');
         }
     });
     applyProfileData();
@@ -405,23 +419,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return Math.floor(hrs / 24) + 'd ago';
     }
 
-    // ── SPARKLINE ──
-    function renderSparkline(containerId, values, color) {
-        const el = document.getElementById(containerId);
-        if (!el) return;
-        const pts = values.length ? values : [0,0,0,0,0,0,0];
-        const max = Math.max(...pts, 1);
-        const w = 60, h = 28, pad = 2;
-        const step = (w - pad * 2) / (pts.length - 1 || 1);
-        let path = '';
-        pts.forEach((v, i) => {
-            const x = pad + i * step;
-            const y = h - pad - ((v / max) * (h - pad * 2));
-            path += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
-        });
-        el.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none"><path d="' + path + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    }
-
     // ── ANIMATE VALUE ──
     function animateValue(el, target, suffix) {
         if (!el) return;
@@ -479,21 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
         animateValue($('statBreathe'), totalBreathe, '');
 
 
-        // ──────── SPARKLINES ────────
         const weekDates = getWeekDates();
-        function getLast7(data, field) {
-            return weekDates.map(d => {
-                const dayItems = (data || []).filter(e => e.created_at && e.created_at.slice(0,10) === d);
-                if (field === 'avg_stress') return dayItems.length ? dayItems.reduce((s,e) => s + (e.stress_level||0), 0) / dayItems.length : 0;
-                return dayItems.reduce((s,e) => s + (parseFloat(e[field])||0), 0);
-            });
-        }
-        renderSparkline('sparkStress', getLast7(stress, 'avg_stress'), '#ef4444');
-        renderSparkline('sparkExercise', getLast7(exercise, 'duration'), '#10b981');
-        renderSparkline('sparkSleep', getLast7(sleep, 'duration_hours'), '#6366f1');
-        renderSparkline('sparkHydration', getLast7(hydration, 'glasses'), '#3b82f6');
-        renderSparkline('sparkFocus', getLast7(focus, 'duration_minutes'), '#f59e0b');
-        renderSparkline('sparkBreathe', getLast7(breathe, 'cycles'), '#8b5cf6');
 
 
         // ──────── WELLBEING SCORE ────────
