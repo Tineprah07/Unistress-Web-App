@@ -469,16 +469,14 @@ body {
 /* =========================================
    5. ANIMATIONS
    ========================================= */
-@keyframes fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-
-.wellbeing-banner { animation: fade-up 0.5s ease both; }
-.stat-cards { animation: fade-up 0.5s ease 0.08s both; }
-.dash-grid { animation: fade-up 0.5s ease 0.16s both; }
-.profile-card { animation: fade-up 0.4s ease 0.1s both; }
-.motivation-slider { animation: fade-up 0.4s ease 0.2s both; }
-.calendar-widget { animation: fade-up 0.4s ease 0.3s both; }
-.scheduled-section { animation: fade-up 0.4s ease 0.4s both; }
+/* Keep dashboard load behavior consistent with other pages (no page-entry fade). */
+.wellbeing-banner,
+.stat-cards,
+.dash-grid,
+.profile-card,
+.motivation-slider,
+.calendar-widget,
+.scheduled-section { animation: none; }
 
 /* Stat card number count-up glow */
 @keyframes stat-glow { 0% { text-shadow: none; } 50% { text-shadow: 0 0 8px var(--primary-glow-strong); } 100% { text-shadow: none; } }
