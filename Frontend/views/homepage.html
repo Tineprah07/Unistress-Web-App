@@ -121,6 +121,15 @@
                                 <span class="switch-knob"></span>
                             </button>
                         </li>
+                        <li class="popover-item popover-item-mobile-only">
+                            <button class="popover-action-btn" id="openProfilePanelBtn" type="button" aria-label="Open profile and calendar">
+                                <span class="popover-label">
+                                    <i class="fa-solid fa-user"></i>
+                                    Profile & Calendar
+                                </span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </li>
                     </ul>
                 </article>
             </section>
@@ -328,12 +337,15 @@
 
     <!-- ========== PROFILE SIDEBAR (Right) ========== -->
     <aside class="profile-panel" id="profilePanel" aria-label="Profile and Calendar">
+        <button class="profile-mobile-close" id="closeProfilePanelBtn" type="button" aria-label="Close profile panel">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
 
         <!-- Profile Card -->
         <section class="profile-card">
             <header class="profile-card-header">
                 <h2 class="profile-card-title">Profile</h2>
-                <button class="profile-edit-btn" type="button">Edit</button>
+                <button class="profile-edit-btn" id="profileEditBtn" type="button">Edit</button>
             </header>
 
             <!-- Avatar -->
@@ -349,6 +361,25 @@
                 </span>
                 <figcaption class="profile-name" id="profileName">Student</figcaption>
                 <p class="profile-handle" id="profileHandle">@student</p>
+
+                <form class="profile-edit-panel" id="profileEditPanel" novalidate>
+                    <label class="profile-edit-field">
+                        <span>Name</span>
+                        <input id="profileNameInput" type="text" maxlength="24" placeholder="Your name">
+                    </label>
+                    <label class="profile-edit-field">
+                        <span>Handle</span>
+                        <input id="profileHandleInput" type="text" maxlength="24" placeholder="@username">
+                    </label>
+                    <label class="profile-edit-field">
+                        <span>Avatar Color</span>
+                        <input id="profileColorInput" type="color" value="#4e54c8">
+                    </label>
+                    <div class="profile-edit-actions">
+                        <button class="profile-edit-save" type="submit">Save</button>
+                        <button class="profile-edit-cancel" id="profileEditCancelBtn" type="button">Cancel</button>
+                    </div>
+                </form>
             </figure>
         </section>
 
@@ -427,6 +458,7 @@
         </section>
 
     </aside>
+    <div class="profile-panel-overlay" id="profilePanelOverlay" aria-hidden="true"></div>
 
     <script src="/js/homepage.js"></script>
 

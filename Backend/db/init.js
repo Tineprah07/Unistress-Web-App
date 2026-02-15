@@ -17,6 +17,8 @@ async function createUsersTable() {
       email VARCHAR(150) UNIQUE NOT NULL,
       password_hash TEXT,
       google_id TEXT UNIQUE,
+      handle VARCHAR(50),
+      avatar_color VARCHAR(7) DEFAULT '#4e54c8',
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);

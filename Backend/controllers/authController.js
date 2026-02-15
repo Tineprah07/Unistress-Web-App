@@ -10,6 +10,7 @@ import {
   createUser,
   findUserByEmail,
   findUserById,
+  updateUserProfile,
 } from "../models/userModel.js";
 
 import crypto from "crypto";
@@ -53,6 +54,8 @@ export async function registerUser(req, res) {
       id: newUser.id,
       name: newUser.name,
       email: newUser.email,
+      handle: newUser.handle || null,
+      avatar_color: newUser.avatar_color || "#4e54c8",
     };
 
     return res.status(201).json({
@@ -102,6 +105,8 @@ export async function loginUser(req, res) {
       id: user.id,
       name: user.name,
       email: user.email,
+      handle: user.handle || null,
+      avatar_color: user.avatar_color || "#4e54c8",
     };
 
     return res.json({
@@ -132,21 +137,96 @@ export function logoutUser(req, res) {
 // Get current logged-in user
 // -------------------------
 export async function getCurrentUser(req, res) {
-  // Passport puts user in req.user; manual login uses req.session.user
-  const user = req.user || req.session.user;
+  try {
+    // Passport puts user in req.user; manual login uses req.session.user
+    const user = req.user || req.session.user;
 
-  if (!user) {
-    return res.status(401).json({ user: null, error: "Not logged in." });
+    if (!user) {
+      return res.status(401).json({ user: null, error: "Not logged in." });
+    }
+
+    const dbUser = await findUserById(user.id);
+    if (!dbUser) {
+      return res.status(404).json({ user: null, error: "User not found." });
+    }
+
+    return res.json({
+      user: {
+        id: dbUser.id,
+        name: dbUser.name,
+        email: dbUser.email,
+        handle: dbUser.handle || null,
+        avatar_color: dbUser.avatar_color || "#4e54c8",
+      },
+    });
+  } catch (error) {
+    console.error("Error in getCurrentUser:", error);
+    return res.status(500).json({ user: null, error: "Something went wrong." });
   }
+}
 
-  // To keep the frontend consistent, return a standard object
-  return res.json({
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    },
-  });
+export async function updateCurrentUserProfile(req, res) {
+  try {
+    const current = req.user || req.session.user;
+    if (!current) {
+      return res.status(401).json({ error: "Not logged in." });
+    }
+
+    const name = String(req.body?.name || "").trim();
+    const handleRaw = String(req.body?.handle || "").trim();
+    const avatarColorRaw = String(req.body?.avatar_color || "").trim();
+
+    if (!name) {
+      return res.status(400).json({ error: "Name is required." });
+    }
+    if (name.length > 100) {
+      return res.status(400).json({ error: "Name is too long." });
+    }
+
+    const handle = handleRaw.replace(/^@+/, "").toLowerCase().replace(/\s+/g, "");
+    if (handle.length > 50) {
+      return res.status(400).json({ error: "Handle is too long." });
+    }
+    if (handle && !/^[a-z0-9._-]+$/.test(handle)) {
+      return res.status(400).json({ error: "Handle can only contain letters, numbers, dot, underscore, or hyphen." });
+    }
+
+    const avatarColor = /^#[0-9a-fA-F]{6}$/.test(avatarColorRaw) ? avatarColorRaw : "#4e54c8";
+
+    const updated = await updateUserProfile(current.id, {
+      name,
+      handle: handle || null,
+      avatarColor,
+    });
+
+    if (!updated) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    if (req.session?.user) {
+      req.session.user = {
+        ...req.session.user,
+        name: updated.name,
+        email: updated.email,
+        handle: updated.handle,
+        avatar_color: updated.avatar_color,
+      };
+    }
+
+    return res.json({
+      message: "Profile updated.",
+      user: {
+        id: updated.id,
+        name: updated.name,
+        email: updated.email,
+        handle: updated.handle || null,
+        avatar_color: updated.avatar_color || "#4e54c8",
+      },
+    });
+  } catch (error) {
+    console.error("Error in updateCurrentUserProfile:", error);
+    return res.status(500).json({ error: "Something went wrong." });
+  }
 }
 
 // -------------------------

@@ -12,9 +12,11 @@ import {
   loginUser,
   logoutUser,
   getCurrentUser,
+  updateCurrentUserProfile,
   requestPasswordReset,
   resetPassword,
 } from "../controllers/authController.js";
+import { requireAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -45,6 +47,7 @@ router.post("/logout", logoutUser);
 
 // Get current logged-in user
 router.get("/me", getCurrentUser);
+router.put("/profile", requireAuth, updateCurrentUserProfile);
 
 // Forgot + reset
 router.post("/forgot", requestPasswordReset);

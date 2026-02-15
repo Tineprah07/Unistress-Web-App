@@ -16,7 +16,7 @@ export async function createUser(name, email, passwordHash = null, googleId = nu
   const query = `
     INSERT INTO users (name, email, password_hash, google_id)
     VALUES ($1, $2, $3, $4)
-    RETURNING id, name, email, created_at;
+    RETURNING id, name, email, handle, avatar_color, created_at;
   `;
 
   const values = [name, email, passwordHash, googleId];
@@ -31,7 +31,7 @@ export async function createUser(name, email, passwordHash = null, googleId = nu
 // Used during login or to check if an email is taken.
 export async function findUserByEmail(email) {
   const query = `
-    SELECT id, name, email, password_hash, google_id, created_at
+    SELECT id, name, email, handle, avatar_color, password_hash, google_id, created_at
     FROM users
     WHERE email = $1;
   `;
@@ -46,7 +46,7 @@ export async function findUserByEmail(email) {
 // New function to help Passport.js identify returning Google users
 export async function findUserByGoogleId(googleId) {
   const query = `
-    SELECT id, name, email, created_at
+    SELECT id, name, email, handle, avatar_color, created_at
     FROM users
     WHERE google_id = $1;
   `;
@@ -61,7 +61,7 @@ export async function findUserByGoogleId(googleId) {
 // Useful for auth/session checks later.
 export async function findUserById(id) {
   const query = `
-    SELECT id, name, email, created_at
+    SELECT id, name, email, handle, avatar_color, created_at
     FROM users
     WHERE id = $1;
   `;
@@ -75,8 +75,19 @@ export async function linkGoogleIdToUser(userId, googleId) {
     UPDATE users
     SET google_id = $1
     WHERE id = $2
-    RETURNING id, name, email, google_id, created_at;
+    RETURNING id, name, email, handle, avatar_color, google_id, created_at;
   `;
   const res = await pool.query(query, [googleId, userId]);
+  return res.rows[0] || null;
+}
+
+export async function updateUserProfile(userId, { name, handle, avatarColor }) {
+  const query = `
+    UPDATE users
+    SET name = $2, handle = $3, avatar_color = $4
+    WHERE id = $1
+    RETURNING id, name, email, handle, avatar_color, created_at;
+  `;
+  const res = await pool.query(query, [userId, name, handle, avatarColor]);
   return res.rows[0] || null;
 }

@@ -10,6 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeSwitch    = document.getElementById('themeSwitch');
     const logoutBtn      = document.getElementById('logoutBtn');
     const userNameEl     = document.getElementById('userName');
+    const profilePanel   = document.getElementById('profilePanel');
+    const profilePanelOverlay = document.getElementById('profilePanelOverlay');
+    const openProfilePanelBtn = document.getElementById('openProfilePanelBtn');
+    const closeProfilePanelBtn = document.getElementById('closeProfilePanelBtn');
+    const profileEditBtn = document.getElementById('profileEditBtn');
+    const profileEditPanel = document.getElementById('profileEditPanel');
+    const profileEditCancelBtn = document.getElementById('profileEditCancelBtn');
+    const profileNameInput = document.getElementById('profileNameInput');
+    const profileHandleInput = document.getElementById('profileHandleInput');
+    const profileColorInput = document.getElementById('profileColorInput');
     const navItems       = document.querySelectorAll('.nav-item');
     const body           = document.body;
 
@@ -17,6 +27,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const THEME_KEY   = 'unistress_theme';
     const todayISO    = new Date().toISOString().slice(0, 10);
     const MONTHS      = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    let currentProfile = {
+        id: null,
+        name: 'Student',
+        email: '',
+        handle: '',
+        avatar_color: '#4e54c8'
+    };
 
     // =========================
     // API HELPERS
@@ -38,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     body.appendChild(overlay);
 
     function isMobile() { return window.innerWidth <= 768; }
+    function isProfileMobileView() { return window.innerWidth <= 768; }
 
     function openSidebar() {
         sidebar.classList.add('expanded');
@@ -61,6 +79,24 @@ document.addEventListener('DOMContentLoaded', () => {
     overlay.addEventListener('click', closeSidebar);
     if (!isMobile() && localStorage.getItem(SIDEBAR_KEY) === 'expanded') sidebar.classList.add('expanded');
     window.addEventListener('resize', () => { if (isMobile() && sidebar.classList.contains('expanded')) closeSidebar(); });
+
+    function openProfilePanelMobile() {
+        if (!isProfileMobileView() || !profilePanel) return;
+        profilePanel.classList.add('mobile-open');
+        profilePanelOverlay?.classList.add('active');
+        closePopover();
+        closeSidebar();
+    }
+
+    function closeProfilePanelMobile() {
+        profilePanel?.classList.remove('mobile-open');
+        profilePanelOverlay?.classList.remove('active');
+    }
+
+    openProfilePanelBtn?.addEventListener('click', openProfilePanelMobile);
+    closeProfilePanelBtn?.addEventListener('click', closeProfilePanelMobile);
+    profilePanelOverlay?.addEventListener('click', closeProfilePanelMobile);
+    window.addEventListener('resize', () => { if (!isProfileMobileView()) closeProfilePanelMobile(); });
 
     // =========================
     // 2. ACTIVE NAV ITEM
@@ -111,29 +147,120 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadUser() {
         try {
             const res = await fetch('/api/auth/me', { credentials: 'include' });
+            if (res.status === 401) {
+                window.location.href = '/views/auth.html';
+                return;
+            }
+            if (!res.ok) return;
             const data = await res.json();
             if (data.user) {
-                const fullName = data.user.name || 'Student';
-                const firstName = fullName.split(' ')[0];
-                if (userNameEl) userNameEl.textContent = firstName;
-                const profileName = document.getElementById('profileName');
-                const profileHandle = document.getElementById('profileHandle');
-                const avatarCircle = document.getElementById('avatarCircle');
-                if (profileName) profileName.textContent = fullName;
-                if (profileHandle) profileHandle.textContent = '@' + firstName.toLowerCase();
-                if (avatarCircle) {
-                    avatarCircle.innerHTML = '<span class="avatar-letter">' + fullName.charAt(0).toUpperCase() + '</span>';
-                    if (!document.getElementById('avatarLetterStyle')) {
-                        const s = document.createElement('style');
-                        s.id = 'avatarLetterStyle';
-                        s.textContent = ".avatar-letter{font-size:2rem;font-weight:700;color:var(--primary);font-family:'Poppins',sans-serif;}";
-                        document.head.appendChild(s);
-                    }
-                }
+                currentProfile = {
+                    id: data.user.id || null,
+                    name: data.user.name || 'Student',
+                    email: data.user.email || '',
+                    handle: data.user.handle || '',
+                    avatar_color: data.user.avatar_color || '#4e54c8'
+                };
+                applyProfileData();
             }
         } catch (err) { console.error('Failed to fetch user:', err); }
     }
     loadUser();
+
+    function normalizeHandle(value, fallbackName) {
+        const raw = (value || '').trim().replace(/^@+/, '');
+        if (raw) return '@' + raw.toLowerCase().replace(/\s+/g, '');
+        return '@' + fallbackName.toLowerCase().replace(/\s+/g, '');
+    }
+
+    function hexToRgb(hex) {
+        const clean = (hex || '#4e54c8').replace('#', '');
+        const full = clean.length === 3 ? clean.split('').map(ch => ch + ch).join('') : clean;
+        const int = parseInt(full, 16);
+        if (Number.isNaN(int)) return { r: 78, g: 84, b: 200 };
+        return { r: (int >> 16) & 255, g: (int >> 8) & 255, b: int & 255 };
+    }
+
+    function lightenHex(hex, amt) {
+        const { r, g, b } = hexToRgb(hex);
+        const mix = channel => Math.round(channel + (255 - channel) * amt);
+        return 'rgb(' + mix(r) + ', ' + mix(g) + ', ' + mix(b) + ')';
+    }
+
+    function applyProfileData() {
+        const finalName = currentProfile.name || 'Student';
+        const firstName = finalName.split(' ')[0] || 'Student';
+        const finalHandle = normalizeHandle(currentProfile.handle || '', firstName);
+        const profileName = document.getElementById('profileName');
+        const profileHandle = document.getElementById('profileHandle');
+        const avatarCircle = document.getElementById('avatarCircle');
+
+        if (userNameEl) userNameEl.textContent = firstName;
+        if (profileName) profileName.textContent = finalName;
+        if (profileHandle) profileHandle.textContent = finalHandle;
+        if (avatarCircle) {
+            avatarCircle.innerHTML = '<span class="avatar-letter">' + finalName.charAt(0).toUpperCase() + '</span>';
+            avatarCircle.style.background = 'linear-gradient(135deg, ' + lightenHex(currentProfile.avatar_color, 0.35) + ', ' + currentProfile.avatar_color + ')';
+            avatarCircle.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
+        }
+    }
+
+    function openProfileEditor() {
+        if (!profileEditPanel) return;
+        profileNameInput.value = currentProfile.name || 'Student';
+        profileHandleInput.value = currentProfile.handle || '';
+        profileColorInput.value = currentProfile.avatar_color || '#4e54c8';
+        profileEditPanel.classList.add('active');
+        profileEditBtn.textContent = 'Editing';
+    }
+
+    function closeProfileEditor() {
+        profileEditPanel?.classList.remove('active');
+        if (profileEditBtn) profileEditBtn.textContent = 'Edit';
+    }
+
+    profileEditBtn?.addEventListener('click', () => {
+        if (profileEditPanel?.classList.contains('active')) return;
+        openProfileEditor();
+    });
+
+    profileEditCancelBtn?.addEventListener('click', closeProfileEditor);
+
+    profileEditPanel?.addEventListener('submit', async e => {
+        e.preventDefault();
+        const payload = {
+            name: (profileNameInput?.value || '').trim(),
+            handle: (profileHandleInput?.value || '').trim().replace(/^@+/, ''),
+            avatar_color: profileColorInput?.value || '#4e54c8'
+        };
+        try {
+            const res = await fetch('/api/auth/profile', {
+                method: 'PUT',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                alert(data.error || 'Failed to update profile.');
+                return;
+            }
+            if (data.user) {
+                currentProfile = {
+                    id: data.user.id || currentProfile.id,
+                    name: data.user.name || currentProfile.name,
+                    email: data.user.email || currentProfile.email,
+                    handle: data.user.handle || '',
+                    avatar_color: data.user.avatar_color || '#4e54c8'
+                };
+                applyProfileData();
+            }
+            closeProfileEditor();
+        } catch {
+            alert('Failed to update profile.');
+        }
+    });
+    applyProfileData();
 
     // =========================
     // 6. LOGOUT
@@ -531,6 +658,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     sleep:     { tag: 'tag-sleep',     card: 'card-purple' },
                     study:     { tag: 'tag-study',     card: 'card-amber' },
                     stress:    { tag: 'tag-stress',    card: 'card-pink' },
+                    focus:     { tag: 'tag-focus',     card: 'card-purple' },
+                    breathe:   { tag: 'tag-breathe',   card: 'card-blue' },
+                    notes:     { tag: 'tag-other',     card: 'card-gray' },
                     other:     { tag: 'tag-other',     card: 'card-gray' }
                 };
 
