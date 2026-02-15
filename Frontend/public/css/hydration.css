@@ -373,6 +373,8 @@
     font-family: 'Poppins', sans-serif;
     font-size: 0.82rem;
     color: var(--text-primary);
+    box-sizing: border-box;
+    max-width: 100%;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -711,11 +713,14 @@
     }
 
     .hero-title { font-size: 1.3rem; }
+    .hero-subtitle { font-size: 0.75rem; line-height: 1.35; }
     .hero-droplet { font-size: 2.4rem; }
     .stats-row { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
     .stat-card { padding: 1rem; }
     .stat-value { font-size: 1.4rem; }
     .quick-add-row { grid-template-columns: repeat(3, 1fr); }
+    .custom-add { flex-direction: column; }
+    .btn-add-custom { width: 100%; }
 }
 
 @media (max-width: 480px) {
@@ -730,4 +735,5 @@
     .chart-bars { height: 120px; }
     .quick-add-row { gap: 0.4rem; }
     .quick-btn { padding: 0.6rem 0.4rem; }
+    .custom-add .form-input { min-height: 46px; padding: 0.7rem 0.9rem; font-size: 1rem; }
 }

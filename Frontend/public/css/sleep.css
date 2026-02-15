@@ -145,11 +145,17 @@
     width: 100%; padding: 0.65rem 0.85rem; border-radius: 10px;
     border: 1.5px solid var(--border-color); background: var(--body-bg);
     font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: var(--text-primary);
+    box-sizing: border-box; max-width: 100%;
     outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 .form-input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); background: var(--card-bg); }
 .form-textarea { resize: vertical; min-height: 50px; }
 .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-input[type="time"] {
+    min-height: 44px;
+    -webkit-appearance: none;
+    appearance: none;
+}
 
 /* Quality Picker (emoji buttons) */
 .quality-picker { display: flex; gap: 0.4rem; }
@@ -303,6 +309,7 @@
     .sleep-hero { flex-direction: column; align-items: flex-start; gap: 1.25rem; padding: 1.5rem; min-height: auto; border-radius: 18px; }
     .hero-ring-wrap { width: 90px; height: 90px; align-self: flex-end; margin-top: -3.5rem; }
     .hero-title { font-size: 1.3rem; }
+    .hero-subtitle { font-size: 0.75rem; line-height: 1.35; }
     .hero-moon { font-size: 2.4rem; }
     .stats-row { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
     .stat-card { padding: 1rem; }
@@ -323,4 +330,10 @@
     .card { padding: 1.1rem; }
     .chart-bars { height: 120px; }
     .quality-btn { padding: 0.5rem 0.2rem; }
+    .form-input[type="time"] {
+        min-height: 50px;
+        padding: 0.7rem 0.9rem;
+        font-size: 1rem;
+        border-radius: 12px;
+    }
 }

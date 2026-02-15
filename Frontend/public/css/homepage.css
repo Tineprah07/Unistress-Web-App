@@ -568,7 +568,7 @@ body {
     .welcome-title { font-size: 1.25rem; }
     .stat-cards { grid-template-columns: repeat(2, 1fr); }
     .wellbeing-banner { flex-direction: column; text-align: center; gap: 1rem; padding: 1.25rem 1.5rem; }
-    .wb-message { max-width: 100%; }
+    .wb-message { max-width: 100%; font-size: 0.75rem; line-height: 1.35; }
     .wb-illustration { display: none; }
     .topbar-date { display: none; }
     .popover-item-mobile-only { display: flex; }

@@ -69,7 +69,7 @@
 .checkin-form { display: flex; flex-direction: column; gap: 1.2rem; }
 .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
 .form-label { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); }
-.form-input { width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px; border: 1.5px solid var(--border-color); background: var(--body-bg); font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+.form-input { width: 100%; padding: 0.6rem 0.8rem; border-radius: 10px; border: 1.5px solid var(--border-color); background: var(--body-bg); font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: var(--text-primary); box-sizing: border-box; max-width: 100%; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
 .form-input:focus { border-color: #e11d48; box-shadow: 0 0 0 3px rgba(225,29,72,0.08); }
 .form-textarea { resize: vertical; min-height: 56px; line-height: 1.5; }
 
@@ -266,8 +266,9 @@
 @media (max-width: 1024px) { .stats-row { grid-template-columns: repeat(2,1fr); } .stress-grid { grid-template-columns: 1fr; } }
 @media (max-width: 768px) {
     .stress-hero { flex-direction: column; align-items: flex-start; gap: 1.25rem; padding: 1.5rem; min-height: auto; border-radius: 18px; }
-    .hero-ring-wrap { width: 90px; height: 90px; align-self: flex-end; margin-top: -3.5rem; }
+    .hero-ring-wrap { width: 90px; height: 90px; align-self: flex-end; margin-top: 0; }
     .hero-title { font-size: 1.3rem; }
+    .hero-subtitle { font-size: 0.75rem; line-height: 1.35; }
     .stats-row { grid-template-columns: repeat(2,1fr); gap: 0.75rem; }
     .mood-picker { gap: 0.3rem; }
     .mood-btn { padding: 0.4rem; }
@@ -278,6 +279,8 @@
     .stat-card { padding: 0.85rem; }
     .stat-value { font-size: 1.25rem; }
     .card { padding: 1.1rem; }
+    .form-input { min-height: 46px; padding: 0.7rem 0.9rem; font-size: 1rem; }
+    .btn-checkin { width: 100%; align-self: stretch; }
     .mood-face { font-size: 3rem; }
     .mood-btn span { font-size: 1.1rem; }
     .mood-btn small { font-size: 0.52rem; }
