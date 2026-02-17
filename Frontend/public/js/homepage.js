@@ -642,6 +642,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const scheduledList = $('scheduledList');
         const allReminders = (reminders || []).filter(r => !r.completed);
 
+        if (scheduledList && !scheduledList.dataset.expandBound) {
+            scheduledList.addEventListener('click', (event) => {
+                const toggle = event.target.closest('.scheduled-expand');
+                if (!toggle) return;
+                const card = toggle.closest('.scheduled-card');
+                if (!card) return;
+                const isExpanded = card.classList.toggle('expanded');
+                toggle.textContent = isExpanded ? 'Show less' : 'Show more';
+                toggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+            });
+            scheduledList.dataset.expandBound = 'true';
+        }
+
         const upcoming = allReminders
             .filter(r => r.due_date && r.due_date.slice(0, 10) >= todayISO)
             .sort((a, b) => {
@@ -663,31 +676,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 scheduledList.innerHTML = '<p class="scheduled-empty">No upcoming schedules.</p>';
             } else {
                 const catConfig = {
-                    hydration: { tag: 'tag-hydration', card: 'card-blue' },
-                    exercise:  { tag: 'tag-exercise',  card: 'card-green' },
-                    sleep:     { tag: 'tag-sleep',     card: 'card-purple' },
-                    study:     { tag: 'tag-study',     card: 'card-amber' },
-                    stress:    { tag: 'tag-stress',    card: 'card-pink' },
-                    focus:     { tag: 'tag-focus',     card: 'card-purple' },
-                    breathe:   { tag: 'tag-breathe',   card: 'card-blue' },
+                    hydration: { tag: 'tag-hydration', card: 'card-gray' },
+                    exercise:  { tag: 'tag-exercise',  card: 'card-gray' },
+                    sleep:     { tag: 'tag-sleep',     card: 'card-gray' },
+                    study:     { tag: 'tag-study',     card: 'card-gray' },
+                    stress:    { tag: 'tag-stress',    card: 'card-gray' },
+                    focus:     { tag: 'tag-focus',     card: 'card-gray' },
+                    breathe:   { tag: 'tag-breathe',   card: 'card-gray' },
                     notes:     { tag: 'tag-other',     card: 'card-gray' },
                     other:     { tag: 'tag-other',     card: 'card-gray' }
                 };
 
                 scheduledList.innerHTML = upcoming.map(r => {
-                    const cat = r.category || 'other';
-                    const cfg = catConfig[cat] || catConfig.other;
+                    const catRaw = (r.category || 'other').trim();
+                    const catKey = catRaw.toLowerCase();
+                    const cfg = catConfig[catKey] || catConfig.other;
+                    const catLabel = catRaw.charAt(0).toUpperCase() + catRaw.slice(1).toLowerCase();
                     const isReminderToday = r.due_date && r.due_date.slice(0, 10) === todayISO;
                     const dateLabel = isReminderToday ? 'Today' : formatDateShort(r.due_date);
                     const timeLabel = r.due_time ? r.due_time.slice(0, 5) : '';
+                    const reminderText = (r.text || 'Reminder');
+                    const isLongMessage = reminderText.length > 70;
 
                     return '<article class="scheduled-card ' + cfg.card + '">' +
                         '<header class="scheduled-card-top">' +
-                            '<span class="scheduled-tag ' + cfg.tag + '">' + cat.charAt(0).toUpperCase() + cat.slice(1) + '</span>' +
-                            '<button class="scheduled-menu" type="button" aria-label="More options"><i class="fa-solid fa-ellipsis"></i></button>' +
+                            '<span class="scheduled-tag ' + cfg.tag + '">' + catLabel + '</span>' +
                         '</header>' +
                         '<footer class="scheduled-card-bottom">' +
-                            '<p class="scheduled-name">' + (r.text || 'Reminder') + '</p>' +
+                            '<p class="scheduled-name' + (isLongMessage ? ' is-collapsible' : '') + '">' + reminderText + '</p>' +
+                            (isLongMessage ? '<button class="scheduled-expand" type="button" aria-expanded="false">Show more</button>' : '') +
                             '<time class="scheduled-date">' + dateLabel + (timeLabel ? ' \u00B7 ' + timeLabel : '') + '</time>' +
                         '</footer>' +
                     '</article>';
