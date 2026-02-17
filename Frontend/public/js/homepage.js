@@ -511,6 +511,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const labelsEl = $('dashChartLabels');
 
         if (barsEl && labelsEl) {
+            const weekStressAvg = [];
+            const weekExerciseTotals = [];
+            const weekSleepTotals = [];
+
+            weekDates.forEach((dateStr) => {
+                const dayStress = (stress || []).filter(e => e.created_at && e.created_at.slice(0,10) === dateStr);
+                const dayExercise = (exercise || []).filter(e => e.created_at && e.created_at.slice(0,10) === dateStr);
+                const daySleep = (sleep || []).filter(e => e.created_at && e.created_at.slice(0,10) === dateStr);
+
+                const sVal = dayStress.length ? dayStress.reduce((sum, e) => sum + (e.stress_level || 0), 0) / dayStress.length : 0;
+                const eVal = dayExercise.reduce((sum, e) => sum + (e.duration || 0), 0);
+                const slVal = daySleep.reduce((sum, e) => sum + (parseFloat(e.duration_hours) || 0), 0);
+
+                weekStressAvg.push(sVal);
+                weekExerciseTotals.push(eVal);
+                weekSleepTotals.push(slVal);
+            });
+
+            const stressMax = Math.max(...weekStressAvg, 10);
+            const exerciseMax = Math.max(...weekExerciseTotals, 30);
+            const sleepMax = Math.max(...weekSleepTotals, 8);
+
+            const toHeightPct = (value, maxValue) => {
+                if (value <= 0) return 4;
+                return Math.min(100, Math.max(4, (value / maxValue) * 100));
+            };
+
             let barsHTML = '', labelsHTML = '';
             weekDates.forEach((dateStr, i) => {
                 const dayStress   = (stress || []).filter(e => e.created_at && e.created_at.slice(0,10) === dateStr);
@@ -522,9 +549,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const slVal = daySleep.reduce((s,e) => s + (parseFloat(e.duration_hours)||0), 0);
 
                 barsHTML += '<div class="chart-bar-group">' +
-                    '<div class="chart-mini-bar bar-stress" style="height:' + Math.max(4, (sVal/10)*100) + '%"></div>' +
-                    '<div class="chart-mini-bar bar-exercise" style="height:' + Math.max(4, (eVal/60)*100) + '%"></div>' +
-                    '<div class="chart-mini-bar bar-sleep" style="height:' + Math.max(4, (slVal/10)*100) + '%"></div>' +
+                    '<div class="chart-mini-bar bar-stress" style="height:' + toHeightPct(sVal, stressMax) + '%"></div>' +
+                    '<div class="chart-mini-bar bar-exercise" style="height:' + toHeightPct(eVal, exerciseMax) + '%"></div>' +
+                    '<div class="chart-mini-bar bar-sleep" style="height:' + toHeightPct(slVal, sleepMax) + '%"></div>' +
                     '</div>';
                 labelsHTML += '<span' + (dateStr === todayISO ? ' class="today"' : '') + '>' + dayLabels[i] + '</span>';
             });
