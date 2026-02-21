@@ -302,6 +302,7 @@
     position: relative;
     overflow: hidden;
     transition: box-shadow 0.2s;
+    margin-bottom: 1rem;
 }
 .fitbit-dash-banner:hover { box-shadow: var(--shadow-md); }
 
