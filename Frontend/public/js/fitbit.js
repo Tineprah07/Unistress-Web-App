@@ -116,11 +116,13 @@
             li.className = 'popover-item popover-fitbit-item';
             li.innerHTML =
                 '<span class="popover-label"><i class="fa-solid fa-heart-pulse" style="color:#00B0B9"></i> Fitbit</span>' +
-                '<span class="popover-fitbit-status">' +
-                    '<span class="fitbit-status-dot"></span>' +
-                    '<span class="popover-fitbit-status-text">...</span>' +
+                '<section class="popover-fitbit-row">' +
+                    '<span class="popover-fitbit-status">' +
+                        '<span class="fitbit-status-dot"></span>' +
+                        '<span class="popover-fitbit-status-text">...</span>' +
+                    '</span>' +
                     '<button class="popover-fitbit-btn" type="button">Connect</button>' +
-                '</span>';
+                '</section>';
 
             // Insert after the notifications item (2nd popover item)
             var items = list.querySelectorAll('.popover-item');

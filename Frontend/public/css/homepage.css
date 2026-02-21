@@ -146,7 +146,7 @@ body {
 
 /* Settings Popover */
 .settings-wrapper { position: static; }
-.settings-popover { position: fixed; z-index: 600; width: 240px; background: var(--popover-bg); border: 1px solid var(--popover-border); border-radius: 14px; box-shadow: var(--popover-shadow); opacity: 0; visibility: hidden; transform: translateY(4px) scale(0.96); transform-origin: bottom left; transition: opacity 0.18s, transform 0.18s, visibility 0.18s; }
+.settings-popover { position: fixed; z-index: 600; width: 270px; background: var(--popover-bg); border: 1px solid var(--popover-border); border-radius: 14px; box-shadow: var(--popover-shadow); opacity: 0; visibility: hidden; transform: translateY(4px) scale(0.96); transform-origin: bottom left; transition: opacity 0.18s, transform 0.18s, visibility 0.18s; }
 .settings-popover.open { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
 .popover-header { padding: 0.75rem 1rem 0.5rem; border-bottom: 1px solid var(--sidebar-divider); }
 .popover-title { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em; }
