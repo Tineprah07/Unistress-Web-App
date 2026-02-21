@@ -402,6 +402,18 @@
     transform: translateY(-1px);
 }
 
+/* Same as yesterday */
+.btn-same-yesterday {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%;
+    padding: 0.6rem 1rem; border-radius: 10px; border: 1.5px dashed var(--border-color);
+    background: var(--body-bg); font-family: 'Poppins', sans-serif; font-size: 0.78rem;
+    font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+}
+.btn-same-yesterday i { color: #0ea5e9; font-size: 0.75rem; }
+.btn-same-yesterday strong { color: var(--text-primary); }
+.btn-same-yesterday:hover { border-color: #0ea5e9; color: var(--text-primary); background: rgba(14,165,233,0.04); }
+.btn-same-yesterday.hidden { display: none; }
+
 /* Toast */
 .toast {
     position: absolute;
@@ -594,8 +606,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    max-height: 300px;
-    overflow-y: auto;
 }
 
 .history-list::-webkit-scrollbar { width: 3px; }

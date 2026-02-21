@@ -3,7 +3,7 @@ import * as Stress from "../models/stressModel.js";
 export async function create(req, res) {
   try {
     const { stress_level, mood, mood_emoji, triggers, notes } = req.body;
-    if (!stress_level || !mood) return res.status(400).json({ error: "Stress level and mood are required." });
+    if (!stress_level) return res.status(400).json({ error: "Stress level is required." });
     if (stress_level < 1 || stress_level > 10) return res.status(400).json({ error: "Stress level must be 1-10." });
 
     const entry = await Stress.createCheckin(req.currentUser.id, { stress_level, mood, mood_emoji, triggers, notes });

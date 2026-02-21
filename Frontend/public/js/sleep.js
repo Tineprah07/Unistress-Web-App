@@ -121,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         entries.unshift(mapEntry(result));
         notesInput.value = '';
+        applySmartDefaults();
         showToast();
         renderAll();
     });
@@ -284,11 +285,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderAll() { renderStats(); renderChart(); renderHistory(); }
 
+    function applySmartDefaults() {
+        if (entries.length === 0) return;
+
+        const last = entries[0];
+        if (last.bedtime && bedtimeInput) bedtimeInput.value = last.bedtime;
+        if (last.wakeTime && wakeTimeInput) wakeTimeInput.value = last.wakeTime;
+
+        // Set quality to last entry's quality
+        const q = last.quality || 3;
+        if (qualityInput) qualityInput.value = q;
+        qualityPicker?.querySelectorAll('.quality-btn').forEach(btn => {
+            btn.classList.toggle('active', parseInt(btn.dataset.quality, 10) === q);
+        });
+    }
+
     async function init() {
         const data = await apiGet('/api/sleep?limit=200');
         if (data && Array.isArray(data)) {
             entries = data.map(mapEntry);
         }
+        applySmartDefaults();
         renderAll();
     }
 

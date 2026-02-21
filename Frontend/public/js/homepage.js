@@ -715,4 +715,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadDashboard();
 
+    // =========================
+    // COLLAPSIBLE HISTORY (shared across pages)
+    // =========================
+    document.querySelectorAll('.history-card .card-header').forEach(header => {
+        header.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-text')) return; // don't toggle when clicking Clear All
+            header.closest('.history-card').classList.toggle('open');
+        });
+    });
+
 });

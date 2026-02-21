@@ -539,6 +539,18 @@ body {
 
 
 /* =========================================
+   COLLAPSIBLE HISTORY (shared across pages)
+   ========================================= */
+.history-card .card-header { cursor: pointer; user-select: none; transition: opacity 0.2s; }
+.history-card .card-header:hover { opacity: 0.8; }
+.history-toggle-arrow { font-size: 0.65rem; color: var(--text-secondary); transition: transform 0.25s ease; margin-left: 0.5rem; }
+.history-card.open .history-toggle-arrow { transform: rotate(180deg); }
+.history-card .history-list { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+.history-card.open .history-list { max-height: 600px; overflow-y: auto; }
+.history-card .card-header .btn-text { opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.history-card.open .card-header .btn-text { opacity: 1; pointer-events: auto; }
+
+/* =========================================
    5. ANIMATIONS
    ========================================= */
 /* Keep dashboard load behavior consistent with other pages (no page-entry fade). */

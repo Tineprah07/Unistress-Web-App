@@ -27,8 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const sliderValue = document.getElementById('sliderValue');
     const moodFace = document.getElementById('moodFace');
     const moodWord = document.getElementById('moodWord');
-    const moodPicker = document.getElementById('moodPicker');
-    const moodInput = document.getElementById('moodInput');
     const triggerPicker = document.getElementById('triggerPicker');
     const checkinNotes = document.getElementById('checkinNotes');
     const checkinTime = document.getElementById('checkinTime');
@@ -52,8 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const calendarMonth = document.getElementById('calendarMonth');
     const calHeader = document.getElementById('calHeader');
     const moodCalendar = document.getElementById('moodCalendar');
-    const affirmationText = document.getElementById('affirmationText');
-    const refreshAffirmation = document.getElementById('refreshAffirmation');
 
     const historyList = document.getElementById('historyList');
     const historyEmpty = document.getElementById('historyEmpty');
@@ -67,23 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const FACES = { 1:'😌', 2:'😊', 3:'🙂', 4:'😐', 5:'😕', 6:'😟', 7:'😣', 8:'😤', 9:'😰', 10:'🤯' };
     const FACE_WORDS = { 1:'Very Calm', 2:'Calm', 3:'At Ease', 4:'Neutral', 5:'Slight Tension', 6:'Uneasy', 7:'Stressed', 8:'Very Stressed', 9:'Overwhelmed', 10:'Burnout' };
 
-    const AFFIRMATIONS = [
-        "You're doing better than you think. One step at a time.",
-        "It's okay to have a tough day. Tomorrow is a fresh start.",
-        "Your feelings are valid. Be kind to yourself today.",
-        "Progress isn't always visible. Trust the process.",
-        "Taking a moment to check in shows real strength.",
-        "You don't have to have it all figured out right now.",
-        "Rest is productive. You deserve a break.",
-        "Small steps still move you forward.",
-        "You've survived 100% of your worst days so far.",
-        "Asking for help is a sign of courage, not weakness.",
-        "You are more than your grades or your to-do list.",
-        "Breathe. This moment will pass.",
-        "Comparison is the thief of joy. Your journey is yours.",
-        "Even the smallest act of self-care is a victory.",
-        "You are enough, exactly as you are right now."
-    ];
 
     function todayStr() { return new Date().toISOString().split('T')[0]; }
     function formatDate(d) { const dt = new Date(d); return dt.getDate() + ' ' + MONTHS[dt.getMonth()]; }
@@ -120,17 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // =============================
-    // MOOD PICKER
-    // =============================
-    moodPicker?.querySelectorAll('.mood-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            moodPicker.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            moodInput.value = btn.dataset.mood;
-        });
-    });
-
-    // =============================
     // TRIGGER PICKER (multi-select)
     // =============================
     triggerPicker?.querySelectorAll('.trigger-btn').forEach(btn => {
@@ -142,15 +110,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =============================
+    // COLLAPSIBLE TOGGLES
+    // =============================
+    document.querySelectorAll('.collapsible-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.closest('.collapsible-section').classList.toggle('open');
+        });
+    });
+
+    // =============================
     // FORM SUBMIT
     // =============================
     checkinForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        const level = parseInt(stressSlider.value, 10);
         const body = {
-            stress_level: parseInt(stressSlider.value, 10),
-            mood: moodInput.value,
-            mood_emoji: moodPicker.querySelector('.mood-btn.active')?.dataset.emoji || '😐',
+            stress_level: level,
+            mood: FACE_WORDS[level],
+            mood_emoji: FACES[level],
             triggers: getSelectedTriggers(),
             notes: checkinNotes.value.trim()
         };
@@ -161,13 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add to local cache
         entries.unshift(mapEntry(result));
 
-        // Reset form
-        stressSlider.value = 5; sliderValue.textContent = '5';
-        moodFace.textContent = '😐'; moodWord.textContent = 'Neutral';
-        moodPicker.querySelectorAll('.mood-btn').forEach(b => b.classList.toggle('active', b.dataset.mood === 'Neutral'));
-        moodInput.value = 'Neutral';
+        // Reset form to smart defaults
         triggerPicker.querySelectorAll('.trigger-btn').forEach(b => b.classList.remove('active'));
         checkinNotes.value = '';
+        document.querySelectorAll('.collapsible-section').forEach(s => s.classList.remove('open'));
+        applySmartDefaults();
 
         // Toast
         toast?.classList.remove('hidden');
@@ -175,16 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderAll();
     });
-
-    // =============================
-    // AFFIRMATIONS
-    // =============================
-    function showAffirmation() {
-        const idx = Math.floor(Math.random() * AFFIRMATIONS.length);
-        if (affirmationText) affirmationText.textContent = AFFIRMATIONS[idx];
-    }
-    showAffirmation();
-    refreshAffirmation?.addEventListener('click', showAffirmation);
 
     // =============================
     // STATS
@@ -370,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
             item.innerHTML = `
                 <span class="history-mood">${entry.moodEmoji || '😐'}</span>
                 <section class="history-details">
-                    <p class="history-mood-label">${entry.mood} <span class="stress-badge ${sbClass}">${entry.stress}/10 ${sbLabel}</span></p>
+                    <p class="history-mood-label">${FACE_WORDS[entry.stress] || entry.mood} <span class="stress-badge ${sbClass}">${entry.stress}/10 ${sbLabel}</span></p>
                     <section class="history-meta">
                         ${triggerStr ? `<span class="history-triggers">${triggerStr}</span>` : ''}
                     </section>
@@ -406,11 +372,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // =============================
     // INITIAL LOAD FROM API
     // =============================
+    function applySmartDefaults() {
+        if (entries.length === 0) return;
+
+        // Set slider to last stress level
+        const lastStress = entries[0].stress;
+        if (stressSlider) { stressSlider.value = lastStress; sliderValue.textContent = lastStress; }
+        if (moodFace) moodFace.textContent = FACES[lastStress];
+        if (moodWord) moodWord.textContent = FACE_WORDS[lastStress];
+
+        // Pre-select top 2 most frequent triggers
+        const counts = {};
+        entries.forEach(e => (e.triggers || []).forEach(t => { counts[t] = (counts[t] || 0) + 1; }));
+        const topTriggers = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 2).map(t => t[0]);
+        triggerPicker?.querySelectorAll('.trigger-btn').forEach(btn => {
+            if (topTriggers.includes(btn.dataset.trigger)) btn.classList.add('active');
+        });
+    }
+
     async function init() {
         const data = await apiGet('/api/stress?limit=200');
         if (data && Array.isArray(data)) {
             entries = data.map(mapEntry);
         }
+        applySmartDefaults();
         renderAll();
     }
 

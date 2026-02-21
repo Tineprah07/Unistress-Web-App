@@ -125,8 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         exercises.unshift(mapEntry(result));
 
-        durationInput.value = '';
         notesInput.value = '';
+        applySmartDefaults();
         showToast();
         renderAll();
     });
@@ -294,11 +294,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================
     function renderAll() { renderStats(); renderChart(); renderHistory(); }
 
+    function applySmartDefaults() {
+        if (exercises.length === 0) return;
+
+        const last = exercises[0];
+
+        // Pre-select last exercise type
+        if (last.type && typePicker) {
+            typePicker.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === last.type));
+            if (exerciseTypeInput) exerciseTypeInput.value = last.type;
+        }
+
+        // Pre-select last intensity
+        if (last.intensity && intensityPicker) {
+            intensityPicker.querySelectorAll('.intensity-btn').forEach(b => b.classList.toggle('active', b.dataset.intensity === last.intensity));
+            if (intensityInput) intensityInput.value = last.intensity;
+        }
+
+        // Pre-fill average duration for this exercise type
+        const sameType = exercises.filter(e => e.type === last.type);
+        if (sameType.length > 0 && durationInput) {
+            const avgDuration = Math.round(sameType.reduce((s, e) => s + e.duration, 0) / sameType.length);
+            durationInput.value = avgDuration;
+        }
+    }
+
     async function init() {
         const data = await apiGet('/api/exercise?limit=200');
         if (data && Array.isArray(data)) {
             exercises = data.map(mapEntry);
         }
+        applySmartDefaults();
         renderAll();
     }
 

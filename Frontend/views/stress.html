@@ -117,43 +117,37 @@
                 </section>
                 <p class="slider-value">Stress Level: <strong id="sliderValue">5</strong> / 10</p>
 
-                <!-- Mood Picker -->
-                <section class="mood-row">
-                    <label class="form-label">Mood</label>
-                    <section class="mood-picker" id="moodPicker">
-                        <button type="button" class="mood-btn" data-mood="Happy" data-emoji="😊"><span>😊</span><small>Happy</small></button>
-                        <button type="button" class="mood-btn" data-mood="Calm" data-emoji="😌"><span>😌</span><small>Calm</small></button>
-                        <button type="button" class="mood-btn active" data-mood="Neutral" data-emoji="😐"><span>😐</span><small>Neutral</small></button>
-                        <button type="button" class="mood-btn" data-mood="Anxious" data-emoji="😟"><span>😟</span><small>Anxious</small></button>
-                        <button type="button" class="mood-btn" data-mood="Stressed" data-emoji="😤"><span>😤</span><small>Stressed</small></button>
-                        <button type="button" class="mood-btn" data-mood="Sad" data-emoji="😔"><span>😔</span><small>Sad</small></button>
-                        <button type="button" class="mood-btn" data-mood="Tired" data-emoji="😴"><span>😴</span><small>Tired</small></button>
-                        <button type="button" class="mood-btn" data-mood="Angry" data-emoji="😠"><span>😠</span><small>Angry</small></button>
-                    </section>
-                    <input type="hidden" id="moodInput" value="Neutral">
-                </section>
-
-                <!-- Triggers -->
-                <section class="triggers-row">
-                    <label class="form-label">What's causing it? <span class="optional">(select any)</span></label>
-                    <section class="trigger-picker" id="triggerPicker">
-                        <button type="button" class="trigger-btn" data-trigger="Exams"><i class="fa-solid fa-file-lines"></i> Exams</button>
-                        <button type="button" class="trigger-btn" data-trigger="Deadlines"><i class="fa-solid fa-clock"></i> Deadlines</button>
-                        <button type="button" class="trigger-btn" data-trigger="Workload"><i class="fa-solid fa-layer-group"></i> Workload</button>
-                        <button type="button" class="trigger-btn" data-trigger="Social"><i class="fa-solid fa-users"></i> Social</button>
-                        <button type="button" class="trigger-btn" data-trigger="Money"><i class="fa-solid fa-coins"></i> Money</button>
-                        <button type="button" class="trigger-btn" data-trigger="Sleep"><i class="fa-solid fa-moon"></i> Sleep</button>
-                        <button type="button" class="trigger-btn" data-trigger="Health"><i class="fa-solid fa-heart"></i> Health</button>
-                        <button type="button" class="trigger-btn" data-trigger="Loneliness"><i class="fa-solid fa-person"></i> Loneliness</button>
-                        <button type="button" class="trigger-btn" data-trigger="Family"><i class="fa-solid fa-house-chimney"></i> Family</button>
-                        <button type="button" class="trigger-btn" data-trigger="Other"><i class="fa-solid fa-ellipsis"></i> Other</button>
+                <!-- Triggers (collapsible) -->
+                <section class="collapsible-section">
+                    <button type="button" class="collapsible-toggle" id="triggersToggle">
+                        <span><i class="fa-solid fa-bolt"></i> What's causing it? <span class="optional">(optional)</span></span>
+                        <i class="fa-solid fa-chevron-down toggle-arrow"></i>
+                    </button>
+                    <section class="collapsible-body" id="triggersBody">
+                        <section class="trigger-picker" id="triggerPicker">
+                            <button type="button" class="trigger-btn" data-trigger="Exams"><i class="fa-solid fa-file-lines"></i> Exams</button>
+                            <button type="button" class="trigger-btn" data-trigger="Deadlines"><i class="fa-solid fa-clock"></i> Deadlines</button>
+                            <button type="button" class="trigger-btn" data-trigger="Workload"><i class="fa-solid fa-layer-group"></i> Workload</button>
+                            <button type="button" class="trigger-btn" data-trigger="Social"><i class="fa-solid fa-users"></i> Social</button>
+                            <button type="button" class="trigger-btn" data-trigger="Money"><i class="fa-solid fa-coins"></i> Money</button>
+                            <button type="button" class="trigger-btn" data-trigger="Sleep"><i class="fa-solid fa-moon"></i> Sleep</button>
+                            <button type="button" class="trigger-btn" data-trigger="Health"><i class="fa-solid fa-heart"></i> Health</button>
+                            <button type="button" class="trigger-btn" data-trigger="Loneliness"><i class="fa-solid fa-person"></i> Loneliness</button>
+                            <button type="button" class="trigger-btn" data-trigger="Family"><i class="fa-solid fa-house-chimney"></i> Family</button>
+                            <button type="button" class="trigger-btn" data-trigger="Other"><i class="fa-solid fa-ellipsis"></i> Other</button>
+                        </section>
                     </section>
                 </section>
 
-                <!-- Notes -->
-                <section class="form-group">
-                    <label for="checkinNotes" class="form-label">Anything on your mind? <span class="optional">(optional)</span></label>
-                    <textarea id="checkinNotes" rows="2" placeholder="A short reflection helps you spot patterns over time..." class="form-input form-textarea"></textarea>
+                <!-- Notes (collapsible) -->
+                <section class="collapsible-section">
+                    <button type="button" class="collapsible-toggle" id="notesToggle">
+                        <span><i class="fa-solid fa-pen"></i> Add a note <span class="optional">(optional)</span></span>
+                        <i class="fa-solid fa-chevron-down toggle-arrow"></i>
+                    </button>
+                    <section class="collapsible-body" id="notesBody">
+                        <textarea id="checkinNotes" rows="2" placeholder="A short reflection helps you spot patterns over time..." class="form-input form-textarea"></textarea>
+                    </section>
                 </section>
 
                 <button type="submit" class="btn-checkin"><i class="fa-solid fa-heart-pulse"></i> Log Check-in</button>
@@ -190,14 +184,6 @@
             <!-- Right Column -->
             <section class="right-col">
 
-                <!-- Affirmation Card -->
-                <article class="card affirmation-card">
-                    <span class="affirmation-glow" aria-hidden="true"></span>
-                    <span class="affirmation-icon">✨</span>
-                    <p class="affirmation-text" id="affirmationText">You're doing better than you think. One step at a time.</p>
-                    <button class="affirmation-refresh" id="refreshAffirmation" type="button" title="New affirmation"><i class="fa-solid fa-shuffle"></i></button>
-                </article>
-
                 <!-- Top Triggers -->
                 <article class="card triggers-summary-card">
                     <header class="card-header">
@@ -229,7 +215,7 @@
         <!-- ── History ── -->
         <section class="card history-card">
             <header class="card-header">
-                <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Check-in History</h2>
+                <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Check-in History <i class="fa-solid fa-chevron-down history-toggle-arrow"></i></h2>
                 <button class="btn-text" id="clearHistoryBtn" type="button">Clear All</button>
             </header>
             <section class="history-list" id="historyList">

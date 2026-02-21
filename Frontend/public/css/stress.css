@@ -114,6 +114,24 @@
 .mood-btn.active { border-color: #e11d48; background: rgba(225,29,72,0.06); }
 .mood-btn.active small { color: #e11d48; font-weight: 600; }
 
+/* Collapsible Sections */
+.collapsible-section { border-radius: 12px; border: 1.5px solid var(--border-color); overflow: hidden; transition: border-color 0.2s; }
+.collapsible-section.open { border-color: rgba(225,29,72,0.2); }
+.collapsible-toggle {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+    padding: 0.6rem 0.85rem; background: var(--body-bg); border: none;
+    font-family: 'Poppins', sans-serif; font-size: 0.8rem; font-weight: 600;
+    color: var(--text-secondary); cursor: pointer; transition: color 0.2s, background 0.2s;
+}
+.collapsible-toggle span { display: flex; align-items: center; gap: 0.4rem; }
+.collapsible-toggle span i { font-size: 0.7rem; color: #e11d48; }
+.collapsible-toggle:hover { color: var(--text-primary); }
+.collapsible-section.open .collapsible-toggle { color: var(--text-primary); }
+.toggle-arrow { font-size: 0.6rem; transition: transform 0.25s ease; }
+.collapsible-section.open .toggle-arrow { transform: rotate(180deg); }
+.collapsible-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; padding: 0 0.85rem; }
+.collapsible-section.open .collapsible-body { max-height: 300px; padding: 0.5rem 0.85rem 0.75rem; }
+
 /* Trigger Picker */
 .triggers-row { display: flex; flex-direction: column; gap: 0.5rem; }
 .trigger-picker { display: flex; flex-wrap: wrap; gap: 0.4rem; }
@@ -234,7 +252,7 @@
 .history-card { margin-bottom: 1.5rem; }
 .btn-text { background: none; border: none; color: #ef4444; font-family: 'Poppins', sans-serif; font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
 .btn-text:hover { opacity: 0.7; }
-.history-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 360px; overflow-y: auto; }
+.history-list { display: flex; flex-direction: column; gap: 0.5rem; }
 .history-list::-webkit-scrollbar { width: 3px; }
 .history-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 

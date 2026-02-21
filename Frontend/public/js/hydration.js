@@ -309,9 +309,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // =========================
-    // 5. RENDER ALL & INIT
+    // 5. SAME AS YESTERDAY
     // =========================
-    function renderAll() { renderStats(); renderChart(); renderHistory(); }
+    const sameYesterdayBtn = document.getElementById('sameYesterdayBtn');
+    const yesterdayCountEl = document.getElementById('yesterdayCount');
+
+    function getYesterdayGlasses() {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yStr = yesterday.toISOString().split('T')[0];
+        return entries.filter(e => e.date.split('T')[0] === yStr).reduce((sum, e) => sum + e.glasses, 0);
+    }
+
+    function updateSameYesterday() {
+        const yGlasses = getYesterdayGlasses();
+        if (yGlasses > 0 && sameYesterdayBtn) {
+            if (yesterdayCountEl) yesterdayCountEl.textContent = yGlasses;
+            sameYesterdayBtn.classList.remove('hidden');
+        } else if (sameYesterdayBtn) {
+            sameYesterdayBtn.classList.add('hidden');
+        }
+    }
+
+    sameYesterdayBtn?.addEventListener('click', () => {
+        const yGlasses = getYesterdayGlasses();
+        if (yGlasses > 0) addWater(yGlasses);
+    });
+
+    // =========================
+    // 6. RENDER ALL & INIT
+    // =========================
+    function renderAll() { renderStats(); renderChart(); renderHistory(); updateSameYesterday(); }
 
     async function init() {
         const data = await apiGet('/api/hydration?limit=200');

@@ -228,6 +228,12 @@
                     </button>
                 </section>
 
+                <!-- Same as yesterday -->
+                <button class="btn-same-yesterday hidden" id="sameYesterdayBtn" type="button">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Same as yesterday (<strong id="yesterdayCount">0</strong> glasses)</span>
+                </button>
+
                 <!-- Custom amount -->
                 <form class="custom-add" id="customForm">
                     <input type="number" id="customAmount" min="1" max="20" placeholder="Custom glasses" class="form-input">
@@ -280,6 +286,7 @@
                 <h2 class="card-title">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     Hydration History
+                    <i class="fa-solid fa-chevron-down history-toggle-arrow"></i>
                 </h2>
                 <button class="btn-text" id="clearHistoryBtn" type="button">Clear All</button>
             </header>
