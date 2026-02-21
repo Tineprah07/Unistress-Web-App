@@ -38,7 +38,7 @@
                 <button class="sidebar-footer-btn" id="settingsBtn" type="button" data-tooltip="Settings"><i class="fa-solid fa-gear nav-icon"></i><span class="nav-text">Settings</span></button>
                 <article class="settings-popover" id="settingsPopover" role="dialog" aria-label="Settings menu">
                     <header class="popover-header"><h3 class="popover-title">Settings</h3></header>
-                    <ul class="popover-list"><li class="popover-item"><span class="popover-label"><i class="fa-solid fa-circle-half-stroke"></i> Dark Mode</span><button class="theme-switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode"><span class="switch-knob"></span></button></li></ul>
+                    <ul class="popover-list"><li class="popover-item"><span class="popover-label"><i class="fa-solid fa-circle-half-stroke"></i> Dark Mode</span><button class="theme-switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode"><span class="switch-knob"></span></button></li><li class="popover-item"><span class="popover-label"><i class="fa-solid fa-bell"></i> Notifications</span><button class="theme-switch" id="notifSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle notifications"><span class="switch-knob"></span></button></li></ul>
                 </article>
             </section>
             <button class="sidebar-footer-btn logout-btn" id="logoutBtn" type="button" data-tooltip="Log Out"><i class="fa-solid fa-right-from-bracket nav-icon"></i><span class="nav-text">Log Out</span></button>
@@ -180,12 +180,12 @@
         </section>
 
         <!-- ── Completed Reminders ── -->
-        <section class="card completed-card">
-            <header class="card-header">
-                <h2 class="card-title"><i class="fa-solid fa-circle-check"></i> Completed</h2>
+        <section class="card completed-card" id="completedCard">
+            <header class="card-header completed-toggle">
+                <h2 class="card-title"><i class="fa-solid fa-circle-check"></i> Completed <i class="fa-solid fa-chevron-down completed-arrow"></i></h2>
                 <button class="btn-text" id="clearCompletedBtn" type="button">Clear All</button>
             </header>
-            <section class="reminder-list" id="completedList">
+            <section class="reminder-list completed-body" id="completedList">
                 <article class="list-empty" id="completedEmpty">
                     <i class="fa-solid fa-circle-check"></i>
                     <p>Completed reminders will appear here.</p>

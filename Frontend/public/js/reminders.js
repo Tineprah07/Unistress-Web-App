@@ -317,6 +317,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =============================
+    // COLLAPSIBLE COMPLETED
+    // =============================
+    const completedCard = document.getElementById('completedCard');
+    completedCard?.querySelector('.completed-toggle')?.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-text')) return;
+        completedCard.classList.toggle('open');
+    });
+
+    // =============================
     // RENDER ALL & INIT
     // =============================
     function renderAll() { renderStats(); renderLists(); }

@@ -156,6 +156,40 @@ document.addEventListener('DOMContentLoaded', () => {
     themeSwitch?.addEventListener('click', () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
 
     // =========================
+    // 4b. NOTIFICATION TOGGLE
+    // =========================
+    const notifSwitch = document.getElementById('notifSwitch');
+    const NOTIF_PREF = 'unistress_notif';
+
+    function updateNotifSwitch() {
+        if (!notifSwitch) return;
+        const on = 'Notification' in window && Notification.permission === 'granted' && localStorage.getItem(NOTIF_PREF) === 'on';
+        notifSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+
+    notifSwitch?.addEventListener('click', async () => {
+        const isOn = 'Notification' in window && Notification.permission === 'granted' && localStorage.getItem(NOTIF_PREF) === 'on';
+        if (isOn) {
+            localStorage.setItem(NOTIF_PREF, 'off');
+            updateNotifSwitch();
+            return;
+        }
+        if (!('Notification' in window)) { alert('Your browser does not support notifications.'); return; }
+        if (Notification.permission === 'denied') { alert('Notifications are blocked. Please allow notifications for this site in your browser settings, then try again.'); return; }
+        if (Notification.permission === 'default') { await Notification.requestPermission(); }
+        if (Notification.permission === 'granted') {
+            localStorage.setItem(NOTIF_PREF, 'on');
+            try {
+                const test = new Notification('Notifications enabled', { body: 'You will now receive reminder alerts.', tag: 'unistress-test' });
+                setTimeout(() => test.close(), 4000);
+            } catch (e) { /* ignore */ }
+        }
+        updateNotifSwitch();
+    });
+
+    updateNotifSwitch();
+
+    // =========================
     // 5. FETCH CURRENT USER
     // =========================
     async function loadUser() {
@@ -724,5 +758,47 @@ document.addEventListener('DOMContentLoaded', () => {
             header.closest('.history-card').classList.toggle('open');
         });
     });
+
+    // =========================
+    // GLOBAL NOTIFICATION CHECKER (runs on every page)
+    // =========================
+    const NOTIF_KEY = 'unistress_notif';
+    const notifiedIds = new Set();
+
+    function isNotifOn() {
+        return 'Notification' in window && Notification.permission === 'granted' && localStorage.getItem(NOTIF_KEY) === 'on';
+    }
+
+    async function checkGlobalReminders() {
+        if (!isNotifOn()) return;
+        try {
+            const data = await apiGet('/api/reminders');
+            if (!data || !Array.isArray(data)) return;
+            const now = new Date();
+            data.filter(r => !r.completed).forEach(r => {
+                const id = String(r.id);
+                if (notifiedIds.has(id)) return;
+                const dateStr = r.due_date ? r.due_date.split('T')[0] : '';
+                const timeStr = (r.due_time || '09:00');
+                const fullTime = timeStr.length === 5 ? timeStr + ':00' : timeStr;
+                const dueTime = new Date(dateStr + 'T' + fullTime);
+                const diff = now - dueTime;
+                if (diff >= 0 && diff < 120000) {
+                    try {
+                        const cat = r.category || 'Reminder';
+                        const notif = new Notification(cat + ' Reminder', {
+                            body: r.text || 'Time for your reminder!',
+                            tag: 'unistress-' + id
+                        });
+                        notif.onclick = () => { window.focus(); notif.close(); };
+                    } catch (e) { /* blocked */ }
+                    notifiedIds.add(id);
+                }
+            });
+        } catch (e) { /* network error, skip */ }
+    }
+
+    checkGlobalReminders();
+    setInterval(checkGlobalReminders, 30000);
 
 });
