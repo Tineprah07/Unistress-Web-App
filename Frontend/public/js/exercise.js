@@ -333,19 +333,78 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================
     // FITBIT INTEGRATION
     // =========================
+    var STEP_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    function getWeekRange() {
+        var now = new Date();
+        var dates = [];
+        for (var i = 6; i >= 0; i--) {
+            var d = new Date(now);
+            d.setDate(now.getDate() - i);
+            dates.push(d.toISOString().split('T')[0]);
+        }
+        return dates;
+    }
+
     async function loadFitbitActivity() {
         if (!window.Fitbit || !Fitbit.connected) return;
 
-        var activity = await Fitbit.getActivity();
-        if (!activity) return;
+        var weekDates = getWeekRange();
+        var startDate = weekDates[0];
+        var endDate = weekDates[6];
 
-        var fbSteps = document.getElementById('fbSteps');
-        var fbCalories = document.getElementById('fbCalories');
-        var fbActiveMin = document.getElementById('fbActiveMin');
+        // Fetch activity + 7-day steps in parallel
+        var results = await Promise.all([
+            Fitbit.getActivity(),
+            Fitbit.getSteps(startDate, endDate)
+        ]);
+        var activity = results[0];
+        var stepsData = results[1];
 
-        if (fbSteps) fbSteps.textContent = Fitbit.formatNumber(activity.steps);
-        if (fbCalories) fbCalories.textContent = Fitbit.formatNumber(activity.calories);
-        if (fbActiveMin) fbActiveMin.innerHTML = (activity.active_minutes || 0) + '<small>min</small>';
+        // ── Animated stat counters ──
+        if (activity) {
+            Fitbit.animateValue(document.getElementById('fbSteps'), activity.steps || 0, '');
+            Fitbit.animateValue(document.getElementById('fbCalories'), activity.calories || 0, '');
+            Fitbit.animateValue(document.getElementById('fbActiveMin'), activity.active_minutes || 0, '<small>min</small>');
+        }
+
+        // ── 7-Day Step Chart ──
+        var barsEl = document.getElementById('fbStepBars');
+        var labelsEl = document.getElementById('fbStepLabels');
+        var avgEl = document.getElementById('fbStepAvg');
+
+        if (barsEl && stepsData && Array.isArray(stepsData)) {
+            var todayStr = new Date().toISOString().split('T')[0];
+            var stepMap = {};
+            stepsData.forEach(function (d) { stepMap[d.date] = d.steps; });
+
+            var stepValues = weekDates.map(function (dt) { return stepMap[dt] || 0; });
+            var maxSteps = Math.max.apply(null, stepValues.concat([1000]));
+            var totalSteps = stepValues.reduce(function (s, v) { return s + v; }, 0);
+            var daysWithData = stepValues.filter(function (v) { return v > 0; }).length || 1;
+
+            if (avgEl) avgEl.textContent = 'Avg: ' + Fitbit.formatNumber(Math.round(totalSteps / daysWithData));
+
+            barsEl.innerHTML = weekDates.map(function (dt, i) {
+                var steps = stepValues[i];
+                var pct = steps > 0 ? Math.max((steps / maxSteps) * 100, 4) : 4;
+                var isToday = dt === todayStr;
+                var cls = steps === 0 ? ' empty' : (isToday ? ' today' : '');
+                var valText = steps > 0 ? (steps >= 1000 ? (steps / 1000).toFixed(1) + 'k' : steps) : '';
+                return '<div class="fitbit-step-bar-wrap">' +
+                    '<span class="fitbit-step-bar-value">' + valText + '</span>' +
+                    '<div class="fitbit-step-bar' + cls + '" style="height:' + pct + '%"></div>' +
+                    '</div>';
+            }).join('');
+
+            if (labelsEl) {
+                labelsEl.innerHTML = weekDates.map(function (dt) {
+                    var d = new Date(dt + 'T12:00:00');
+                    var isToday = dt === todayStr;
+                    return '<span' + (isToday ? ' class="today"' : '') + '>' + STEP_DAYS[d.getDay()] + '</span>';
+                }).join('');
+            }
+        }
 
         var syncLabel = document.getElementById('fbExerciseLastSync');
         if (syncLabel) syncLabel.textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

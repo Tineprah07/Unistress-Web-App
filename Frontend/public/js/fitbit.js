@@ -63,6 +63,13 @@
             catch (e) { return null; }
         },
 
+        async getSteps(start, end) {
+            try {
+                var r = await fetch('/api/fitbit/steps?start=' + start + '&end=' + end, { credentials: 'include' });
+                return r.ok ? r.json() : null;
+            } catch (e) { return null; }
+        },
+
         // ── Listener System ──
 
         onStatusChange: function (fn) {
@@ -174,6 +181,24 @@
 
         formatNumber: function (n) {
             return (n || 0).toLocaleString();
+        },
+
+        // Animated count-up for stat values
+        animateValue: function (el, target, suffix) {
+            if (!el || target === 0) { if (el) el.innerHTML = '0' + (suffix || ''); return; }
+            var duration = 900;
+            var startTime = performance.now();
+            var isFloat = String(target).includes('.');
+            var self = this;
+            function tick(now) {
+                var progress = Math.min((now - startTime) / duration, 1);
+                var ease = 1 - Math.pow(1 - progress, 3);
+                var current = target * ease;
+                if (isFloat) el.innerHTML = current.toFixed(1) + (suffix || '');
+                else el.innerHTML = self.formatNumber(Math.round(current)) + (suffix || '');
+                if (progress < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
         }
     };
 

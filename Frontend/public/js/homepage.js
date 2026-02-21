@@ -768,6 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadFitbitDashboard() {
         if (!window.Fitbit || !Fitbit.connected) return;
 
+        // ── Banner update ──
         var titleEl = document.getElementById('fbDashTitle');
         var metricsEl = document.getElementById('fbDashMetrics');
         var btnEl = document.getElementById('fbDashBtn');
@@ -778,6 +779,10 @@ document.addEventListener('DOMContentLoaded', () => {
             btnEl.onclick = function () { window.location.href = '/views/exercise.html'; };
         }
 
+        // ── Show Fitbit stat cards ──
+        var statCards = document.querySelector('.stat-cards');
+        if (statCards) statCards.classList.add('fitbit-connected');
+
         var results = await Promise.all([
             Fitbit.getActivity(),
             Fitbit.getSleep(),
@@ -787,19 +792,34 @@ document.addEventListener('DOMContentLoaded', () => {
         var sleep = results[1];
         var hr = results[2];
 
-        if (!metricsEl) return;
-        var html = '';
-        if (activity) {
-            html += '<span class="fitbit-dash-metric"><strong>' + Fitbit.formatNumber(activity.steps) + '</strong> steps</span>';
-            html += '<span class="fitbit-dash-metric"><strong>' + (activity.active_minutes || 0) + '</strong> active min</span>';
+        // ── Banner metrics ──
+        if (metricsEl) {
+            var html = '';
+            if (activity) {
+                html += '<span class="fitbit-dash-metric"><strong>' + Fitbit.formatNumber(activity.steps) + '</strong> steps</span>';
+                html += '<span class="fitbit-dash-metric"><strong>' + (activity.active_minutes || 0) + '</strong> active min</span>';
+            }
+            if (sleep && parseFloat(sleep.total_hours) > 0) {
+                html += '<span class="fitbit-dash-metric"><strong>' + sleep.total_hours + '</strong> hrs sleep</span>';
+            }
+            if (hr && hr.resting_heart_rate) {
+                html += '<span class="fitbit-dash-metric"><strong>' + hr.resting_heart_rate + '</strong> bpm resting</span>';
+            }
+            if (html) metricsEl.innerHTML = html;
         }
-        if (sleep && parseFloat(sleep.total_hours) > 0) {
-            html += '<span class="fitbit-dash-metric"><strong>' + sleep.total_hours + '</strong> hrs sleep</span>';
+
+        // ── Stat cards: Steps + Heart Rate with animated counters ──
+        var stepsEl = document.getElementById('statFitbitSteps');
+        var hrEl = document.getElementById('statFitbitHR');
+
+        if (activity && stepsEl) {
+            animateValue(stepsEl, activity.steps || 0, '');
         }
-        if (hr && hr.resting_heart_rate) {
-            html += '<span class="fitbit-dash-metric"><strong>' + hr.resting_heart_rate + '</strong> bpm resting</span>';
+        if (hr && hr.resting_heart_rate && hrEl) {
+            animateValue(hrEl, hr.resting_heart_rate, '<small>bpm</small>');
+        } else if (hrEl) {
+            hrEl.innerHTML = '--';
         }
-        if (html) metricsEl.innerHTML = html;
     }
 
     function resetFitbitDashboard() {
@@ -813,6 +833,15 @@ document.addEventListener('DOMContentLoaded', () => {
             btnEl.textContent = 'Connect';
             btnEl.onclick = function () { if (window.Fitbit) Fitbit.connect(); };
         }
+
+        // Hide Fitbit stat cards
+        var statCards = document.querySelector('.stat-cards');
+        if (statCards) statCards.classList.remove('fitbit-connected');
+
+        var stepsEl = document.getElementById('statFitbitSteps');
+        var hrEl = document.getElementById('statFitbitHR');
+        if (stepsEl) stepsEl.textContent = '--';
+        if (hrEl) hrEl.textContent = '--';
     }
 
     // Dashboard Fitbit button handler

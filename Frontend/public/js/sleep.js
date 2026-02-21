@@ -324,12 +324,10 @@ document.addEventListener('DOMContentLoaded', () => {
         var fbEff = document.getElementById('fbSleepEff');
         var fbBed = document.getElementById('fbTimeInBed');
 
-        if (fbHours) fbHours.innerHTML = (sleep.total_hours || '0') + '<small>hrs</small>';
-        if (fbEff) fbEff.innerHTML = (sleep.efficiency || 0) + '<small>%</small>';
-        if (fbBed) {
-            var bedHrs = sleep.time_in_bed ? (sleep.time_in_bed / 60).toFixed(1) : '0';
-            fbBed.innerHTML = bedHrs + '<small>hrs</small>';
-        }
+        Fitbit.animateValue(fbHours, parseFloat(sleep.total_hours) || 0, '<small>hrs</small>');
+        Fitbit.animateValue(fbEff, sleep.efficiency || 0, '<small>%</small>');
+        var bedHrs = sleep.time_in_bed ? parseFloat((sleep.time_in_bed / 60).toFixed(1)) : 0;
+        Fitbit.animateValue(fbBed, bedHrs, '<small>hrs</small>');
 
         // Sleep stages bar
         var stagesBar = document.getElementById('fbStagesBar');
