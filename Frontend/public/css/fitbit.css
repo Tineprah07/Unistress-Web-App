@@ -531,6 +531,10 @@
     background: rgba(0, 212, 170, 0.15);
     color: #00D4AA;
 }
+[data-theme="dark"] .stat-fitbit-hr .stat-icon {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
 
 /* ── Dashboard Banner: Connected State ── */
 .fitbit-dash-banner.connected .fitbit-dash-icon {
@@ -544,10 +548,6 @@
 }
 
 /* ── Responsive ── */
-@media (max-width: 1400px) {
-    .stat-cards.fitbit-connected { grid-template-columns: repeat(4, 1fr); }
-}
-
 @media (max-width: 768px) {
     .fitbit-stats { grid-template-columns: repeat(2, 1fr); }
     .fitbit-dash-banner { flex-wrap: wrap; }
@@ -557,7 +557,5 @@
 }
 
 @media (max-width: 480px) {
-    .fitbit-stats { grid-template-columns: 1fr 1fr; }
     .fitbit-card { padding: 1.1rem; }
-    .stat-cards.fitbit-connected { grid-template-columns: repeat(2, 1fr); }
 }

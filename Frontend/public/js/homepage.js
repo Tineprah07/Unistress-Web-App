@@ -783,14 +783,20 @@ document.addEventListener('DOMContentLoaded', () => {
         var statCards = document.querySelector('.stat-cards');
         if (statCards) statCards.classList.add('fitbit-connected');
 
-        var results = await Promise.all([
-            Fitbit.getActivity(),
-            Fitbit.getSleep(),
-            Fitbit.getHeartRate()
-        ]);
-        var activity = results[0];
-        var sleep = results[1];
-        var hr = results[2];
+        var activity, sleep, hr;
+        try {
+            var results = await Promise.all([
+                Fitbit.getActivity(),
+                Fitbit.getSleep(),
+                Fitbit.getHeartRate()
+            ]);
+            activity = results[0];
+            sleep = results[1];
+            hr = results[2];
+        } catch (e) {
+            console.warn('Fitbit dashboard fetch error:', e);
+            return;
+        }
 
         // ── Banner metrics ──
         if (metricsEl) {
@@ -858,8 +864,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (window.Fitbit) {
         Fitbit.onStatusChange(function (connected) {
-            if (connected) loadFitbitDashboard();
-            else resetFitbitDashboard();
+            try {
+                if (connected) loadFitbitDashboard();
+                else resetFitbitDashboard();
+            } catch (e) { console.warn('Fitbit dashboard error:', e); }
         });
     }
 

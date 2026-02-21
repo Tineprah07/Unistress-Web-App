@@ -355,7 +355,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (window.Fitbit) {
         Fitbit.onStatusChange(function (connected) {
-            if (connected) loadFitbitSleep();
+            try { if (connected) loadFitbitSleep(); }
+            catch (e) { console.warn('Fitbit sleep load error:', e); }
         });
     }
 

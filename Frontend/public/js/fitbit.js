@@ -165,7 +165,11 @@
             this._injectSettings();
 
             // Check connection status
-            await this.checkStatus();
+            try {
+                await this.checkStatus();
+            } catch (e) {
+                console.warn('Fitbit status check failed:', e);
+            }
             this._updateCards();
 
             this._initDone = true;

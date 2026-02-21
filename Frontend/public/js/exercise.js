@@ -354,12 +354,18 @@ document.addEventListener('DOMContentLoaded', () => {
         var endDate = weekDates[6];
 
         // Fetch activity + 7-day steps in parallel
-        var results = await Promise.all([
-            Fitbit.getActivity(),
-            Fitbit.getSteps(startDate, endDate)
-        ]);
-        var activity = results[0];
-        var stepsData = results[1];
+        var activity, stepsData;
+        try {
+            var results = await Promise.all([
+                Fitbit.getActivity(),
+                Fitbit.getSteps(startDate, endDate)
+            ]);
+            activity = results[0];
+            stepsData = results[1];
+        } catch (e) {
+            console.warn('Fitbit activity fetch error:', e);
+            return;
+        }
 
         // ── Animated stat counters ──
         if (activity) {
@@ -412,7 +418,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (window.Fitbit) {
         Fitbit.onStatusChange(function (connected) {
-            if (connected) loadFitbitActivity();
+            try { if (connected) loadFitbitActivity(); }
+            catch (e) { console.warn('Fitbit activity load error:', e); }
         });
     }
 
