@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/fitbit.css">
 </head>
 
 <body>
@@ -242,6 +243,18 @@
                 </article>
             </section>
 
+            <!-- ── Fitbit Dashboard Banner ── -->
+            <section class="fitbit-dash-banner" id="fitbitDashBanner">
+                <div class="fitbit-dash-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                <div class="fitbit-dash-info">
+                    <h3 id="fbDashTitle">Connect Fitbit</h3>
+                    <div class="fitbit-dash-metrics" id="fbDashMetrics">
+                        <span class="fitbit-dash-metric">Sync your activity, sleep, and heart rate data automatically.</span>
+                    </div>
+                </div>
+                <button class="fitbit-dash-connect-btn" id="fbDashBtn" type="button">Connect</button>
+            </section>
+
             <!-- ── Main 2-Column Grid ── -->
             <section class="dash-grid">
 
@@ -464,6 +477,7 @@
     </aside>
     <div class="profile-panel-overlay" id="profilePanelOverlay" aria-hidden="true"></div>
 
+    <script src="/js/fitbit.js"></script>
     <script src="/js/homepage.js"></script>
 
 </body>

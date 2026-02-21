@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/css/homepage.css">
     <link rel="stylesheet" href="/css/exercise.css">
+    <link rel="stylesheet" href="/css/fitbit.css">
 </head>
 
 <body>
@@ -193,6 +194,56 @@
             </article>
         </section>
 
+        <!-- ── Fitbit Activity Card ── -->
+        <section class="fitbit-card" id="fitbitExerciseCard">
+            <header class="fitbit-card-header">
+                <span class="fitbit-brand">
+                    <span class="fitbit-logo">F</span>
+                    <span class="fitbit-brand-text">Fitbit</span>
+                </span>
+                <span class="fitbit-badge">ACTIVITY</span>
+            </header>
+
+            <!-- Connect Prompt (visible when not connected) -->
+            <div class="fitbit-connect-prompt">
+                <div class="fitbit-connect-icon"><i class="fa-solid fa-person-running"></i></div>
+                <h3>Sync your Fitbit</h3>
+                <p>Connect your Fitbit to automatically track steps, calories, and active minutes alongside your manual logs.</p>
+                <button class="fitbit-connect-btn" type="button">
+                    <i class="fa-solid fa-link"></i> Connect Fitbit
+                </button>
+            </div>
+
+            <!-- Connected Data (visible when connected) -->
+            <div class="fitbit-data">
+                <div class="fitbit-stats">
+                    <div class="fitbit-stat">
+                        <div class="fitbit-stat-icon icon-steps"><i class="fa-solid fa-shoe-prints"></i></div>
+                        <p class="fitbit-stat-value" id="fbSteps">--</p>
+                        <p class="fitbit-stat-label">Steps</p>
+                    </div>
+                    <div class="fitbit-stat">
+                        <div class="fitbit-stat-icon icon-cal"><i class="fa-solid fa-fire-flame-curved"></i></div>
+                        <p class="fitbit-stat-value" id="fbCalories">--</p>
+                        <p class="fitbit-stat-label">Calories</p>
+                    </div>
+                    <div class="fitbit-stat">
+                        <div class="fitbit-stat-icon icon-active"><i class="fa-solid fa-bolt"></i></div>
+                        <p class="fitbit-stat-value" id="fbActiveMin">--<small>min</small></p>
+                        <p class="fitbit-stat-label">Active Minutes</p>
+                    </div>
+                </div>
+
+                <footer class="fitbit-card-footer">
+                    <button class="fitbit-sync-btn" type="button">
+                        <i class="fa-solid fa-arrows-rotate"></i> Sync
+                    </button>
+                    <span class="fitbit-last-sync" id="fbExerciseLastSync"></span>
+                    <button class="fitbit-disconnect-btn" type="button">Disconnect</button>
+                </footer>
+            </div>
+        </section>
+
         <!-- ── Main Grid: Form + Chart ── -->
         <section class="exercise-grid">
 
@@ -334,6 +385,7 @@
     </main>
 
     <script src="/js/homepage.js"></script>
+    <script src="/js/fitbit.js"></script>
     <script src="/js/exercise.js"></script>
 
 </body>

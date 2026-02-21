@@ -311,4 +311,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 
+    // =========================
+    // FITBIT INTEGRATION
+    // =========================
+    async function loadFitbitSleep() {
+        if (!window.Fitbit || !Fitbit.connected) return;
+
+        var sleep = await Fitbit.getSleep();
+        if (!sleep) return;
+
+        var fbHours = document.getElementById('fbSleepHours');
+        var fbEff = document.getElementById('fbSleepEff');
+        var fbBed = document.getElementById('fbTimeInBed');
+
+        if (fbHours) fbHours.innerHTML = (sleep.total_hours || '0') + '<small>hrs</small>';
+        if (fbEff) fbEff.innerHTML = (sleep.efficiency || 0) + '<small>%</small>';
+        if (fbBed) {
+            var bedHrs = sleep.time_in_bed ? (sleep.time_in_bed / 60).toFixed(1) : '0';
+            fbBed.innerHTML = bedHrs + '<small>hrs</small>';
+        }
+
+        // Sleep stages bar
+        var stagesBar = document.getElementById('fbStagesBar');
+        var stagesContainer = document.getElementById('fbSleepStages');
+        if (stagesBar && sleep.stages) {
+            var deep = sleep.stages.deep || 0;
+            var light = sleep.stages.light || 0;
+            var rem = sleep.stages.rem || 0;
+            var wake = sleep.stages.wake || 0;
+            var total = deep + light + rem + wake;
+
+            if (total > 0) {
+                stagesBar.innerHTML =
+                    '<span class="stage-segment stage-deep" style="width:' + ((deep / total) * 100).toFixed(1) + '%"></span>' +
+                    '<span class="stage-segment stage-light" style="width:' + ((light / total) * 100).toFixed(1) + '%"></span>' +
+                    '<span class="stage-segment stage-rem" style="width:' + ((rem / total) * 100).toFixed(1) + '%"></span>' +
+                    '<span class="stage-segment stage-awake" style="width:' + ((wake / total) * 100).toFixed(1) + '%"></span>';
+                if (stagesContainer) stagesContainer.style.display = 'block';
+            }
+        }
+
+        var syncLabel = document.getElementById('fbSleepLastSync');
+        if (syncLabel) syncLabel.textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    if (window.Fitbit) {
+        Fitbit.onStatusChange(function (connected) {
+            if (connected) loadFitbitSleep();
+        });
+    }
+
 });

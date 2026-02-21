@@ -763,6 +763,78 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboard().catch(() => { /* Not on dashboard page — safe to ignore */ });
 
     // =========================
+    // FITBIT DASHBOARD
+    // =========================
+    async function loadFitbitDashboard() {
+        if (!window.Fitbit || !Fitbit.connected) return;
+
+        var titleEl = document.getElementById('fbDashTitle');
+        var metricsEl = document.getElementById('fbDashMetrics');
+        var btnEl = document.getElementById('fbDashBtn');
+
+        if (titleEl) titleEl.textContent = 'Fitbit Activity Today';
+        if (btnEl) {
+            btnEl.textContent = 'View Details';
+            btnEl.onclick = function () { window.location.href = '/views/exercise.html'; };
+        }
+
+        var results = await Promise.all([
+            Fitbit.getActivity(),
+            Fitbit.getSleep(),
+            Fitbit.getHeartRate()
+        ]);
+        var activity = results[0];
+        var sleep = results[1];
+        var hr = results[2];
+
+        if (!metricsEl) return;
+        var html = '';
+        if (activity) {
+            html += '<span class="fitbit-dash-metric"><strong>' + Fitbit.formatNumber(activity.steps) + '</strong> steps</span>';
+            html += '<span class="fitbit-dash-metric"><strong>' + (activity.active_minutes || 0) + '</strong> active min</span>';
+        }
+        if (sleep && parseFloat(sleep.total_hours) > 0) {
+            html += '<span class="fitbit-dash-metric"><strong>' + sleep.total_hours + '</strong> hrs sleep</span>';
+        }
+        if (hr && hr.resting_heart_rate) {
+            html += '<span class="fitbit-dash-metric"><strong>' + hr.resting_heart_rate + '</strong> bpm resting</span>';
+        }
+        if (html) metricsEl.innerHTML = html;
+    }
+
+    function resetFitbitDashboard() {
+        var titleEl = document.getElementById('fbDashTitle');
+        var metricsEl = document.getElementById('fbDashMetrics');
+        var btnEl = document.getElementById('fbDashBtn');
+
+        if (titleEl) titleEl.textContent = 'Connect Fitbit';
+        if (metricsEl) metricsEl.innerHTML = '<span class="fitbit-dash-metric">Sync your activity, sleep, and heart rate data automatically.</span>';
+        if (btnEl) {
+            btnEl.textContent = 'Connect';
+            btnEl.onclick = function () { if (window.Fitbit) Fitbit.connect(); };
+        }
+    }
+
+    // Dashboard Fitbit button handler
+    var fbDashBtn = document.getElementById('fbDashBtn');
+    if (fbDashBtn) {
+        fbDashBtn.addEventListener('click', function () {
+            if (window.Fitbit && Fitbit.connected) {
+                window.location.href = '/views/exercise.html';
+            } else if (window.Fitbit) {
+                Fitbit.connect();
+            }
+        });
+    }
+
+    if (window.Fitbit) {
+        Fitbit.onStatusChange(function (connected) {
+            if (connected) loadFitbitDashboard();
+            else resetFitbitDashboard();
+        });
+    }
+
+    // =========================
     // COLLAPSIBLE HISTORY (shared across pages)
     // =========================
     document.querySelectorAll('.history-card .card-header').forEach(header => {

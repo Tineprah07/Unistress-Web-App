@@ -330,4 +330,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 
+    // =========================
+    // FITBIT INTEGRATION
+    // =========================
+    async function loadFitbitActivity() {
+        if (!window.Fitbit || !Fitbit.connected) return;
+
+        var activity = await Fitbit.getActivity();
+        if (!activity) return;
+
+        var fbSteps = document.getElementById('fbSteps');
+        var fbCalories = document.getElementById('fbCalories');
+        var fbActiveMin = document.getElementById('fbActiveMin');
+
+        if (fbSteps) fbSteps.textContent = Fitbit.formatNumber(activity.steps);
+        if (fbCalories) fbCalories.textContent = Fitbit.formatNumber(activity.calories);
+        if (fbActiveMin) fbActiveMin.innerHTML = (activity.active_minutes || 0) + '<small>min</small>';
+
+        var syncLabel = document.getElementById('fbExerciseLastSync');
+        if (syncLabel) syncLabel.textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    if (window.Fitbit) {
+        Fitbit.onStatusChange(function (connected) {
+            if (connected) loadFitbitActivity();
+        });
+    }
+
 });
