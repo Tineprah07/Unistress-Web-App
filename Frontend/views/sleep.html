@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/css/homepage.css">
     <link rel="stylesheet" href="/css/sleep.css">
-    <link rel="stylesheet" href="/css/fitbit.css">
 </head>
 
 <body>
@@ -115,67 +114,6 @@
                 <p class="stat-value" id="bestStreak">0</p>
                 <p class="stat-label">Best Streak</p>
             </article>
-        </section>
-
-        <!-- ── Fitbit Sleep Card ── -->
-        <section class="fitbit-card" id="fitbitSleepCard">
-            <header class="fitbit-card-header">
-                <span class="fitbit-brand">
-                    <span class="fitbit-logo">F</span>
-                    <span class="fitbit-brand-text">Fitbit</span>
-                </span>
-                <span class="fitbit-badge">SLEEP</span>
-            </header>
-
-            <!-- Connect Prompt -->
-            <div class="fitbit-connect-prompt">
-                <div class="fitbit-connect-icon"><i class="fa-solid fa-bed"></i></div>
-                <h3>Track sleep with Fitbit</h3>
-                <p>Connect your Fitbit to see detailed sleep stages, efficiency, and duration automatically.</p>
-                <button class="fitbit-connect-btn" type="button">
-                    <i class="fa-solid fa-link"></i> Connect Fitbit
-                </button>
-            </div>
-
-            <!-- Connected Data -->
-            <div class="fitbit-data">
-                <div class="fitbit-stats">
-                    <div class="fitbit-stat">
-                        <div class="fitbit-stat-icon icon-sleep"><i class="fa-solid fa-moon"></i></div>
-                        <p class="fitbit-stat-value" id="fbSleepHours">--<small>hrs</small></p>
-                        <p class="fitbit-stat-label">Sleep Duration</p>
-                    </div>
-                    <div class="fitbit-stat">
-                        <div class="fitbit-stat-icon icon-eff"><i class="fa-solid fa-gauge-high"></i></div>
-                        <p class="fitbit-stat-value" id="fbSleepEff">--<small>%</small></p>
-                        <p class="fitbit-stat-label">Efficiency</p>
-                    </div>
-                    <div class="fitbit-stat">
-                        <div class="fitbit-stat-icon icon-bed"><i class="fa-solid fa-bed"></i></div>
-                        <p class="fitbit-stat-value" id="fbTimeInBed">--<small>hrs</small></p>
-                        <p class="fitbit-stat-label">Time in Bed</p>
-                    </div>
-                </div>
-
-                <!-- Sleep Stages Bar -->
-                <div id="fbSleepStages" style="display:none">
-                    <div class="fitbit-stages-bar" id="fbStagesBar"></div>
-                    <div class="fitbit-stages-legend">
-                        <span class="stage-legend-item"><span class="stage-dot dot-deep"></span> Deep</span>
-                        <span class="stage-legend-item"><span class="stage-dot dot-light"></span> Light</span>
-                        <span class="stage-legend-item"><span class="stage-dot dot-rem"></span> REM</span>
-                        <span class="stage-legend-item"><span class="stage-dot dot-awake"></span> Awake</span>
-                    </div>
-                </div>
-
-                <footer class="fitbit-card-footer">
-                    <button class="fitbit-sync-btn" type="button">
-                        <i class="fa-solid fa-arrows-rotate"></i> Sync
-                    </button>
-                    <span class="fitbit-last-sync" id="fbSleepLastSync"></span>
-                    <button class="fitbit-disconnect-btn" type="button">Disconnect</button>
-                </footer>
-            </div>
         </section>
 
         <!-- ── Main Grid: Form + Chart ── -->
@@ -288,7 +226,6 @@
     </main>
 
     <script src="/js/homepage.js"></script>
-    <script src="/js/fitbit.js"></script>
     <script src="/js/sleep.js"></script>
 
 </body>
