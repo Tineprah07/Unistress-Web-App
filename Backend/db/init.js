@@ -19,6 +19,7 @@ async function createUsersTable() {
       google_id TEXT UNIQUE,
       handle VARCHAR(50),
       avatar_color VARCHAR(7) DEFAULT '#4e54c8',
+      notification_enabled BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
@@ -250,6 +251,11 @@ async function runInit() {
     await createNotesTable();
     await createRemindersTable();
     await createTasksTable();
+
+    // Migrations for existing databases
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_enabled BOOLEAN DEFAULT FALSE;
+    `);
 
     await pool.query("COMMIT");
     console.log("\n🎉 All UniStress tables initialised successfully!");

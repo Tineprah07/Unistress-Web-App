@@ -11,6 +11,8 @@ import {
   findUserByEmail,
   findUserById,
   updateUserProfile,
+  getNotificationPref,
+  updateNotificationPref,
 } from "../models/userModel.js";
 
 import crypto from "crypto";
@@ -157,6 +159,7 @@ export async function getCurrentUser(req, res) {
         email: dbUser.email,
         handle: dbUser.handle || null,
         avatar_color: dbUser.avatar_color || "#4e54c8",
+        notification_enabled: dbUser.notification_enabled || false,
       },
     });
   } catch (error) {
@@ -309,6 +312,41 @@ export async function resetPassword(req, res) {
   } catch (error) {
     await pool.query("ROLLBACK").catch(() => {});
     console.error("Error in resetPassword:", error);
+    return res.status(500).json({ error: "Something went wrong." });
+  }
+}
+
+// -------------------------
+// Get notification preference
+// GET /api/auth/notifications
+// -------------------------
+export async function getNotification(req, res) {
+  try {
+    const current = req.user || req.session?.user;
+    if (!current) return res.status(401).json({ error: "Not logged in." });
+
+    const enabled = await getNotificationPref(current.id);
+    return res.json({ notification_enabled: enabled });
+  } catch (error) {
+    console.error("Error in getNotification:", error);
+    return res.status(500).json({ error: "Something went wrong." });
+  }
+}
+
+// -------------------------
+// Update notification preference
+// PUT /api/auth/notifications
+// -------------------------
+export async function updateNotification(req, res) {
+  try {
+    const current = req.user || req.session?.user;
+    if (!current) return res.status(401).json({ error: "Not logged in." });
+
+    const enabled = Boolean(req.body?.enabled);
+    const result = await updateNotificationPref(current.id, enabled);
+    return res.json({ notification_enabled: result });
+  } catch (error) {
+    console.error("Error in updateNotification:", error);
     return res.status(500).json({ error: "Something went wrong." });
   }
 }

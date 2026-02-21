@@ -15,6 +15,8 @@ import {
   updateCurrentUserProfile,
   requestPasswordReset,
   resetPassword,
+  getNotification,
+  updateNotification,
 } from "../controllers/authController.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 
@@ -52,5 +54,9 @@ router.put("/profile", requireAuth, updateCurrentUserProfile);
 // Forgot + reset
 router.post("/forgot", requestPasswordReset);
 router.post("/reset", resetPassword);
+
+// Notification preference
+router.get("/notifications", requireAuth, getNotification);
+router.put("/notifications", requireAuth, updateNotification);
 
 export default router;

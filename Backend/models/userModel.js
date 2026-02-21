@@ -61,7 +61,7 @@ export async function findUserByGoogleId(googleId) {
 // Useful for auth/session checks later.
 export async function findUserById(id) {
   const query = `
-    SELECT id, name, email, handle, avatar_color, created_at
+    SELECT id, name, email, handle, avatar_color, notification_enabled, created_at
     FROM users
     WHERE id = $1;
   `;
@@ -90,4 +90,27 @@ export async function updateUserProfile(userId, { name, handle, avatarColor }) {
   `;
   const res = await pool.query(query, [userId, name, handle, avatarColor]);
   return res.rows[0] || null;
+}
+
+// -------------------------
+// Get notification preference
+// -------------------------
+export async function getNotificationPref(userId) {
+  const query = `SELECT notification_enabled FROM users WHERE id = $1;`;
+  const res = await pool.query(query, [userId]);
+  return res.rows[0]?.notification_enabled || false;
+}
+
+// -------------------------
+// Update notification preference
+// -------------------------
+export async function updateNotificationPref(userId, enabled) {
+  const query = `
+    UPDATE users
+    SET notification_enabled = $2
+    WHERE id = $1
+    RETURNING notification_enabled;
+  `;
+  const res = await pool.query(query, [userId, enabled]);
+  return res.rows[0]?.notification_enabled || false;
 }

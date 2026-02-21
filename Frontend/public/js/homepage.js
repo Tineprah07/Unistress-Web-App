@@ -156,35 +156,46 @@ document.addEventListener('DOMContentLoaded', () => {
     themeSwitch?.addEventListener('click', () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
 
     // =========================
-    // 4b. NOTIFICATION TOGGLE
+    // 4b. NOTIFICATION TOGGLE (persisted in database)
     // =========================
     const notifSwitch = document.getElementById('notifSwitch');
-    const NOTIF_PREF = 'unistress_notif';
+    let notifEnabledDB = false; // tracks the DB value
 
     function updateNotifSwitch() {
         if (!notifSwitch) return;
-        const on = 'Notification' in window && Notification.permission === 'granted' && localStorage.getItem(NOTIF_PREF) === 'on';
+        const on = 'Notification' in window && Notification.permission === 'granted' && notifEnabledDB;
         notifSwitch.setAttribute('aria-checked', on ? 'true' : 'false');
     }
 
+    async function saveNotifPref(enabled) {
+        try {
+            const res = await fetch('/api/auth/notifications', {
+                method: 'PUT', credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled })
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            notifEnabledDB = data.notification_enabled || false;
+        } catch { /* ignore */ }
+        updateNotifSwitch();
+    }
+
     notifSwitch?.addEventListener('click', async () => {
-        const isOn = 'Notification' in window && Notification.permission === 'granted' && localStorage.getItem(NOTIF_PREF) === 'on';
-        if (isOn) {
-            localStorage.setItem(NOTIF_PREF, 'off');
-            updateNotifSwitch();
+        if (notifEnabledDB && 'Notification' in window && Notification.permission === 'granted') {
+            await saveNotifPref(false);
             return;
         }
         if (!('Notification' in window)) { alert('Your browser does not support notifications.'); return; }
         if (Notification.permission === 'denied') { alert('Notifications are blocked. Please allow notifications for this site in your browser settings, then try again.'); return; }
         if (Notification.permission === 'default') { await Notification.requestPermission(); }
         if (Notification.permission === 'granted') {
-            localStorage.setItem(NOTIF_PREF, 'on');
+            await saveNotifPref(true);
             try {
                 const test = new Notification('Notifications enabled', { body: 'You will now receive reminder alerts.', tag: 'unistress-test' });
                 setTimeout(() => test.close(), 4000);
             } catch (e) { /* ignore */ }
         }
-        updateNotifSwitch();
     });
 
     updateNotifSwitch();
@@ -209,6 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     handle: data.user.handle || '',
                     avatar_color: data.user.avatar_color || '#4e54c8'
                 };
+                notifEnabledDB = data.user.notification_enabled || false;
+                updateNotifSwitch();
                 applyProfileData();
             }
         } catch (err) { console.error('Failed to fetch user:', err); }
@@ -522,8 +535,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const wb = Math.round(stressScore + exerciseScore + sleepScore + hydrationScore + focusScore);
         const circumference = 2 * Math.PI * 52;
 
-        $('wbScore').textContent = wb + '/100';
-        $('wbRingPct').textContent = wb + '%';
+        $('wbScore') && ($('wbScore').textContent = wb + '/100');
+        $('wbRingPct') && ($('wbRingPct').textContent = wb + '%');
 
         const ringFill = $('wbRingFill');
         if (ringFill) {
@@ -536,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (wb >= 60) msg = "Good progress! Keep up the healthy habits.";
         else if (wb >= 40) msg = "Not bad! A few more healthy activities will boost your score.";
         else if (wb > 0)  msg = "Getting started! Every small step counts.";
-        $('wbMessage').textContent = msg;
+        $('wbMessage') && ($('wbMessage').textContent = msg);
 
 
         // ──────── WEEKLY CHART ────────
@@ -665,11 +678,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const wAvgHydration = hydDays.size ? Math.round(wHydration.reduce((s,e) => s + (e.glasses||0), 0) / hydDays.size) : 0;
         const wTotalFocus = wFocus.reduce((s,e) => s + (e.duration_minutes||0), 0);
 
-        $('weekExercise').textContent = wTotalExercise + ' min';
-        $('weekStress').textContent = wAvgStress + '/10';
-        $('weekSleep').textContent = wAvgSleep + ' hrs';
-        $('weekHydration').textContent = wAvgHydration + ' glasses';
-        $('weekFocus').textContent = wTotalFocus + ' min';
+        $('weekExercise') && ($('weekExercise').textContent = wTotalExercise + ' min');
+        $('weekStress') && ($('weekStress').textContent = wAvgStress + '/10');
+        $('weekSleep') && ($('weekSleep').textContent = wAvgSleep + ' hrs');
+        $('weekHydration') && ($('weekHydration').textContent = wAvgHydration + ' glasses');
+        $('weekFocus') && ($('weekFocus').textContent = wTotalFocus + ' min');
 
 
         // ──────── SCHEDULED (from reminders API) ────────
@@ -747,7 +760,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    loadDashboard();
+    loadDashboard().catch(() => { /* Not on dashboard page — safe to ignore */ });
 
     // =========================
     // COLLAPSIBLE HISTORY (shared across pages)
@@ -762,43 +775,66 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================
     // GLOBAL NOTIFICATION CHECKER (runs on every page)
     // =========================
-    const NOTIF_KEY = 'unistress_notif';
-    const notifiedIds = new Set();
+    const notifiedIds = new Set(JSON.parse(localStorage.getItem('unistress_notified') || '[]'));
 
     function isNotifOn() {
-        return 'Notification' in window && Notification.permission === 'granted' && localStorage.getItem(NOTIF_KEY) === 'on';
+        return 'Notification' in window && Notification.permission === 'granted' && notifEnabledDB;
+    }
+
+    function saveNotifiedIds() {
+        const arr = [...notifiedIds].slice(-200);
+        localStorage.setItem('unistress_notified', JSON.stringify(arr));
     }
 
     async function checkGlobalReminders() {
         if (!isNotifOn()) return;
         try {
-            const data = await apiGet('/api/reminders');
+            const res = await fetch('/api/reminders', { credentials: 'include' });
+            if (!res.ok) return;
+            const data = await res.json();
             if (!data || !Array.isArray(data)) return;
+
             const now = new Date();
+
             data.filter(r => !r.completed).forEach(r => {
                 const id = String(r.id);
                 if (notifiedIds.has(id)) return;
+
                 const dateStr = r.due_date ? r.due_date.split('T')[0] : '';
+                if (!dateStr) return;
+
                 const timeStr = (r.due_time || '09:00');
                 const fullTime = timeStr.length === 5 ? timeStr + ':00' : timeStr;
-                const dueTime = new Date(dateStr + 'T' + fullTime);
-                const diff = now - dueTime;
-                if (diff >= 0 && diff < 120000) {
+
+                const [year, month, day] = dateStr.split('-').map(Number);
+                const [hours, mins, secs] = fullTime.split(':').map(Number);
+                const dueTime = new Date(year, month - 1, day, hours, mins, secs || 0);
+
+                const diffMs = now.getTime() - dueTime.getTime();
+
+                if (diffMs >= 0 && diffMs < 120000) {
                     try {
                         const cat = r.category || 'Reminder';
-                        const notif = new Notification(cat + ' Reminder', {
+                        const notif = new Notification('UniStress — ' + cat + ' Reminder', {
                             body: r.text || 'Time for your reminder!',
-                            tag: 'unistress-' + id
+                            icon: '/assets/images/stress.png',
+                            tag: 'unistress-' + id,
+                            requireInteraction: true
                         });
-                        notif.onclick = () => { window.focus(); notif.close(); };
-                    } catch (e) { /* blocked */ }
+                        notif.onclick = () => {
+                            window.focus();
+                            window.location.href = '/views/reminders.html';
+                            notif.close();
+                        };
+                    } catch (e) { /* notification blocked */ }
                     notifiedIds.add(id);
+                    saveNotifiedIds();
                 }
             });
         } catch (e) { /* network error, skip */ }
     }
 
     checkGlobalReminders();
-    setInterval(checkGlobalReminders, 30000);
+    setInterval(checkGlobalReminders, 15000);
 
 });
