@@ -27,6 +27,7 @@ import notesRoutes from "./routes/notesRoutes.js";
 import remindersRoutes from "./routes/remindersRoutes.js";
 import summaryRoutes from "./routes/summaryRoutes.js";
 import tasksRoutes from "./routes/tasksRoutes.js";
+import fitbitRoutes from "./routes/fitbitRoutes.js";
 
 // Load environment variables
 dotenv.config();
@@ -202,6 +203,17 @@ app.use("/api/notes",      requireAuth, notesRoutes);
 app.use("/api/reminders",  requireAuth, remindersRoutes);
 app.use("/api/summary",    requireAuth, summaryRoutes);
 app.use("/api/tasks", requireAuth, tasksRoutes);
+
+// Fitbit: callback is a browser redirect from Fitbit, so use ensureAuthenticated (redirects to login)
+app.get("/api/fitbit/callback", ensureAuthenticated, async (req, res) => {
+  // Manually import and call the callback controller
+  const { callback } = await import("./controllers/fitbitController.js");
+  req.currentUser = { id: (req.user || req.session.user).id };
+  return callback(req, res);
+});
+
+// All other Fitbit endpoints use requireAuth (returns 401 JSON)
+app.use("/api/fitbit", requireAuth, fitbitRoutes);
 
 // Database connection test
 app.get("/api/db-test", async (req, res) => {

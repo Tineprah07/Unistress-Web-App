@@ -252,6 +252,24 @@ async function runInit() {
     await createRemindersTable();
     await createTasksTable();
 
+    // Fitbit integration
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS fitbit_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        fitbit_user_id VARCHAR(50),
+        access_token TEXT NOT NULL,
+        refresh_token TEXT NOT NULL,
+        token_type VARCHAR(20) DEFAULT 'Bearer',
+        expires_at TIMESTAMP NOT NULL,
+        scope TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_fitbit_user ON fitbit_tokens(user_id);
+    `);
+    console.log("✅ fitbit_tokens table is ready");
+
     // Migrations for existing databases
     await pool.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_enabled BOOLEAN DEFAULT FALSE;
