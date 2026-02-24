@@ -455,41 +455,91 @@
     font-size: 0.68rem;
     color: var(--text-secondary);
 }
-.fitbit-step-bars {
-    display: flex;
-    align-items: flex-end;
-    gap: 6px;
-    height: 80px;
+/* ── Area Line Chart ── */
+.fitbit-area-chart-wrap {
+    position: relative;
+    height: 100px;
     margin-bottom: 0.35rem;
 }
-.fitbit-step-bar-wrap {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    height: 100%;
-    justify-content: flex-end;
-}
-.fitbit-step-bar-value {
-    font-size: 0.55rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-    white-space: nowrap;
-}
-.fitbit-step-bar {
+.fitbit-area-svg {
     width: 100%;
-    border-radius: 4px 4px 0 0;
-    background: linear-gradient(180deg, #00B0B9, #00D4AA);
-    min-height: 3px;
-    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    display: block;
 }
-.fitbit-step-bar.today {
-    background: linear-gradient(180deg, #00D4AA, #00B0B9);
-    box-shadow: 0 2px 8px rgba(0, 176, 185, 0.3);
+.fitbit-area-fill {
+    fill: url(#areaGrad);
+    opacity: 0.35;
+    transition: opacity 0.3s;
 }
-.fitbit-step-bar.empty {
+.fitbit-area-line {
+    fill: none;
+    stroke: #00B0B9;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 1px 3px rgba(0, 176, 185, 0.3));
+}
+[data-theme="dark"] .fitbit-area-line { stroke: #00D4AA; }
+
+.fitbit-area-dots {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.fitbit-area-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00B0B9;
+    border: 2px solid var(--card-bg);
+    transform: translate(-50%, -50%);
+    transition: transform 0.2s, box-shadow 0.2s;
+    pointer-events: auto;
+    cursor: pointer;
+    z-index: 2;
+}
+[data-theme="dark"] .fitbit-area-dot { background: #00D4AA; }
+.fitbit-area-dot:hover {
+    transform: translate(-50%, -50%) scale(1.4);
+    box-shadow: 0 0 10px rgba(0, 176, 185, 0.45);
+}
+.fitbit-area-dot.today {
+    background: #00D4AA;
+    box-shadow: 0 0 8px rgba(0, 212, 170, 0.4);
+}
+.fitbit-area-dot.empty {
     background: var(--border-color);
+    border-color: var(--card-bg);
+    box-shadow: none;
+}
+
+.fitbit-area-tooltips {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.fitbit-area-tooltip {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    font-size: 0.58rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    padding: 0 2px;
+    margin-top: -4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.fitbit-area-dot:hover + .fitbit-area-tooltip,
+.fitbit-area-tooltip.visible {
+    opacity: 1;
+}
+
+/* Grid lines behind the chart */
+.fitbit-area-grid {
+    stroke: var(--border-color);
+    stroke-width: 0.5;
     opacity: 0.5;
 }
 .fitbit-step-labels {
@@ -553,7 +603,7 @@
     .fitbit-dash-banner { flex-wrap: wrap; }
     .fitbit-dash-metrics { gap: 0.75rem; }
     .stat-cards.fitbit-connected { grid-template-columns: repeat(2, 1fr); }
-    .fitbit-step-bars { height: 60px; }
+    .fitbit-area-chart-wrap { height: 70px; }
 }
 
 @media (max-width: 480px) {

@@ -374,12 +374,14 @@ document.addEventListener('DOMContentLoaded', () => {
             Fitbit.animateValue(document.getElementById('fbActiveMin'), activity.active_minutes || 0, '<small>min</small>');
         }
 
-        // ── 7-Day Step Chart ──
-        var barsEl = document.getElementById('fbStepBars');
+        // ── 7-Day Step Area Chart ──
+        var svgEl = document.getElementById('fbAreaSvg');
+        var dotsEl = document.getElementById('fbAreaDots');
+        var tooltipsEl = document.getElementById('fbAreaTooltips');
         var labelsEl = document.getElementById('fbStepLabels');
         var avgEl = document.getElementById('fbStepAvg');
 
-        if (barsEl && stepsData && Array.isArray(stepsData)) {
+        if (svgEl && stepsData && Array.isArray(stepsData)) {
             var todayStr = new Date().toISOString().split('T')[0];
             var stepMap = {};
             stepsData.forEach(function (d) { stepMap[d.date] = d.steps; });
@@ -391,17 +393,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (avgEl) avgEl.textContent = 'Avg: ' + Fitbit.formatNumber(Math.round(totalSteps / daysWithData));
 
-            barsEl.innerHTML = weekDates.map(function (dt, i) {
-                var steps = stepValues[i];
-                var pct = steps > 0 ? Math.max((steps / maxSteps) * 100, 4) : 4;
-                var isToday = dt === todayStr;
-                var cls = steps === 0 ? ' empty' : (isToday ? ' today' : '');
-                var valText = steps > 0 ? (steps >= 1000 ? (steps / 1000).toFixed(1) + 'k' : steps) : '';
-                return '<div class="fitbit-step-bar-wrap">' +
-                    '<span class="fitbit-step-bar-value">' + valText + '</span>' +
-                    '<div class="fitbit-step-bar' + cls + '" style="height:' + pct + '%"></div>' +
-                    '</div>';
-            }).join('');
+            // Chart dimensions (matching viewBox 300x120)
+            var W = 300, H = 120, padX = 20, padY = 12;
+            var chartW = W - padX * 2;
+            var chartH = H - padY * 2;
+
+            // Calculate points
+            var points = stepValues.map(function (val, i) {
+                var x = padX + (i / 6) * chartW;
+                var y = padY + chartH - (val / maxSteps) * chartH;
+                return { x: x, y: y, val: val };
+            });
+
+            // Build smooth line path using cardinal spline
+            var linePath = 'M' + points.map(function (p) { return p.x + ',' + p.y; }).join(' L');
+
+            // Area path (line + close to bottom)
+            var areaPath = linePath + ' L' + points[points.length - 1].x + ',' + (H - padY) + ' L' + points[0].x + ',' + (H - padY) + ' Z';
+
+            // Grid lines
+            var gridLines = '';
+            for (var g = 0; g <= 3; g++) {
+                var gy = padY + (g / 3) * chartH;
+                gridLines += '<line class="fitbit-area-grid" x1="' + padX + '" y1="' + gy + '" x2="' + (W - padX) + '" y2="' + gy + '"/>';
+            }
+
+            svgEl.innerHTML =
+                '<defs>' +
+                    '<linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">' +
+                        '<stop offset="0%" stop-color="#00B0B9" stop-opacity="0.5"/>' +
+                        '<stop offset="100%" stop-color="#00D4AA" stop-opacity="0.05"/>' +
+                    '</linearGradient>' +
+                '</defs>' +
+                gridLines +
+                '<path class="fitbit-area-fill" d="' + areaPath + '"/>' +
+                '<path class="fitbit-area-line" d="' + linePath + '"/>';
+
+            // Dots and tooltips overlay
+            if (dotsEl) {
+                dotsEl.innerHTML = points.map(function (p, i) {
+                    var isToday = weekDates[i] === todayStr;
+                    var isEmpty = p.val === 0;
+                    var cls = 'fitbit-area-dot' + (isToday ? ' today' : '') + (isEmpty ? ' empty' : '');
+                    var left = (p.x / W * 100).toFixed(2) + '%';
+                    var top = (p.y / H * 100).toFixed(2) + '%';
+                    return '<span class="' + cls + '" style="left:' + left + ';top:' + top + '"></span>';
+                }).join('');
+            }
+
+            if (tooltipsEl) {
+                tooltipsEl.innerHTML = points.map(function (p, i) {
+                    var valText = p.val > 0 ? (p.val >= 1000 ? (p.val / 1000).toFixed(1) + 'k' : p.val) : '';
+                    var left = (p.x / W * 100).toFixed(2) + '%';
+                    var top = (p.y / H * 100).toFixed(2) + '%';
+                    var vis = p.val > 0 ? ' visible' : '';
+                    return '<span class="fitbit-area-tooltip' + vis + '" style="left:' + left + ';top:' + top + '">' + valText + '</span>';
+                }).join('');
+            }
 
             if (labelsEl) {
                 labelsEl.innerHTML = weekDates.map(function (dt) {

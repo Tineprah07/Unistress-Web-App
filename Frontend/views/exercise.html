@@ -234,13 +234,17 @@
                     </div>
                 </div>
 
-                <!-- 7-Day Steps Chart -->
+                <!-- 7-Day Steps Area Chart -->
                 <div class="fitbit-step-chart" id="fbStepChart">
                     <div class="fitbit-step-chart-header">
                         <span class="fitbit-step-chart-title">7-Day Steps</span>
                         <span class="fitbit-step-chart-avg" id="fbStepAvg">Avg: --</span>
                     </div>
-                    <div class="fitbit-step-bars" id="fbStepBars"></div>
+                    <div class="fitbit-area-chart-wrap">
+                        <svg class="fitbit-area-svg" id="fbAreaSvg" viewBox="0 0 300 120" preserveAspectRatio="none"></svg>
+                        <div class="fitbit-area-dots" id="fbAreaDots"></div>
+                        <div class="fitbit-area-tooltips" id="fbAreaTooltips"></div>
+                    </div>
                     <div class="fitbit-step-labels" id="fbStepLabels"></div>
                 </div>
 
