@@ -9,8 +9,25 @@ import { getFitbitTokens, updateFitbitTokens } from "../models/fitbitModel.js";
 const FITBIT_TOKEN_URL = "https://api.fitbit.com/oauth2/token";
 const FITBIT_API_BASE = "https://api.fitbit.com";
 
-// Refresh an expired access token using the refresh token
-async function refreshAccessToken(userId, refreshToken) {
+// In-flight refresh promises keyed by userId — prevents concurrent refresh races
+const pendingRefreshes = new Map();
+
+// Refresh an expired access token using the refresh token.
+// If a refresh is already in-flight for this user, reuse that promise.
+function refreshAccessToken(userId, refreshToken) {
+  if (pendingRefreshes.has(userId)) {
+    return pendingRefreshes.get(userId);
+  }
+
+  const promise = _doRefresh(userId, refreshToken).finally(() => {
+    pendingRefreshes.delete(userId);
+  });
+
+  pendingRefreshes.set(userId, promise);
+  return promise;
+}
+
+async function _doRefresh(userId, refreshToken) {
   const clientId = process.env.FITBIT_CLIENT_ID;
   const clientSecret = process.env.FITBIT_CLIENT_SECRET;
   const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
