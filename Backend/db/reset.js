@@ -11,6 +11,7 @@ async function resetDatabase() {
     console.log("⚠️  Dropping all UniStress tables...\n");
     await pool.query(`
       DROP TABLE IF EXISTS password_reset_tokens CASCADE;
+      DROP TABLE IF EXISTS fitbit_tokens CASCADE;
       DROP TABLE IF EXISTS stress_checkins CASCADE;
       DROP TABLE IF EXISTS exercise_logs CASCADE;
       DROP TABLE IF EXISTS sleep_logs CASCADE;

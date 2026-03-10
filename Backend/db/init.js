@@ -66,6 +66,7 @@ async function createStressTable() {
       mood_emoji VARCHAR(10),
       triggers TEXT[] DEFAULT '{}',
       notes TEXT,
+      heart_rate_bpm INTEGER,
       created_at TIMESTAMP DEFAULT NOW()
     );
     CREATE INDEX IF NOT EXISTS idx_stress_user ON stress_checkins(user_id);
@@ -274,12 +275,6 @@ async function runInit() {
     await pool.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_enabled BOOLEAN DEFAULT FALSE;
     `);
-
-    // Add heart rate column to stress_checkins (Fitbit integration)
-    await pool.query(`
-      ALTER TABLE stress_checkins ADD COLUMN IF NOT EXISTS heart_rate_bpm INTEGER;
-    `);
-    console.log("✅ heart_rate_bpm migration applied");
 
     await pool.query("COMMIT");
     console.log("\n🎉 All UniStress tables initialised successfully!");

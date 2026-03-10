@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function apiPost(url, body) {
         const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
         if (res.status === 401) { window.location.href = '/views/auth.html'; return null; }
+        if (!res.ok) { const err = await res.json().catch(() => ({})); return { error: err.error || 'Request failed' }; }
         return res.json();
     }
     async function apiDelete(url) {
@@ -232,11 +233,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Silently attach heart rate if Fitbit is connected
         if (fitbitConnected) {
             try {
-                const hrData = await apiGet('/api/fitbit/heart-rate');
-                if (hrData && hrData.resting_heart_rate) {
-                    body.heart_rate_bpm = hrData.resting_heart_rate;
-                    currentHeartRate = hrData.resting_heart_rate;
-                    renderHeartRate();
+                const hrRes = await fetch('/api/fitbit/heart-rate', { credentials: 'include' });
+                if (hrRes.ok) {
+                    const hrData = await hrRes.json();
+                    if (hrData && hrData.resting_heart_rate) {
+                        body.heart_rate_bpm = hrData.resting_heart_rate;
+                        currentHeartRate = hrData.resting_heart_rate;
+                        renderHeartRate();
+                    }
                 }
             } catch (e) { /* graceful fallback — submit without HR */ }
         }
@@ -275,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const d = new Date(e.date); const now = new Date();
             return (now - d) / 86400000 <= 7;
         });
-        const avg = week.length > 0 ? (week.reduce((s, e) => s + e.stress, 0) / week.length).toFixed(1) : 0;
+        const avg = week.length > 0 ? (week.reduce((s, e) => s + wellnessScore(e.stress, e.heartRate), 0) / week.length).toFixed(1) : 0;
         if (avgStressEl) avgStressEl.textContent = avg;
 
         // Hero ring (today check-ins vs goal 3)
@@ -401,11 +405,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const todayDate = now.getDate();
 
         const dayAvg = {};
+        const dayHrAvg = {};
         for (let d = 1; d <= daysInMonth; d++) {
             const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const dayEntries = entries.filter(e => e.date.split('T')[0] === ds);
             if (dayEntries.length > 0) {
                 dayAvg[d] = dayEntries.reduce((s, e) => s + wellnessScore(e.stress, e.heartRate), 0) / dayEntries.length;
+                const hrEntries = dayEntries.filter(e => e.heartRate);
+                if (hrEntries.length > 0) {
+                    dayHrAvg[d] = Math.round(hrEntries.reduce((s, e) => s + e.heartRate, 0) / hrEntries.length);
+                }
             }
         }
 
@@ -420,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     else if (dayAvg[d] <= 6) level = ' level-2';
                     else level = ' level-3';
                 }
-                cells += `<span class="cal-cell${level}${isToday ? ' today' : ''}" title="${d} ${MONTHS[month]}${dayAvg[d] !== undefined ? ' — Stress: ' + dayAvg[d].toFixed(1) : ''}">${d}</span>`;
+                cells += `<span class="cal-cell${level}${isToday ? ' today' : ''}" title="${d} ${MONTHS[month]}${dayAvg[d] !== undefined ? ' — Wellness: ' + dayAvg[d].toFixed(1) : ''}${dayHrAvg[d] ? ' | HR: ' + dayHrAvg[d] + ' bpm' : ''}">${d}</span>`;
             }
             moodCalendar.innerHTML = cells;
         }
