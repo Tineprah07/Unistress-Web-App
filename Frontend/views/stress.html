@@ -97,30 +97,44 @@
             </article>
         </section>
 
-        <!-- ── Heart Rate Card ── -->
-        <section class="card hr-card" id="hrCard">
-            <header class="card-header">
-                <h2 class="card-title"><i class="fa-solid fa-heart-pulse"></i> Heart Rate</h2>
-                <span class="hr-source">via Fitbit</span>
+        <!-- ── Fitbit Heart Rate Card ── -->
+        <section class="fitbit-card" id="hrCard">
+            <header class="fitbit-card-header">
+                <span class="fitbit-brand">
+                    <span class="fitbit-logo">F</span>
+                    <span class="fitbit-brand-text">Fitbit</span>
+                </span>
+                <span class="fitbit-badge">HEART RATE</span>
             </header>
-            <!-- Shown when Fitbit is connected -->
-            <section class="hr-connected hidden" id="hrConnected">
-                <figure class="hr-display">
-                    <span class="hr-pulse-icon" id="hrPulseIcon"><i class="fa-solid fa-heart-pulse"></i></span>
-                    <section class="hr-reading">
-                        <span class="hr-bpm" id="hrBpm">--</span>
-                        <span class="hr-unit">BPM</span>
-                    </section>
-                    <span class="hr-zone-badge" id="hrZoneBadge">--</span>
-                </figure>
-                <p class="hr-label" id="hrLabel">Resting heart rate</p>
-            </section>
-            <!-- Shown when Fitbit is NOT connected -->
-            <section class="hr-disconnected" id="hrDisconnected">
-                <i class="fa-solid fa-link-slash hr-disconnect-icon"></i>
+
+            <!-- Connect Prompt (visible when not connected) -->
+            <div class="fitbit-connect-prompt">
+                <div class="fitbit-connect-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                <h3>Track your heart rate</h3>
                 <p>Connect your Fitbit to see heart rate data and improve stress insights.</p>
-                <button type="button" class="btn-connect-fitbit fitbit-connect-btn"><i class="fa-solid fa-link"></i> Connect Fitbit</button>
-            </section>
+                <button class="fitbit-connect-btn" type="button">
+                    <i class="fa-solid fa-link"></i> Connect Fitbit
+                </button>
+            </div>
+
+            <!-- Connected Data (visible when connected) -->
+            <div class="fitbit-data">
+                <div class="fitbit-stats" style="grid-template-columns: 1fr;">
+                    <div class="fitbit-stat" id="hrStatCard">
+                        <div class="fitbit-stat-icon icon-hr" id="hrPulseIcon"><i class="fa-solid fa-heart-pulse"></i></div>
+                        <p class="fitbit-stat-value" id="hrBpm">--<small> BPM</small></p>
+                        <p class="fitbit-stat-label" id="hrLabel">Resting heart rate</p>
+                        <span class="hr-zone-badge" id="hrZoneBadge" style="margin-top:0.4rem;display:inline-block;">--</span>
+                    </div>
+                </div>
+                <footer class="fitbit-card-footer">
+                    <button class="fitbit-sync-btn" type="button">
+                        <i class="fa-solid fa-arrows-rotate"></i> Sync
+                    </button>
+                    <span class="fitbit-last-sync" id="hrLastSync"></span>
+                    <button class="fitbit-disconnect-btn" type="button">Disconnect</button>
+                </footer>
+            </div>
         </section>
 
         <!-- ── Check-in Card ── -->

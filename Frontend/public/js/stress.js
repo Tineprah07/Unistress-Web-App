@@ -61,12 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
     // Heart rate elements
-    const hrConnected = document.getElementById('hrConnected');
-    const hrDisconnected = document.getElementById('hrDisconnected');
+    const hrCard = document.getElementById('hrCard');
     const hrBpm = document.getElementById('hrBpm');
     const hrZoneBadge = document.getElementById('hrZoneBadge');
     const hrPulseIcon = document.getElementById('hrPulseIcon');
     const hrLabel = document.getElementById('hrLabel');
+    const hrLastSync = document.getElementById('hrLastSync');
 
     const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const DAY_SHORT = ['S','M','T','W','T','F','S'];
@@ -131,29 +131,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update the heart rate display card
     function renderHeartRate() {
-        if (!hrConnected || !hrDisconnected) return;
+        if (!hrCard) return;
+
+        // Toggle connected class (fitbit.css handles show/hide)
+        hrCard.classList.toggle('connected', fitbitConnected);
 
         if (fitbitConnected && currentHeartRate) {
-            hrConnected.classList.remove('hidden');
-            hrDisconnected.classList.add('hidden');
-
             const zone = hrZone(currentHeartRate);
-            hrBpm.textContent = currentHeartRate;
-            hrZoneBadge.textContent = hrZoneLabel(zone);
-            hrZoneBadge.className = 'hr-zone-badge zone-' + zone;
-            hrPulseIcon.className = 'hr-pulse-icon hr-' + zone;
-            hrLabel.textContent = 'Resting heart rate';
+            if (hrBpm) hrBpm.innerHTML = currentHeartRate + '<small> BPM</small>';
+            if (hrZoneBadge) { hrZoneBadge.textContent = hrZoneLabel(zone); hrZoneBadge.className = 'hr-zone-badge zone-' + zone; }
+            if (hrPulseIcon) hrPulseIcon.className = 'fitbit-stat-icon icon-hr hr-' + zone;
+            if (hrLabel) hrLabel.textContent = 'Resting heart rate';
+            if (hrLastSync) hrLastSync.textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         } else if (fitbitConnected) {
-            hrConnected.classList.remove('hidden');
-            hrDisconnected.classList.add('hidden');
-            hrBpm.textContent = '--';
-            hrZoneBadge.textContent = 'No data';
-            hrZoneBadge.className = 'hr-zone-badge';
-            hrPulseIcon.className = 'hr-pulse-icon';
-            hrLabel.textContent = 'Heart rate unavailable right now';
-        } else {
-            hrConnected.classList.add('hidden');
-            hrDisconnected.classList.remove('hidden');
+            if (hrBpm) hrBpm.innerHTML = '--<small> BPM</small>';
+            if (hrZoneBadge) { hrZoneBadge.textContent = 'No data'; hrZoneBadge.className = 'hr-zone-badge'; }
+            if (hrPulseIcon) hrPulseIcon.className = 'fitbit-stat-icon icon-hr';
+            if (hrLabel) hrLabel.textContent = 'Heart rate unavailable right now';
         }
     }
 
@@ -522,6 +516,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Load Fitbit heart rate in background (non-blocking)
         loadFitbitHeartRate();
+
+        // Listen for Fitbit connect/disconnect events (instant UI update)
+        if (window.Fitbit) {
+            Fitbit.onStatusChange(function (connected) {
+                fitbitConnected = connected;
+                if (connected) {
+                    loadFitbitHeartRate();
+                } else {
+                    currentHeartRate = null;
+                    renderHeartRate();
+                }
+            });
+        }
     }
 
     init();
