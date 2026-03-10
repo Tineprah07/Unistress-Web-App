@@ -12,6 +12,38 @@ const FITBIT_API_BASE = "https://api.fitbit.com";
 // In-flight refresh promises keyed by userId — prevents concurrent refresh races
 const pendingRefreshes = new Map();
 
+// ── Response cache ──
+// Caches Fitbit API responses per user+endpoint for a short window
+// to avoid burning through the 150 requests/hour rate limit.
+const responseCache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function cacheKey(userId, endpoint) {
+  return `${userId}::${endpoint}`;
+}
+
+function getCached(userId, endpoint) {
+  const key = cacheKey(userId, endpoint);
+  const entry = responseCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > CACHE_TTL_MS) {
+    responseCache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCache(userId, endpoint, data) {
+  responseCache.set(cacheKey(userId, endpoint), { data, ts: Date.now() });
+}
+
+// Clear cache for a user (e.g. on disconnect)
+export function clearFitbitCache(userId) {
+  for (const key of responseCache.keys()) {
+    if (key.startsWith(`${userId}::`)) responseCache.delete(key);
+  }
+}
+
 // Refresh an expired access token using the refresh token.
 // If a refresh is already in-flight for this user, reuse that promise.
 function refreshAccessToken(userId, refreshToken) {
@@ -64,8 +96,15 @@ async function _doRefresh(userId, refreshToken) {
 }
 
 // Make an authenticated request to the Fitbit API
-// Automatically refreshes the token if expired
-export async function fitbitApiRequest(userId, endpoint) {
+// Automatically refreshes the token if expired.
+// Uses an in-memory cache to avoid hitting Fitbit's 150 req/hr rate limit.
+export async function fitbitApiRequest(userId, endpoint, { bypassCache = false } = {}) {
+  // Check cache first
+  if (!bypassCache) {
+    const cached = getCached(userId, endpoint);
+    if (cached) return cached;
+  }
+
   const tokens = await getFitbitTokens(userId);
   if (!tokens) throw new Error("Fitbit not connected");
 
@@ -98,10 +137,21 @@ export async function fitbitApiRequest(userId, endpoint) {
         },
       });
       if (!retry.ok) throw new Error(`Fitbit API error: ${retry.status}`);
-      return retry.json();
+      const data = await retry.json();
+      setCache(userId, endpoint, data);
+      return data;
     } catch (e) {
       throw new Error("Fitbit authorisation expired. Please reconnect.");
     }
+  }
+
+  if (res.status === 429) {
+    // Rate limited — return cached data if available, otherwise throw
+    const stale = getCached(userId, endpoint);
+    if (stale) return stale;
+    const retryAfter = res.headers.get("Retry-After") || "unknown";
+    console.warn(`Fitbit rate limited (429). Retry-After: ${retryAfter}s`);
+    throw new Error("Fitbit rate limit reached. Please wait a few minutes.");
   }
 
   if (!res.ok) {
@@ -110,7 +160,9 @@ export async function fitbitApiRequest(userId, endpoint) {
     throw new Error(`Fitbit API error: ${res.status}`);
   }
 
-  return res.json();
+  const data = await res.json();
+  setCache(userId, endpoint, data);
+  return data;
 }
 
 // Helper: Get today's date in YYYY-MM-DD format

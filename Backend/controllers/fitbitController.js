@@ -5,7 +5,7 @@
 // and fetching activity/sleep/steps data from Fitbit Web API.
 
 import * as FitbitModel from "../models/fitbitModel.js";
-import { fitbitApiRequest, todayStr } from "../utils/fitbitApi.js";
+import { fitbitApiRequest, todayStr, clearFitbitCache } from "../utils/fitbitApi.js";
 
 const FITBIT_AUTH_URL = "https://www.fitbit.com/oauth2/authorize";
 const FITBIT_TOKEN_URL = "https://api.fitbit.com/oauth2/token";
@@ -18,7 +18,11 @@ export function connect(req, res) {
   const redirectUri = process.env.FITBIT_REDIRECT_URI;
   const scope = "activity sleep heartrate profile";
 
-  const authUrl = `${FITBIT_AUTH_URL}?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&expires_in=604800`;
+  // Encode the return page so we can redirect back after OAuth
+  const returnTo = req.query.return_to || "/views/exercise.html";
+  const state = Buffer.from(JSON.stringify({ return_to: returnTo })).toString("base64url");
+
+  const authUrl = `${FITBIT_AUTH_URL}?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&expires_in=604800&state=${encodeURIComponent(state)}`;
 
   res.json({ url: authUrl });
 }
@@ -27,8 +31,17 @@ export function connect(req, res) {
 // OAuth: Handle callback from Fitbit
 // =============================
 export async function callback(req, res) {
-  const { code } = req.query;
+  const { code, state } = req.query;
   if (!code) return res.status(400).send("Missing authorisation code.");
+
+  // Decode the return page from OAuth state
+  let returnTo = "/views/exercise.html";
+  if (state) {
+    try {
+      const parsed = JSON.parse(Buffer.from(state, "base64url").toString());
+      if (parsed.return_to && parsed.return_to.startsWith("/")) returnTo = parsed.return_to;
+    } catch (e) { /* fall back to default */ }
+  }
 
   const userId = req.currentUser?.id || req.session?.user?.id || req.user?.id;
   if (!userId) return res.redirect("/views/auth.html");
@@ -73,8 +86,8 @@ export async function callback(req, res) {
       scope: data.scope,
     });
 
-    // Redirect back to the app (exercise page or homepage)
-    res.redirect("/views/exercise.html?fitbit=connected");
+    // Redirect back to the page the user connected from
+    res.redirect(returnTo + "?fitbit=connected");
 
   } catch (err) {
     console.error("Fitbit callback error:", err);
@@ -87,6 +100,7 @@ export async function callback(req, res) {
 // =============================
 export async function disconnect(req, res) {
   try {
+    clearFitbitCache(req.currentUser.id);
     await FitbitModel.deleteFitbitTokens(req.currentUser.id);
     res.json({ message: "Fitbit disconnected." });
   } catch (err) {
@@ -117,8 +131,9 @@ export async function status(req, res) {
 export async function getActivityToday(req, res) {
   try {
     const date = req.query.date || todayStr();
-    const data = await fitbitApiRequest(req.currentUser.id, `/1/user/-/activities/date/${date}.json`);
-    
+    const bypassCache = req.query.refresh === "true";
+    const data = await fitbitApiRequest(req.currentUser.id, `/1/user/-/activities/date/${date}.json`, { bypassCache });
+
     res.json({
       date,
       steps: data.summary?.steps || 0,
@@ -130,7 +145,8 @@ export async function getActivityToday(req, res) {
     });
   } catch (err) {
     console.error("Fitbit activity error:", err);
-    res.status(err.message.includes("not connected") ? 400 : 500).json({ error: err.message });
+    const status = err.message.includes("not connected") ? 400 : err.message.includes("rate limit") ? 429 : 500;
+    res.status(status).json({ error: err.message });
   }
 }
 
@@ -140,7 +156,8 @@ export async function getActivityToday(req, res) {
 export async function getSleepToday(req, res) {
   try {
     const date = req.query.date || todayStr();
-    const data = await fitbitApiRequest(req.currentUser.id, `/1.2/user/-/sleep/date/${date}.json`);
+    const bypassCache = req.query.refresh === "true";
+    const data = await fitbitApiRequest(req.currentUser.id, `/1.2/user/-/sleep/date/${date}.json`, { bypassCache });
 
     const mainSleep = data.sleep?.find(s => s.isMainSleep) || data.sleep?.[0];
 
@@ -156,7 +173,8 @@ export async function getSleepToday(req, res) {
     });
   } catch (err) {
     console.error("Fitbit sleep error:", err);
-    res.status(err.message.includes("not connected") ? 400 : 500).json({ error: err.message });
+    const status = err.message.includes("not connected") ? 400 : err.message.includes("rate limit") ? 429 : 500;
+    res.status(status).json({ error: err.message });
   }
 }
 
@@ -167,7 +185,8 @@ export async function getStepsRange(req, res) {
   try {
     const start = req.query.start || todayStr();
     const end = req.query.end || todayStr();
-    const data = await fitbitApiRequest(req.currentUser.id, `/1/user/-/activities/steps/date/${start}/${end}.json`);
+    const bypassCache = req.query.refresh === "true";
+    const data = await fitbitApiRequest(req.currentUser.id, `/1/user/-/activities/steps/date/${start}/${end}.json`, { bypassCache });
 
     const steps = (data["activities-steps"] || []).map(d => ({
       date: d.dateTime,
@@ -177,7 +196,8 @@ export async function getStepsRange(req, res) {
     res.json(steps);
   } catch (err) {
     console.error("Fitbit steps range error:", err);
-    res.status(err.message.includes("not connected") ? 400 : 500).json({ error: err.message });
+    const status = err.message.includes("not connected") ? 400 : err.message.includes("rate limit") ? 429 : 500;
+    res.status(status).json({ error: err.message });
   }
 }
 
@@ -187,7 +207,8 @@ export async function getStepsRange(req, res) {
 export async function getHeartRate(req, res) {
   try {
     const date = req.query.date || todayStr();
-    const data = await fitbitApiRequest(req.currentUser.id, `/1/user/-/activities/heart/date/${date}/1d.json`);
+    const bypassCache = req.query.refresh === "true";
+    const data = await fitbitApiRequest(req.currentUser.id, `/1/user/-/activities/heart/date/${date}/1d.json`, { bypassCache });
 
     const heartRate = data["activities-heart"]?.[0]?.value;
 
@@ -198,7 +219,8 @@ export async function getHeartRate(req, res) {
     });
   } catch (err) {
     console.error("Fitbit heart rate error:", err);
-    res.status(err.message.includes("not connected") ? 400 : 500).json({ error: err.message });
+    const status = err.message.includes("not connected") ? 400 : err.message.includes("rate limit") ? 429 : 500;
+    res.status(status).json({ error: err.message });
   }
 }
 

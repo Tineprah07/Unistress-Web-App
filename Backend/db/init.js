@@ -275,6 +275,12 @@ async function runInit() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_enabled BOOLEAN DEFAULT FALSE;
     `);
 
+    // Add heart rate column to stress_checkins (Fitbit integration)
+    await pool.query(`
+      ALTER TABLE stress_checkins ADD COLUMN IF NOT EXISTS heart_rate_bpm INTEGER;
+    `);
+    console.log("✅ heart_rate_bpm migration applied");
+
     await pool.query("COMMIT");
     console.log("\n🎉 All UniStress tables initialised successfully!");
   } catch (error) {

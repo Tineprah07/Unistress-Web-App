@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // In-memory cache of entries (loaded from API)
     let entries = [];
 
+    // Fitbit state
+    let fitbitConnected = false;
+    let currentHeartRate = null;
+
     const checkinForm = document.getElementById('checkinForm');
     const stressSlider = document.getElementById('stressSlider');
     const sliderValue = document.getElementById('sliderValue');
@@ -55,6 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyEmpty = document.getElementById('historyEmpty');
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
+    // Heart rate elements
+    const hrConnected = document.getElementById('hrConnected');
+    const hrDisconnected = document.getElementById('hrDisconnected');
+    const hrBpm = document.getElementById('hrBpm');
+    const hrZoneBadge = document.getElementById('hrZoneBadge');
+    const hrPulseIcon = document.getElementById('hrPulseIcon');
+    const hrLabel = document.getElementById('hrLabel');
+
     const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const DAY_SHORT = ['S','M','T','W','T','F','S'];
     const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -77,8 +89,92 @@ document.addEventListener('DOMContentLoaded', () => {
             moodEmoji: e.mood_emoji || '😐',
             triggers: e.triggers || [],
             notes: e.notes || '',
-            date: e.created_at
+            date: e.created_at,
+            heartRate: e.heart_rate_bpm || null
         };
+    }
+
+    // =============================
+    // HEART RATE HELPERS
+    // =============================
+    function hrZone(bpm) {
+        if (bpm <= 80) return 'green';
+        if (bpm <= 100) return 'amber';
+        return 'red';
+    }
+
+    function hrZoneLabel(zone) {
+        if (zone === 'green') return 'Relaxed';
+        if (zone === 'amber') return 'Elevated';
+        return 'High';
+    }
+
+    // Convert HR zone to a stress-like score (1-10) for blending
+    function hrToScore(bpm) {
+        if (bpm <= 60) return 1;
+        if (bpm <= 70) return 2;
+        if (bpm <= 80) return 3;
+        if (bpm <= 85) return 5;
+        if (bpm <= 90) return 6;
+        if (bpm <= 100) return 7;
+        if (bpm <= 110) return 8;
+        return 10;
+    }
+
+    // Blend stress level with heart rate into a wellness score (1-10)
+    function wellnessScore(stressLevel, heartRate) {
+        if (!heartRate) return stressLevel;
+        const hrScore = hrToScore(heartRate);
+        return Math.round((stressLevel * 0.6 + hrScore * 0.4) * 10) / 10;
+    }
+
+    // Update the heart rate display card
+    function renderHeartRate() {
+        if (!hrConnected || !hrDisconnected) return;
+
+        if (fitbitConnected && currentHeartRate) {
+            hrConnected.classList.remove('hidden');
+            hrDisconnected.classList.add('hidden');
+
+            const zone = hrZone(currentHeartRate);
+            hrBpm.textContent = currentHeartRate;
+            hrZoneBadge.textContent = hrZoneLabel(zone);
+            hrZoneBadge.className = 'hr-zone-badge zone-' + zone;
+            hrPulseIcon.className = 'hr-pulse-icon hr-' + zone;
+            hrLabel.textContent = 'Resting heart rate';
+        } else if (fitbitConnected) {
+            hrConnected.classList.remove('hidden');
+            hrDisconnected.classList.add('hidden');
+            hrBpm.textContent = '--';
+            hrZoneBadge.textContent = 'No data';
+            hrZoneBadge.className = 'hr-zone-badge';
+            hrPulseIcon.className = 'hr-pulse-icon';
+            hrLabel.textContent = 'Heart rate unavailable right now';
+        } else {
+            hrConnected.classList.add('hidden');
+            hrDisconnected.classList.remove('hidden');
+        }
+    }
+
+    // Check Fitbit status and fetch heart rate
+    async function loadFitbitHeartRate() {
+        try {
+            const statusRes = await apiGet('/api/fitbit/status');
+            if (!statusRes || !statusRes.connected) {
+                fitbitConnected = false;
+                renderHeartRate();
+                return;
+            }
+            fitbitConnected = true;
+
+            const hrData = await apiGet('/api/fitbit/heart-rate');
+            if (hrData && hrData.resting_heart_rate) {
+                currentHeartRate = hrData.resting_heart_rate;
+            }
+        } catch (e) {
+            fitbitConnected = false;
+        }
+        renderHeartRate();
     }
 
     // Show current time
@@ -132,6 +228,18 @@ document.addEventListener('DOMContentLoaded', () => {
             triggers: getSelectedTriggers(),
             notes: checkinNotes.value.trim()
         };
+
+        // Silently attach heart rate if Fitbit is connected
+        if (fitbitConnected) {
+            try {
+                const hrData = await apiGet('/api/fitbit/heart-rate');
+                if (hrData && hrData.resting_heart_rate) {
+                    body.heart_rate_bpm = hrData.resting_heart_rate;
+                    currentHeartRate = hrData.resting_heart_rate;
+                    renderHeartRate();
+                }
+            } catch (e) { /* graceful fallback — submit without HR */ }
+        }
 
         const result = await apiPost('/api/stress', body);
         if (!result || result.error) return;
@@ -219,8 +327,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const d = new Date(now); d.setDate(now.getDate() - dow + i);
             const ds = d.toISOString().split('T')[0];
             const dayEntries = entries.filter(e => e.date.split('T')[0] === ds);
-            const avg = dayEntries.length > 0 ? dayEntries.reduce((s, e) => s + e.stress, 0) / dayEntries.length : 0;
-            weekData.push(Math.round(avg * 10) / 10);
+            if (dayEntries.length > 0) {
+                const avg = dayEntries.reduce((s, e) => s + wellnessScore(e.stress, e.heartRate), 0) / dayEntries.length;
+                weekData.push(Math.round(avg * 10) / 10);
+            } else {
+                weekData.push(0);
+            }
         }
 
         if (chartBars) {
@@ -293,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const dayEntries = entries.filter(e => e.date.split('T')[0] === ds);
             if (dayEntries.length > 0) {
-                dayAvg[d] = dayEntries.reduce((s, e) => s + e.stress, 0) / dayEntries.length;
+                dayAvg[d] = dayEntries.reduce((s, e) => s + wellnessScore(e.stress, e.heartRate), 0) / dayEntries.length;
             }
         }
 
@@ -332,11 +444,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const sbClass = entry.stress <= 3 ? 'sb-low' : entry.stress <= 6 ? 'sb-mid' : 'sb-high';
             const sbLabel = entry.stress <= 3 ? 'Low' : entry.stress <= 6 ? 'Medium' : 'High';
             const triggerStr = (entry.triggers || []).length > 0 ? entry.triggers.join(', ') : '';
+            const hrStr = entry.heartRate ? `<span class="history-hr"><i class="fa-solid fa-heart-pulse"></i> ${entry.heartRate} bpm</span>` : '';
 
             item.innerHTML = `
                 <span class="history-mood">${entry.moodEmoji || '😐'}</span>
                 <section class="history-details">
-                    <p class="history-mood-label">${FACE_WORDS[entry.stress] || entry.mood} <span class="stress-badge ${sbClass}">${entry.stress}/10 ${sbLabel}</span></p>
+                    <p class="history-mood-label">${FACE_WORDS[entry.stress] || entry.mood} <span class="stress-badge ${sbClass}">${entry.stress}/10 ${sbLabel}</span> ${hrStr}</p>
                     <section class="history-meta">
                         ${triggerStr ? `<span class="history-triggers">${triggerStr}</span>` : ''}
                     </section>
@@ -367,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =============================
     // RENDER ALL
     // =============================
-    function renderAll() { renderStats(); renderChart(); renderTriggers(); renderCalendar(); renderHistory(); }
+    function renderAll() { renderStats(); renderChart(); renderTriggers(); renderCalendar(); renderHistory(); renderHeartRate(); }
 
     // =============================
     // INITIAL LOAD FROM API
@@ -397,6 +510,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         applySmartDefaults();
         renderAll();
+
+        // Load Fitbit heart rate in background (non-blocking)
+        loadFitbitHeartRate();
     }
 
     init();

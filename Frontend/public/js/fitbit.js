@@ -29,7 +29,8 @@
 
         async connect() {
             try {
-                var res = await fetch('/api/fitbit/connect', { credentials: 'include' });
+                var returnTo = encodeURIComponent(window.location.pathname);
+                var res = await fetch('/api/fitbit/connect?return_to=' + returnTo, { credentials: 'include' });
                 if (!res.ok) return;
                 var data = await res.json();
                 if (data.url) window.location.href = data.url;
@@ -48,24 +49,24 @@
             } catch (e) { console.error('Fitbit disconnect:', e); }
         },
 
-        async getActivity() {
-            try { var r = await fetch('/api/fitbit/activity', { credentials: 'include' }); return r.ok ? r.json() : null; }
+        async getActivity(refresh) {
+            try { var r = await fetch('/api/fitbit/activity' + (refresh ? '?refresh=true' : ''), { credentials: 'include' }); return r.ok ? r.json() : null; }
             catch (e) { return null; }
         },
 
-        async getSleep() {
-            try { var r = await fetch('/api/fitbit/sleep', { credentials: 'include' }); return r.ok ? r.json() : null; }
+        async getSleep(refresh) {
+            try { var r = await fetch('/api/fitbit/sleep' + (refresh ? '?refresh=true' : ''), { credentials: 'include' }); return r.ok ? r.json() : null; }
             catch (e) { return null; }
         },
 
-        async getHeartRate() {
-            try { var r = await fetch('/api/fitbit/heart-rate', { credentials: 'include' }); return r.ok ? r.json() : null; }
+        async getHeartRate(refresh) {
+            try { var r = await fetch('/api/fitbit/heart-rate' + (refresh ? '?refresh=true' : ''), { credentials: 'include' }); return r.ok ? r.json() : null; }
             catch (e) { return null; }
         },
 
-        async getSteps(start, end) {
+        async getSteps(start, end, refresh) {
             try {
-                var r = await fetch('/api/fitbit/steps?start=' + start + '&end=' + end, { credentials: 'include' });
+                var r = await fetch('/api/fitbit/steps?start=' + start + '&end=' + end + (refresh ? '&refresh=true' : ''), { credentials: 'include' });
                 return r.ok ? r.json() : null;
             } catch (e) { return null; }
         },
@@ -77,9 +78,9 @@
             if (this._initDone) fn(this.connected);
         },
 
-        _fire: function (connected) {
+        _fire: function (connected, refresh) {
             this._listeners.forEach(function (fn) {
-                try { fn(connected); } catch (e) { console.error(e); }
+                try { fn(connected, refresh); } catch (e) { console.error(e); }
             });
         },
 
@@ -156,7 +157,7 @@
                 b.addEventListener('click', async function (e) {
                     e.preventDefault();
                     b.classList.add('syncing');
-                    self._fire(self.connected);
+                    self._fire(self.connected, true);
                     setTimeout(function () { b.classList.remove('syncing'); }, 1200);
                 });
             });

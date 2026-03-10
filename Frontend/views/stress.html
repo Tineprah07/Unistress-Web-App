@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/css/homepage.css">
     <link rel="stylesheet" href="/css/stress.css">
+    <link rel="stylesheet" href="/css/fitbit.css">
 </head>
 
 <body>
@@ -94,6 +95,32 @@
                 <p class="stat-value" id="totalCheckins">0</p>
                 <p class="stat-label">Total Check-ins</p>
             </article>
+        </section>
+
+        <!-- ── Heart Rate Card ── -->
+        <section class="card hr-card" id="hrCard">
+            <header class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-heart-pulse"></i> Heart Rate</h2>
+                <span class="hr-source">via Fitbit</span>
+            </header>
+            <!-- Shown when Fitbit is connected -->
+            <section class="hr-connected hidden" id="hrConnected">
+                <figure class="hr-display">
+                    <span class="hr-pulse-icon" id="hrPulseIcon"><i class="fa-solid fa-heart-pulse"></i></span>
+                    <section class="hr-reading">
+                        <span class="hr-bpm" id="hrBpm">--</span>
+                        <span class="hr-unit">BPM</span>
+                    </section>
+                    <span class="hr-zone-badge" id="hrZoneBadge">--</span>
+                </figure>
+                <p class="hr-label" id="hrLabel">Resting heart rate</p>
+            </section>
+            <!-- Shown when Fitbit is NOT connected -->
+            <section class="hr-disconnected" id="hrDisconnected">
+                <i class="fa-solid fa-link-slash hr-disconnect-icon"></i>
+                <p>Connect your Fitbit to see heart rate data and improve stress insights.</p>
+                <button type="button" class="btn-connect-fitbit fitbit-connect-btn"><i class="fa-solid fa-link"></i> Connect Fitbit</button>
+            </section>
         </section>
 
         <!-- ── Check-in Card ── -->
@@ -229,6 +256,7 @@
     </main>
 
     <script src="/js/homepage.js"></script>
+    <script src="/js/fitbit.js"></script>
     <script src="/js/stress.js"></script>
 </body>
 </html>

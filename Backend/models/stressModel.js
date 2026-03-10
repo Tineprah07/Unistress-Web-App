@@ -1,12 +1,12 @@
 import pool from "../db/pool.js";
 
-export async function createCheckin(userId, { stress_level, mood, mood_emoji, triggers, notes }) {
+export async function createCheckin(userId, { stress_level, mood, mood_emoji, triggers, notes, heart_rate_bpm }) {
   const q = `
-    INSERT INTO stress_checkins (user_id, stress_level, mood, mood_emoji, triggers, notes)
-    VALUES ($1, $2, $3, $4, $5, $6)
+    INSERT INTO stress_checkins (user_id, stress_level, mood, mood_emoji, triggers, notes, heart_rate_bpm)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING *;
   `;
-  const res = await pool.query(q, [userId, stress_level, mood, mood_emoji || "😐", triggers || [], notes || null]);
+  const res = await pool.query(q, [userId, stress_level, mood, mood_emoji || "😐", triggers || [], notes || null, heart_rate_bpm || null]);
   return res.rows[0];
 }
 
