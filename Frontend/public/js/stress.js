@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Check Fitbit status and fetch heart rate
-    async function loadFitbitHeartRate() {
+    async function loadFitbitHeartRate(refresh) {
         try {
             const statusRes = await apiGet('/api/fitbit/status');
             if (!statusRes || !statusRes.connected) {
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             fitbitConnected = true;
 
-            const hrData = await apiGet('/api/fitbit/heart-rate');
+            const hrData = await apiGet('/api/fitbit/heart-rate' + (refresh ? '?refresh=true' : ''));
             if (hrData && hrData.resting_heart_rate) {
                 currentHeartRate = hrData.resting_heart_rate;
             }
@@ -519,10 +519,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listen for Fitbit connect/disconnect events (instant UI update)
         if (window.Fitbit) {
-            Fitbit.onStatusChange(function (connected) {
+            Fitbit.onStatusChange(function (connected, refresh) {
                 fitbitConnected = connected;
                 if (connected) {
-                    loadFitbitHeartRate();
+                    loadFitbitHeartRate(refresh);
                 } else {
                     currentHeartRate = null;
                     renderHeartRate();

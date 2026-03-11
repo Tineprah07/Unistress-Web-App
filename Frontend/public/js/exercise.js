@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return dates;
     }
 
-    async function loadFitbitActivity() {
+    async function loadFitbitActivity(refresh) {
         if (!window.Fitbit || !Fitbit.connected) return;
 
         var weekDates = getWeekRange();
@@ -357,8 +357,8 @@ document.addEventListener('DOMContentLoaded', () => {
         var activity, stepsData;
         try {
             var results = await Promise.all([
-                Fitbit.getActivity(),
-                Fitbit.getSteps(startDate, endDate)
+                Fitbit.getActivity(refresh),
+                Fitbit.getSteps(startDate, endDate, refresh)
             ]);
             activity = results[0];
             stepsData = results[1];
@@ -465,8 +465,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (window.Fitbit) {
-        Fitbit.onStatusChange(function (connected) {
-            try { if (connected) loadFitbitActivity(); }
+        Fitbit.onStatusChange(function (connected, refresh) {
+            try { if (connected) loadFitbitActivity(refresh); }
             catch (e) { console.warn('Fitbit activity load error:', e); }
         });
     }

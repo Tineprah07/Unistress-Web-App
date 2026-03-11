@@ -765,7 +765,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================
     // FITBIT DASHBOARD
     // =========================
-    async function loadFitbitDashboard() {
+    async function loadFitbitDashboard(refresh) {
         if (!window.Fitbit || !Fitbit.connected) return;
 
         // ── Banner update ──
@@ -786,9 +786,9 @@ document.addEventListener('DOMContentLoaded', () => {
         var activity, sleep, hr;
         try {
             var results = await Promise.all([
-                Fitbit.getActivity(),
-                Fitbit.getSleep(),
-                Fitbit.getHeartRate()
+                Fitbit.getActivity(refresh),
+                Fitbit.getSleep(refresh),
+                Fitbit.getHeartRate(refresh)
             ]);
             activity = results[0];
             sleep = results[1];
@@ -863,9 +863,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (window.Fitbit) {
-        Fitbit.onStatusChange(function (connected) {
+        Fitbit.onStatusChange(function (connected, refresh) {
             try {
-                if (connected) loadFitbitDashboard();
+                if (connected) loadFitbitDashboard(refresh);
                 else resetFitbitDashboard();
             } catch (e) { console.warn('Fitbit dashboard error:', e); }
         });
