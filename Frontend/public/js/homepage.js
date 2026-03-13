@@ -487,6 +487,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    // ── State shared between loadDashboard & loadFitbitDashboard ──
+    let _dashManualExercise = 0, _dashManualSleep = 0, _dashAvgStress = 0, _dashGlasses = 0, _dashFocus = 0;
+    let _dashWeekDates = [], _dashWeekStressVals = [], _dashWeekExerciseVals = [], _dashWeekSleepVals = [];
+
+    // ── Grouped Bar Chart Renderer (matches other page charts) ──
+    function renderDashBarChart(containerEl, datasets) {
+        if (!containerEl || !_dashWeekDates.length) return;
+        var html = '';
+        for (var i = 0; i < _dashWeekDates.length; i++) {
+            html += '<div class="dash-bar-group">';
+            datasets.forEach(function(ds) {
+                var v = ds.vals[i] || 0;
+                var pct = ds.max > 0 ? Math.min((v / ds.max) * 100, 100) : 0;
+                var isEmpty = v <= 0;
+                html += '<div class="dash-mini-bar ' + ds.barClass + (isEmpty ? ' empty' : '') + '" style="height:' + (isEmpty ? '4' : Math.max(4, Math.round(pct))) + '%"></div>';
+            });
+            html += '</div>';
+        }
+        containerEl.innerHTML = html;
+    }
+
     async function loadDashboard() {
         const [stress, exercise, sleep, hydration, focus, breathe, reminders] = await Promise.all([
             apiGet('/api/stress?limit=200'),
@@ -521,6 +542,46 @@ document.addEventListener('DOMContentLoaded', () => {
         animateValue($('statHydration'), totalGlasses, '');
         animateValue($('statFocus'), totalFocus, '<small>min</small>');
         animateValue($('statBreathe'), totalBreathe, '');
+
+        // Store manual totals for Fitbit enrichment
+        _dashManualExercise = totalExercise;
+        _dashManualSleep    = totalSleep;
+        _dashAvgStress      = avgStress;
+        _dashGlasses        = totalGlasses;
+        _dashFocus          = totalFocus;
+
+        // ──────── TREND INDICATORS ────────
+        const yesterdayISO = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+        const yStress    = (stress    || []).filter(e => e.created_at?.slice(0,10) === yesterdayISO);
+        const yExercise  = (exercise  || []).filter(e => e.created_at?.slice(0,10) === yesterdayISO);
+        const ySleep     = (sleep     || []).filter(e => e.created_at?.slice(0,10) === yesterdayISO);
+        const yHydration = (hydration || []).filter(e => e.created_at?.slice(0,10) === yesterdayISO);
+        const yFocus     = (focus     || []).filter(e => e.created_at?.slice(0,10) === yesterdayISO);
+
+        const yAvgStress     = yStress.length    ? Math.round(yStress.reduce((s,e) => s + (e.stress_level||0), 0) / yStress.length) : null;
+        const yTotalExercise = yExercise.length  ? yExercise.reduce((s,e) => s + (e.duration||0), 0) : null;
+        const yTotalSleep    = ySleep.length     ? ySleep.reduce((s,e) => s + (parseFloat(e.duration_hours)||0), 0) : null;
+        const yTotalGlasses  = yHydration.length ? yHydration.reduce((s,e) => s + (e.glasses||0), 0) : null;
+        const yTotalFocus    = yFocus.length     ? yFocus.reduce((s,e) => s + (e.duration_minutes||0), 0) : null;
+
+        function renderTrend(id, today, yesterday, isInverse) {
+            const el = $(id);
+            if (!el) return;
+            if (yesterday === null || (today === 0 && yesterday === 0)) { el.innerHTML = ''; return; }
+            if (today === yesterday) { el.innerHTML = ''; return; }
+            const up  = today > yesterday;
+            const cls = isInverse ? (up ? 'trend-down' : 'trend-up') : (up ? 'trend-up' : 'trend-down');
+            const icon = up ? 'fa-arrow-up' : 'fa-arrow-down';
+            const pct  = yesterday > 0 ? Math.round(Math.abs(today - yesterday) / yesterday * 100) : '';
+            el.className = 'stat-trend ' + cls;
+            el.innerHTML = '<i class="fa-solid ' + icon + '"></i>' + (pct ? pct + '%' : '');
+        }
+
+        renderTrend('trendStress',    avgStress,    yAvgStress,     true);
+        renderTrend('trendExercise',  totalExercise, yTotalExercise, false);
+        renderTrend('trendSleep',     totalSleep,   yTotalSleep,    false);
+        renderTrend('trendHydration', totalGlasses, yTotalGlasses,  false);
+        renderTrend('trendFocus',     totalFocus,   yTotalFocus,    false);
 
 
         const weekDates = getWeekDates();
@@ -558,51 +619,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const labelsEl = $('dashChartLabels');
 
         if (barsEl && labelsEl) {
-            const weekStressAvg = [];
-            const weekExerciseTotals = [];
-            const weekSleepTotals = [];
+            _dashWeekDates = weekDates;
+            _dashWeekStressVals = [];
+            _dashWeekExerciseVals = [];
+            _dashWeekSleepVals = [];
 
-            weekDates.forEach((dateStr) => {
-                const dayStress = (stress || []).filter(e => e.created_at && e.created_at.slice(0,10) === dateStr);
-                const dayExercise = (exercise || []).filter(e => e.created_at && e.created_at.slice(0,10) === dateStr);
-                const daySleep = (sleep || []).filter(e => e.created_at && e.created_at.slice(0,10) === dateStr);
-
-                const sVal = dayStress.length ? dayStress.reduce((sum, e) => sum + (e.stress_level || 0), 0) / dayStress.length : 0;
-                const eVal = dayExercise.reduce((sum, e) => sum + (e.duration || 0), 0);
-                const slVal = daySleep.reduce((sum, e) => sum + (parseFloat(e.duration_hours) || 0), 0);
-
-                weekStressAvg.push(sVal);
-                weekExerciseTotals.push(eVal);
-                weekSleepTotals.push(slVal);
+            weekDates.forEach(dateStr => {
+                const dayStress   = (stress || []).filter(e => e.created_at?.slice(0,10) === dateStr);
+                const dayExercise = (exercise || []).filter(e => e.created_at?.slice(0,10) === dateStr);
+                const daySleep    = (sleep || []).filter(e => e.created_at?.slice(0,10) === dateStr);
+                _dashWeekStressVals.push(dayStress.length ? dayStress.reduce((s,e) => s + (e.stress_level||0), 0) / dayStress.length : 0);
+                _dashWeekExerciseVals.push(dayExercise.reduce((s,e) => s + (e.duration||0), 0));
+                _dashWeekSleepVals.push(daySleep.reduce((s,e) => s + (parseFloat(e.duration_hours)||0), 0));
             });
 
-            const stressMax = Math.max(...weekStressAvg, 10);
-            const exerciseMax = Math.max(...weekExerciseTotals, 30);
-            const sleepMax = Math.max(...weekSleepTotals, 8);
+            renderDashBarChart(barsEl, [
+                { vals: _dashWeekStressVals,   max: Math.max(..._dashWeekStressVals, 10),   barClass: 'bar-stress' },
+                { vals: _dashWeekExerciseVals, max: Math.max(..._dashWeekExerciseVals, 30), barClass: 'bar-exercise' },
+                { vals: _dashWeekSleepVals,    max: Math.max(..._dashWeekSleepVals, 8),     barClass: 'bar-sleep' },
+            ]);
 
-            const toHeightPct = (value, maxValue) => {
-                if (value <= 0) return 4;
-                return Math.min(100, Math.max(4, (value / maxValue) * 100));
-            };
-
-            let barsHTML = '', labelsHTML = '';
+            let labelsHTML = '';
             weekDates.forEach((dateStr, i) => {
-                const dayStress   = (stress || []).filter(e => e.created_at && e.created_at.slice(0,10) === dateStr);
-                const dayExercise = (exercise || []).filter(e => e.created_at && e.created_at.slice(0,10) === dateStr);
-                const daySleep    = (sleep || []).filter(e => e.created_at && e.created_at.slice(0,10) === dateStr);
-
-                const sVal = dayStress.length ? dayStress.reduce((s,e) => s + (e.stress_level||0), 0) / dayStress.length : 0;
-                const eVal = dayExercise.reduce((s,e) => s + (e.duration||0), 0);
-                const slVal = daySleep.reduce((s,e) => s + (parseFloat(e.duration_hours)||0), 0);
-
-                barsHTML += '<div class="chart-bar-group">' +
-                    '<div class="chart-mini-bar bar-stress" style="height:' + toHeightPct(sVal, stressMax) + '%"></div>' +
-                    '<div class="chart-mini-bar bar-exercise" style="height:' + toHeightPct(eVal, exerciseMax) + '%"></div>' +
-                    '<div class="chart-mini-bar bar-sleep" style="height:' + toHeightPct(slVal, sleepMax) + '%"></div>' +
-                    '</div>';
                 labelsHTML += '<span' + (dateStr === todayISO ? ' class="today"' : '') + '>' + dayLabels[i] + '</span>';
             });
-            barsEl.innerHTML = barsHTML;
             labelsEl.innerHTML = labelsHTML;
         }
 
@@ -826,6 +866,50 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (hrEl) {
             hrEl.innerHTML = '--';
         }
+
+        // ── Enrich Exercise stat with Fitbit active_minutes ──
+        var fitbitActiveMins = activity ? (activity.active_minutes || 0) : 0;
+        var exEl = document.getElementById('statExercise');
+        if (exEl && fitbitActiveMins > 0) {
+            animateValue(exEl, _dashManualExercise + fitbitActiveMins, '<small>min</small>');
+        }
+
+        // ── Enrich Sleep stat with Fitbit sleep hours (use whichever is higher) ──
+        var fitbitSleepHrs = sleep ? (parseFloat(sleep.total_hours) || 0) : 0;
+        var slEl = document.getElementById('statSleep');
+        if (slEl && fitbitSleepHrs > 0 && fitbitSleepHrs > _dashManualSleep) {
+            animateValue(slEl, fitbitSleepHrs, '<small>hrs</small>');
+        }
+
+        // ── Recompute wellbeing score with enriched data + HR bonus ──
+        var hrVal      = hr ? (hr.resting_heart_rate || 0) : 0;
+        var hrBonus    = hrVal > 0 && hrVal < 60 ? 5 : hrVal >= 60 && hrVal < 75 ? 3 : 0;
+        var enrichedEx = _dashManualExercise + fitbitActiveMins;
+        var enrichedSl = Math.max(_dashManualSleep, fitbitSleepHrs);
+        var stressScF  = _dashAvgStress ? Math.max(0, 20 - (_dashAvgStress * 2)) : 0;
+        var exScF      = Math.min(20, (enrichedEx / 30) * 20);
+        var slScF      = Math.min(20, (enrichedSl / 7) * 20);
+        var hydScF     = Math.min(20, (_dashGlasses / 8) * 20);
+        var focScF     = Math.min(20, (_dashFocus / 25) * 20);
+        var wbF        = Math.min(100, Math.round(stressScF + exScF + slScF + hydScF + focScF + hrBonus));
+        var circumF    = 2 * Math.PI * 52;
+
+        var wbScoreEl = document.getElementById('wbScore');
+        var wbPctEl   = document.getElementById('wbRingPct');
+        var wbRingEl  = document.getElementById('wbRingFill');
+        var wbMsgEl   = document.getElementById('wbMessage');
+        if (wbScoreEl) wbScoreEl.textContent = wbF + '/100';
+        if (wbPctEl)   wbPctEl.textContent   = wbF + '%';
+        if (wbRingEl)  wbRingEl.style.strokeDashoffset = circumF - (circumF * wbF / 100);
+        if (wbMsgEl) {
+            var msgF = wbF >= 80 ? "Outstanding! You're taking great care of yourself today."
+                     : wbF >= 60 ? "Good progress! Keep up the healthy habits."
+                     : wbF >= 40 ? "Not bad! A few more healthy activities will boost your score."
+                     : wbF > 0   ? "Getting started! Every small step counts."
+                     : "Start tracking to build your score!";
+            wbMsgEl.textContent = msgF;
+        }
+
     }
 
     function resetFitbitDashboard() {
@@ -848,6 +932,38 @@ document.addEventListener('DOMContentLoaded', () => {
         var hrEl = document.getElementById('statFitbitHR');
         if (stepsEl) stepsEl.textContent = '--';
         if (hrEl) hrEl.textContent = '--';
+
+        // Revert enriched exercise and sleep stats to manual-only
+        var exEl2 = document.getElementById('statExercise');
+        var slEl2 = document.getElementById('statSleep');
+        if (exEl2) animateValue(exEl2, _dashManualExercise, '<small>min</small>');
+        if (slEl2) animateValue(slEl2, _dashManualSleep, '<small>hrs</small>');
+
+        // Revert wellbeing score to manual-only calculation
+        var stressScR = _dashAvgStress ? Math.max(0, 20 - (_dashAvgStress * 2)) : 0;
+        var exScR     = Math.min(20, (_dashManualExercise / 30) * 20);
+        var slScR     = Math.min(20, (_dashManualSleep / 7) * 20);
+        var hydScR    = Math.min(20, (_dashGlasses / 8) * 20);
+        var focScR    = Math.min(20, (_dashFocus / 25) * 20);
+        var wbR       = Math.round(stressScR + exScR + slScR + hydScR + focScR);
+        var circumR   = 2 * Math.PI * 52;
+
+        var wbScoreElR = document.getElementById('wbScore');
+        var wbPctElR   = document.getElementById('wbRingPct');
+        var wbRingElR  = document.getElementById('wbRingFill');
+        var wbMsgElR   = document.getElementById('wbMessage');
+        if (wbScoreElR) wbScoreElR.textContent = wbR + '/100';
+        if (wbPctElR)   wbPctElR.textContent   = wbR + '%';
+        if (wbRingElR)  wbRingElR.style.strokeDashoffset = circumR - (circumR * wbR / 100);
+        if (wbMsgElR) {
+            var msgR = wbR >= 80 ? "Outstanding! You're taking great care of yourself today."
+                     : wbR >= 60 ? "Good progress! Keep up the healthy habits."
+                     : wbR >= 40 ? "Not bad! A few more healthy activities will boost your score."
+                     : wbR > 0   ? "Getting started! Every small step counts."
+                     : "Start tracking to build your score!";
+            wbMsgElR.textContent = msgR;
+        }
+
     }
 
     // Dashboard Fitbit button handler
