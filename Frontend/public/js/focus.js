@@ -445,16 +445,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderAll() { renderStats(); renderChart(); renderHistory(); renderTasks(); }
 
     async function init() {
-        const [focusData, tasksData] = await Promise.all([
-            apiGet('/api/focus?limit=200'),
-            apiGet('/api/tasks')
-        ]);
-        if (focusData && Array.isArray(focusData)) {
-            entries = focusData.map(mapEntry);
-        }
-        if (tasksData && Array.isArray(tasksData)) {
-            tasks = tasksData.map(mapTask);
-        }
+        const [focusData, tasksData] = await Promise.all([apiGet('/api/focus?limit=200'), apiGet('/api/tasks')]);
+        if (focusData && Array.isArray(focusData)) entries = focusData.map(mapEntry);
+        if (tasksData && Array.isArray(tasksData)) tasks = tasksData.map(mapTask);
         updateDisplay();
         updatePomDots();
         renderAll();

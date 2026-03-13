@@ -1063,3 +1063,4 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(checkGlobalReminders, 15000);
 
 });
+

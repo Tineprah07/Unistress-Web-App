@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================
     // CONSTANTS & ELEMENTS
     // =========================
-    const WEEKLY_GOAL  = 150;
+    const WEEKLY_GOAL = 150;
 
     const form           = document.getElementById('exerciseForm');
     const typePicker     = document.getElementById('typePicker');
@@ -443,17 +443,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function init() {
         const data = await apiGet('/api/exercise?limit=200');
-        if (data && Array.isArray(data)) {
-            exercises = data.map(mapEntry);
-        }
+        if (data && Array.isArray(data)) exercises = data.map(mapEntry);
         applySmartDefaults();
         renderAll();
-
-        // Load Fitbit weekly data in background (non-blocking)
         if (window.Fitbit) {
             await Fitbit.ready;
             await loadFitbitWeeklyData();
-            renderAll(); // Re-render with Fitbit data included
+            renderAll();
         }
     }
 

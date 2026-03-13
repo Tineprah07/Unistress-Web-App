@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let fitbitSleepData = null; // Today's Fitbit sleep data
     let fitbitWeeklySleep = {}; // Keyed by date string YYYY-MM-DD -> hours
 
-    const SLEEP_GOAL  = 8;
+    const SLEEP_GOAL = 8;
 
     const form          = document.getElementById('sleepForm');
     const qualityPicker = document.getElementById('qualityPicker');
@@ -437,13 +437,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function init() {
         const data = await apiGet('/api/sleep?limit=200');
-        if (data && Array.isArray(data)) {
-            entries = data.map(mapEntry);
-        }
+        if (data && Array.isArray(data)) entries = data.map(mapEntry);
         applySmartDefaults();
         renderAll();
-
-        // Load Fitbit sleep in background
         if (window.Fitbit) {
             await Fitbit.ready;
             await loadFitbitSleep();

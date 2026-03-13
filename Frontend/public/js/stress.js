@@ -508,25 +508,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function init() {
         const data = await apiGet('/api/stress?limit=200');
-        if (data && Array.isArray(data)) {
-            entries = data.map(mapEntry);
-        }
+        if (data && Array.isArray(data)) entries = data.map(mapEntry);
         applySmartDefaults();
         renderAll();
-
-        // Load Fitbit heart rate in background (non-blocking)
         loadFitbitHeartRate();
-
-        // Listen for Fitbit connect/disconnect events (instant UI update)
         if (window.Fitbit) {
-            Fitbit.onStatusChange(function (connected, refresh) {
+            Fitbit.onStatusChange(function(connected, refresh) {
                 fitbitConnected = connected;
-                if (connected) {
-                    loadFitbitHeartRate(refresh);
-                } else {
-                    currentHeartRate = null;
-                    renderHeartRate();
-                }
+                if (connected) { loadFitbitHeartRate(refresh); }
+                else { currentHeartRate = null; renderHeartRate(); }
             });
         }
     }

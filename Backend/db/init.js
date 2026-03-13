@@ -271,6 +271,23 @@ async function runInit() {
     `);
     console.log("✅ fitbit_tokens table is ready");
 
+    // User Goals
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_goals (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        exercise_weekly_min INTEGER DEFAULT 150,
+        sleep_hours NUMERIC(3,1) DEFAULT 8.0,
+        hydration_daily_glasses INTEGER DEFAULT 8,
+        focus_weekly_min INTEGER DEFAULT 120,
+        focus_daily_sessions INTEGER DEFAULT 4,
+        stress_daily_checkins INTEGER DEFAULT 3,
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_user_goals_user ON user_goals(user_id);
+    `);
+    console.log("✅ user_goals table is ready");
+
     // Migrations for existing databases
     await pool.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_enabled BOOLEAN DEFAULT FALSE;

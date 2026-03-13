@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // In-memory cache
     let entries = [];
 
-    const DAILY_GOAL  = 8;
+    const DAILY_GOAL = 8;
     const ML_PER_GLASS = 250;
 
     const glassCountEl   = document.getElementById('glassCount');
@@ -343,9 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function init() {
         const data = await apiGet('/api/hydration?limit=200');
-        if (data && Array.isArray(data)) {
-            entries = data.map(mapEntry);
-        }
+        if (data && Array.isArray(data)) entries = data.map(mapEntry);
         renderAll();
     }
 
