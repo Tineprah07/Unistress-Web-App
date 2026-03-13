@@ -760,6 +760,83 @@
 }
 
 
+/* ── Stacked Chart Bars (Manual + Fitbit) ── */
+.chart-bar-stacked {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 36px;
+    border-radius: 8px 8px 4px 4px;
+    overflow: hidden;
+    min-height: 4px;
+    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.bar-segment {
+    width: 100%;
+    min-height: 2px;
+    transition: height 0.4s ease;
+}
+
+.bar-manual {
+    background: linear-gradient(180deg, var(--primary), var(--primary-light));
+}
+
+.bar-fitbit {
+    background: linear-gradient(180deg, #00B0B9, #00D4AA);
+}
+
+.bar-fitbit-only {
+    width: 100%;
+    max-width: 36px;
+    border-radius: 8px 8px 4px 4px;
+    background: linear-gradient(180deg, #00B0B9, #00D4AA);
+    min-height: 4px;
+    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.bar-fitbit-only:hover,
+.chart-bar-stacked:hover {
+    opacity: 0.85;
+}
+
+/* ── Chart Legend ── */
+.chart-legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    padding: 0.6rem 0 0;
+    margin-top: 0.4rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.legend-manual {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+}
+
+.legend-fitbit {
+    background: linear-gradient(135deg, #00B0B9, #00D4AA);
+}
+
+
 /* =========================================
    RESPONSIVE
    ========================================= */

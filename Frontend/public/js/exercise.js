@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // In-memory cache
     let exercises = [];
 
+    // Fitbit state
+    let fitbitConnected = false;
+
     // =========================
     // CONSTANTS & ELEMENTS
     // =========================
@@ -65,6 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return map[type] || 'fa-dumbbell';
     }
 
+    // Convert Fitbit steps to estimated active minutes (100 steps = 1 minute)
+    const STEPS_PER_MINUTE = 100;
+    function stepsToMinutes(steps) {
+        return Math.round((steps || 0) / STEPS_PER_MINUTE);
+    }
+
     // Map API response to UI format
     function mapEntry(e) {
         return {
@@ -75,6 +84,65 @@ document.addEventListener('DOMContentLoaded', () => {
             notes: e.notes || '',
             date: e.created_at
         };
+    }
+
+    // Fitbit daily data: { steps, activeMinutes, estimatedMinutes }
+    let fitbitDayData = {};
+
+    // Load Fitbit activity data for the current week
+    async function loadFitbitWeeklyData() {
+        if (!window.Fitbit || !Fitbit.connected) {
+            fitbitConnected = false;
+            fitbitDayData = {};
+            return;
+        }
+        fitbitConnected = true;
+
+        try {
+            const now = new Date();
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            const start = startOfWeek.toISOString().split('T')[0];
+            const end = now.toISOString().split('T')[0];
+
+            // Fetch steps for the week AND today's activity summary in parallel
+            const [stepsData, activityToday] = await Promise.all([
+                Fitbit.getSteps(start, end),
+                Fitbit.getActivity()
+            ]);
+
+            fitbitDayData = {};
+
+            // Populate steps for each day
+            if (stepsData && Array.isArray(stepsData)) {
+                stepsData.forEach(d => {
+                    fitbitDayData[d.date] = {
+                        steps: d.steps || 0,
+                        activeMinutes: 0,
+                        estimatedMinutes: stepsToMinutes(d.steps || 0)
+                    };
+                });
+            }
+
+            // Override today with real active minutes if available
+            if (activityToday && activityToday.active_minutes > 0) {
+                const todayDate = new Date().toISOString().split('T')[0];
+                if (!fitbitDayData[todayDate]) {
+                    fitbitDayData[todayDate] = { steps: activityToday.steps || 0, activeMinutes: 0, estimatedMinutes: 0 };
+                }
+                fitbitDayData[todayDate].activeMinutes = activityToday.active_minutes;
+            }
+        } catch (e) {
+            console.warn('Failed to load Fitbit weekly data:', e);
+        }
+    }
+
+    // Get Fitbit contribution in minutes for a given date.
+    // Uses active minutes (watch) if available, otherwise falls back to steps estimate.
+    function getFitbitMinutes(dateStr) {
+        const data = fitbitDayData[dateStr];
+        if (!data) return 0;
+        return data.activeMinutes > 0 ? data.activeMinutes : data.estimatedMinutes;
     }
 
     // =========================
@@ -142,14 +210,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderStats() {
         if (totalSessionsEl) totalSessionsEl.textContent = exercises.length;
 
-        const weekMinutes = getWeekMinutes(exercises);
+        const weekData = getWeekMinutes(exercises);
+        const weekMinutes = weekData.total;
         if (weekTotalEl) weekTotalEl.innerHTML = weekMinutes + '<small>min</small>';
 
         const { current, best } = calculateStreaks(exercises);
         if (currentStreakEl) currentStreakEl.textContent = current;
         if (bestStreakEl) bestStreakEl.textContent = best;
 
-        if (goalProgress) goalProgress.textContent = weekMinutes + ' / ' + WEEKLY_GOAL + ' min';
+        if (goalProgress) {
+            if (fitbitConnected && weekData.fitbit > 0) {
+                goalProgress.textContent = weekMinutes + ' / ' + WEEKLY_GOAL + ' min (Manual: ' + weekData.manual + ' + Fitbit: ' + weekData.fitbit + ')';
+            } else {
+                goalProgress.textContent = weekMinutes + ' / ' + WEEKLY_GOAL + ' min';
+            }
+        }
         if (goalBar) { goalBar.max = WEEKLY_GOAL; goalBar.value = Math.min(weekMinutes, WEEKLY_GOAL); }
 
         const heroTitle = document.getElementById('heroTitle');
@@ -180,7 +255,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const startOfWeek = new Date(now);
         startOfWeek.setDate(now.getDate() - now.getDay());
         startOfWeek.setHours(0, 0, 0, 0);
-        return exs.filter(e => new Date(e.date) >= startOfWeek).reduce((sum, e) => sum + e.duration, 0);
+
+        // Manual exercise minutes
+        const manualMin = exs.filter(e => new Date(e.date) >= startOfWeek).reduce((sum, e) => sum + e.duration, 0);
+
+        // Fitbit minutes (active minutes from watch, or estimated from steps)
+        let fitbitMin = 0;
+        if (fitbitConnected) {
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(now); d.setDate(now.getDate() - now.getDay() + i);
+                const ds = d.toISOString().split('T')[0];
+                if (d <= now) fitbitMin += getFitbitMinutes(ds);
+            }
+        }
+
+        return { manual: manualMin, fitbit: fitbitMin, total: manualMin + fitbitMin };
     }
 
     function calculateStreaks(exs) {
@@ -221,20 +310,53 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < 7; i++) {
             const d = new Date(now); d.setDate(now.getDate() - dayOfWeek + i);
             const dateStr = d.toISOString().split('T')[0];
-            const minutes = exercises.filter(e => e.date.split('T')[0] === dateStr).reduce((sum, e) => sum + e.duration, 0);
-            weekData.push({ day: DAYS[i], minutes, isToday: i === dayOfWeek });
+            const manualMin = exercises.filter(e => e.date.split('T')[0] === dateStr).reduce((sum, e) => sum + e.duration, 0);
+            const fitbitMin = fitbitConnected ? getFitbitMinutes(dateStr) : 0;
+            weekData.push({ day: DAYS[i], dateStr, manual: manualMin, fitbit: fitbitMin, total: manualMin + fitbitMin, isToday: i === dayOfWeek });
         }
-        const maxMin = Math.max(...weekData.map(d => d.minutes), 30);
+        const maxMin = Math.max(...weekData.map(d => d.total), 30);
 
         if (chartBars) {
             chartBars.innerHTML = weekData.map(d => {
-                const heightPct = d.minutes > 0 ? Math.max((d.minutes / maxMin) * 100, 5) : 5;
-                const emptyClass = d.minutes === 0 ? ' empty' : '';
-                return `<section class="chart-bar-wrap"><span class="chart-bar-value">${d.minutes > 0 ? d.minutes : ''}</span><span class="chart-bar${emptyClass}" style="height: ${heightPct}%" title="${d.minutes} min"></span></section>`;
+                const totalPct = d.total > 0 ? Math.max((d.total / maxMin) * 100, 5) : 5;
+                const manualPct = d.total > 0 ? (d.manual / d.total) * 100 : 0;
+                const fitbitPct = d.total > 0 ? (d.fitbit / d.total) * 100 : 0;
+                const emptyClass = d.total === 0 ? ' empty' : '';
+
+                if (d.fitbit > 0 && d.manual > 0) {
+                    return `<section class="chart-bar-wrap">
+                        <span class="chart-bar-value">${d.total}</span>
+                        <span class="chart-bar chart-bar-stacked${emptyClass}" style="height:${totalPct}%" title="Manual: ${d.manual} min + Fitbit: ${d.fitbit} min">
+                            <span class="bar-segment bar-fitbit" style="height:${fitbitPct}%"></span>
+                            <span class="bar-segment bar-manual" style="height:${manualPct}%"></span>
+                        </span>
+                    </section>`;
+                } else if (d.fitbit > 0) {
+                    return `<section class="chart-bar-wrap">
+                        <span class="chart-bar-value">${d.fitbit}</span>
+                        <span class="chart-bar bar-fitbit-only${emptyClass}" style="height:${totalPct}%" title="Fitbit: ${d.fitbit} min (${Fitbit.formatNumber((fitbitDayData[d.dateStr] && fitbitDayData[d.dateStr].steps) || 0)} steps)"></span>
+                    </section>`;
+                } else {
+                    return `<section class="chart-bar-wrap">
+                        <span class="chart-bar-value">${d.manual > 0 ? d.manual : ''}</span>
+                        <span class="chart-bar${emptyClass}" style="height:${totalPct}%" title="${d.manual} min"></span>
+                    </section>`;
+                }
             }).join('');
         }
         if (chartLabels) {
             chartLabels.innerHTML = weekData.map(d => `<span class="chart-label${d.isToday ? ' today' : ''}">${d.day}</span>`).join('');
+        }
+
+        // Add chart legend if Fitbit data exists
+        const legendEl = document.getElementById('chartLegend');
+        if (legendEl) {
+            if (fitbitConnected && Object.keys(fitbitDayData).length > 0) {
+                legendEl.innerHTML = '<span class="legend-item"><span class="legend-dot legend-manual"></span>Manual</span><span class="legend-item"><span class="legend-dot legend-fitbit"></span>Fitbit Steps</span>';
+                legendEl.style.display = 'flex';
+            } else {
+                legendEl.style.display = 'none';
+            }
         }
     }
 
@@ -326,6 +448,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         applySmartDefaults();
         renderAll();
+
+        // Load Fitbit weekly data in background (non-blocking)
+        if (window.Fitbit) {
+            await Fitbit.ready;
+            await loadFitbitWeeklyData();
+            renderAll(); // Re-render with Fitbit data included
+        }
     }
 
     init();
@@ -465,9 +594,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (window.Fitbit) {
-        Fitbit.onStatusChange(function (connected, refresh) {
-            try { if (connected) loadFitbitActivity(refresh); }
-            catch (e) { console.warn('Fitbit activity load error:', e); }
+        Fitbit.onStatusChange(async function (connected, refresh) {
+            fitbitConnected = connected;
+            try {
+                if (connected) {
+                    loadFitbitActivity(refresh);
+                    await loadFitbitWeeklyData();
+                    renderAll();
+                } else {
+                    fitbitDayData = {};
+                    renderAll();
+                }
+            } catch (e) { console.warn('Fitbit activity load error:', e); }
         });
     }
 
