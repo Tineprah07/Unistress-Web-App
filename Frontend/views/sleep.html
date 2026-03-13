@@ -117,6 +117,70 @@
             </article>
         </section>
 
+        <!-- ── Fitbit Sleep Card ── -->
+        <section class="fitbit-card" id="fitbitSleepCard">
+            <header class="fitbit-card-header">
+                <span class="fitbit-brand">
+                    <span class="fitbit-logo">F</span>
+                    <span class="fitbit-brand-text">Fitbit</span>
+                </span>
+                <span class="fitbit-badge">SLEEP</span>
+            </header>
+
+            <!-- Connect Prompt (visible when not connected) -->
+            <div class="fitbit-connect-prompt">
+                <div class="fitbit-connect-icon"><i class="fa-solid fa-moon"></i></div>
+                <h3>Track your sleep automatically</h3>
+                <p>Connect your Fitbit to see detailed sleep data including duration, efficiency, and sleep stages.</p>
+                <button class="fitbit-connect-btn" type="button">
+                    <i class="fa-solid fa-link"></i> Connect Fitbit
+                </button>
+            </div>
+
+            <!-- Connected Data (visible when connected) -->
+            <div class="fitbit-data">
+                <div class="fitbit-stats">
+                    <div class="fitbit-stat">
+                        <div class="fitbit-stat-icon icon-sleep-hrs"><i class="fa-solid fa-clock"></i></div>
+                        <p class="fitbit-stat-value" id="fbSleepHours">--<small>hrs</small></p>
+                        <p class="fitbit-stat-label">Asleep</p>
+                    </div>
+                    <div class="fitbit-stat">
+                        <div class="fitbit-stat-icon icon-sleep-eff"><i class="fa-solid fa-gauge-high"></i></div>
+                        <p class="fitbit-stat-value" id="fbSleepEfficiency">--<small>%</small></p>
+                        <p class="fitbit-stat-label">Efficiency</p>
+                    </div>
+                    <div class="fitbit-stat">
+                        <div class="fitbit-stat-icon icon-sleep-bed"><i class="fa-solid fa-bed"></i></div>
+                        <p class="fitbit-stat-value" id="fbTimeInBed">--<small>hrs</small></p>
+                        <p class="fitbit-stat-label">In Bed</p>
+                    </div>
+                </div>
+
+                <!-- Sleep Stages Breakdown -->
+                <div class="sleep-stages-wrap" id="sleepStagesWrap" style="display:none;">
+                    <p class="sleep-stages-title">Sleep Stages</p>
+                    <div class="sleep-stages-bar" id="sleepStagesBar"></div>
+                    <div class="sleep-stages-legend" id="sleepStagesLegend"></div>
+                </div>
+
+                <!-- Bedtime / Wake time from Fitbit -->
+                <div class="fitbit-sleep-times" id="fbSleepTimes" style="display:none;">
+                    <span class="fb-sleep-time"><i class="fa-solid fa-moon"></i> <span id="fbBedtime">--</span></span>
+                    <span class="fb-sleep-arrow">→</span>
+                    <span class="fb-sleep-time"><i class="fa-solid fa-sun"></i> <span id="fbWakeTime">--</span></span>
+                </div>
+
+                <footer class="fitbit-card-footer">
+                    <button class="fitbit-sync-btn" type="button">
+                        <i class="fa-solid fa-arrows-rotate"></i> Sync
+                    </button>
+                    <span class="fitbit-last-sync" id="fbSleepLastSync"></span>
+                    <button class="fitbit-disconnect-btn" type="button">Disconnect</button>
+                </footer>
+            </div>
+        </section>
+
         <!-- ── Main Grid: Form + Chart ── -->
         <section class="sleep-grid">
 
@@ -192,6 +256,8 @@
                     <section class="chart-bars" id="chartBars"></section>
                     <figcaption class="chart-labels" id="chartLabels"></figcaption>
                 </figure>
+
+                <section class="chart-legend" id="chartLegend" style="display:none;"></section>
 
                 <!-- Goal line reference -->
                 <section class="weekly-goal">

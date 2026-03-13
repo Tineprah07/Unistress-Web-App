@@ -22,6 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // In-memory cache
     let entries = [];
 
+    // Fitbit state
+    let fitbitConnected = false;
+    let fitbitSleepData = null; // Today's Fitbit sleep data
+    let fitbitWeeklySleep = {}; // Keyed by date string YYYY-MM-DD -> hours
+
     const SLEEP_GOAL  = 8;
 
     const form          = document.getElementById('sleepForm');
@@ -84,6 +89,96 @@ document.addEventListener('DOMContentLoaded', () => {
         return hrs + 'h ' + mins + 'm';
     }
 
+    // Load Fitbit sleep data
+    async function loadFitbitSleep() {
+        if (!window.Fitbit || !Fitbit.connected) {
+            fitbitConnected = false;
+            fitbitSleepData = null;
+            fitbitWeeklySleep = {};
+            renderFitbitSleep();
+            return;
+        }
+        fitbitConnected = true;
+
+        try {
+            const sleepData = await Fitbit.getSleep();
+            if (sleepData && sleepData.total_minutes > 0) {
+                fitbitSleepData = sleepData;
+
+                const todayDate = new Date().toISOString().split('T')[0];
+                fitbitWeeklySleep[todayDate] = parseFloat(sleepData.total_hours) || 0;
+            }
+        } catch (e) {
+            console.warn('Failed to load Fitbit sleep:', e);
+        }
+        renderFitbitSleep();
+    }
+
+    // Render the Fitbit sleep card data
+    function renderFitbitSleep() {
+        const sleepCard = document.getElementById('fitbitSleepCard');
+        if (!sleepCard) return;
+
+        sleepCard.classList.toggle('connected', fitbitConnected);
+
+        if (!fitbitConnected || !fitbitSleepData) return;
+
+        const data = fitbitSleepData;
+
+        if (window.Fitbit) {
+            Fitbit.animateValue(document.getElementById('fbSleepHours'), parseFloat(data.total_hours) || 0, '<small>hrs</small>');
+            Fitbit.animateValue(document.getElementById('fbSleepEfficiency'), data.efficiency || 0, '<small>%</small>');
+            const inBedHrs = data.time_in_bed ? (data.time_in_bed / 60).toFixed(1) : 0;
+            Fitbit.animateValue(document.getElementById('fbTimeInBed'), parseFloat(inBedHrs), '<small>hrs</small>');
+        }
+
+        // Bedtime and wake time
+        const timesEl = document.getElementById('fbSleepTimes');
+        const bedtimeEl = document.getElementById('fbBedtime');
+        const wakeEl = document.getElementById('fbWakeTime');
+        if (timesEl && data.start_time && data.end_time) {
+            timesEl.style.display = 'flex';
+            if (bedtimeEl) bedtimeEl.textContent = new Date(data.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            if (wakeEl) wakeEl.textContent = new Date(data.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Sleep stages
+        const stagesWrap = document.getElementById('sleepStagesWrap');
+        const stagesBar = document.getElementById('sleepStagesBar');
+        const stagesLegend = document.getElementById('sleepStagesLegend');
+
+        if (stagesWrap && stagesBar && data.stages) {
+            const stages = data.stages;
+            const total = (stages.deep || 0) + (stages.light || 0) + (stages.rem || 0) + (stages.wake || 0);
+
+            if (total > 0) {
+                stagesWrap.style.display = 'block';
+
+                const deepPct = ((stages.deep || 0) / total * 100).toFixed(1);
+                const lightPct = ((stages.light || 0) / total * 100).toFixed(1);
+                const remPct = ((stages.rem || 0) / total * 100).toFixed(1);
+                const wakePct = ((stages.wake || 0) / total * 100).toFixed(1);
+
+                stagesBar.innerHTML =
+                    `<span class="stage-segment stage-deep" style="width:${deepPct}%" title="Deep: ${stages.deep} min"></span>` +
+                    `<span class="stage-segment stage-light" style="width:${lightPct}%" title="Light: ${stages.light} min"></span>` +
+                    `<span class="stage-segment stage-rem" style="width:${remPct}%" title="REM: ${stages.rem} min"></span>` +
+                    `<span class="stage-segment stage-wake" style="width:${wakePct}%" title="Awake: ${stages.wake} min"></span>`;
+
+                if (stagesLegend) {
+                    stagesLegend.innerHTML =
+                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-deep"></span>Deep ${stages.deep}m</span>` +
+                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-light"></span>Light ${stages.light}m</span>` +
+                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-rem"></span>REM ${stages.rem}m</span>` +
+                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-wake"></span>Awake ${stages.wake}m</span>`;
+                }
+            }
+        }
+
+        const syncLabel = document.getElementById('fbSleepLastSync');
+        if (syncLabel) syncLabel.textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
     function showToast() {
         toast?.classList.add('show');
         setTimeout(() => toast?.classList.remove('show'), 2500);
@@ -130,7 +225,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderStats() {
         // Last night
         if (lastSleepEl) {
-            if (entries.length > 0) {
+            if (fitbitConnected && fitbitSleepData && fitbitSleepData.total_minutes > 0) {
+                lastSleepEl.textContent = formatHours(parseFloat(fitbitSleepData.total_hours));
+            } else if (entries.length > 0) {
                 lastSleepEl.textContent = formatHours(entries[0].duration);
             } else {
                 lastSleepEl.textContent = '0';
@@ -139,8 +236,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Weekly average
         const weekData = getWeekData();
-        const daysWithData = weekData.filter(d => d > 0).length || 1;
-        const weekTotal = weekData.reduce((s, d) => s + d, 0);
+        const totals = weekData.map(d => d.total);
+        const daysWithData = totals.filter(d => d > 0).length || 1;
+        const weekTotal = totals.reduce((s, d) => s + d, 0);
         const avg = Math.round((weekTotal / daysWithData) * 10) / 10;
 
         if (weekAvgEl) weekAvgEl.innerHTML = avg + '<small>hrs</small>';
@@ -211,8 +309,13 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < 7; i++) {
             const d = new Date(now); d.setDate(now.getDate() - dow + i);
             const ds = d.toISOString().split('T')[0];
-            const hrs = entries.filter(e => e.date.split('T')[0] === ds).reduce((s, e) => s + e.duration, 0);
-            data.push(Math.round(hrs * 10) / 10);
+            const manualHrs = entries.filter(e => e.date.split('T')[0] === ds).reduce((s, e) => s + e.duration, 0);
+            const fitbitHrs = fitbitConnected ? (fitbitWeeklySleep[ds] || 0) : 0;
+            data.push({
+                manual: Math.round(manualHrs * 10) / 10,
+                fitbit: Math.round(fitbitHrs * 10) / 10,
+                total: Math.round((manualHrs + fitbitHrs) * 10) / 10
+            });
         }
         return data;
     }
@@ -221,18 +324,50 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         const dow = now.getDay();
         const weekData = getWeekData();
-        const maxVal = Math.max(...weekData, SLEEP_GOAL);
+        const maxVal = Math.max(...weekData.map(d => d.total), SLEEP_GOAL);
 
         if (chartBars) {
-            chartBars.innerHTML = weekData.map((hrs) => {
-                const pct = hrs > 0 ? Math.max((hrs / maxVal) * 100, 5) : 5;
-                const cls = hrs === 0 ? ' empty' : '';
-                return '<section class="chart-bar-wrap"><span class="chart-bar-value">' + (hrs > 0 ? formatHours(hrs) : '') + '</span><span class="chart-bar' + cls + '" style="height:' + pct + '%" title="' + hrs + ' hrs"></span></section>';
+            chartBars.innerHTML = weekData.map(d => {
+                const pct = d.total > 0 ? Math.max((d.total / maxVal) * 100, 5) : 5;
+                const emptyClass = d.total === 0 ? ' empty' : '';
+
+                if (d.fitbit > 0 && d.manual > 0) {
+                    const manualPct = (d.manual / d.total) * 100;
+                    const fitbitPct = (d.fitbit / d.total) * 100;
+                    return `<section class="chart-bar-wrap">
+                        <span class="chart-bar-value">${formatHours(d.total)}</span>
+                        <span class="chart-bar chart-bar-stacked" style="height:${pct}%" title="Manual: ${formatHours(d.manual)} + Fitbit: ${formatHours(d.fitbit)}">
+                            <span class="bar-segment bar-fitbit-sleep" style="height:${fitbitPct}%"></span>
+                            <span class="bar-segment bar-manual-sleep" style="height:${manualPct}%"></span>
+                        </span>
+                    </section>`;
+                } else if (d.fitbit > 0) {
+                    return `<section class="chart-bar-wrap">
+                        <span class="chart-bar-value">${formatHours(d.fitbit)}</span>
+                        <span class="chart-bar bar-fitbit-only${emptyClass}" style="height:${pct}%" title="Fitbit: ${formatHours(d.fitbit)}"></span>
+                    </section>`;
+                } else {
+                    return `<section class="chart-bar-wrap">
+                        <span class="chart-bar-value">${d.manual > 0 ? formatHours(d.manual) : ''}</span>
+                        <span class="chart-bar${emptyClass}" style="height:${pct}%" title="${formatHours(d.manual)}"></span>
+                    </section>`;
+                }
             }).join('');
         }
 
         if (chartLabels) {
             chartLabels.innerHTML = DAYS.map((day, i) => '<span class="chart-label' + (i === dow ? ' today' : '') + '">' + day + '</span>').join('');
+        }
+
+        // Chart legend
+        const legendEl = document.getElementById('chartLegend');
+        if (legendEl) {
+            if (fitbitConnected && Object.keys(fitbitWeeklySleep).length > 0) {
+                legendEl.innerHTML = '<span class="legend-item"><span class="legend-dot legend-manual"></span>Manual</span><span class="legend-item"><span class="legend-dot legend-fitbit"></span>Fitbit</span>';
+                legendEl.style.display = 'flex';
+            } else {
+                legendEl.style.display = 'none';
+            }
         }
     }
 
@@ -283,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function renderAll() { renderStats(); renderChart(); renderHistory(); }
+    function renderAll() { renderStats(); renderChart(); renderHistory(); renderFitbitSleep(); }
 
     function applySmartDefaults() {
         if (entries.length === 0) return;
@@ -307,8 +442,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         applySmartDefaults();
         renderAll();
+
+        // Load Fitbit sleep in background
+        if (window.Fitbit) {
+            await Fitbit.ready;
+            await loadFitbitSleep();
+            renderAll();
+        }
     }
 
     init();
+
+    // Listen for Fitbit connect/disconnect
+    if (window.Fitbit) {
+        Fitbit.onStatusChange(async function (connected, refresh) {
+            fitbitConnected = connected;
+            if (connected) {
+                await loadFitbitSleep();
+                renderAll();
+            } else {
+                fitbitSleepData = null;
+                fitbitWeeklySleep = {};
+                renderAll();
+            }
+        });
+    }
 
 });
