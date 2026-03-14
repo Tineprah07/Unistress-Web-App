@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const heroRingValue = document.getElementById('heroRingValue');
         const heroRingTotal = document.getElementById('heroRingTotal');
 
-        if (heroTitle) heroTitle.textContent = exercises.length + ' Exercise' + (exercises.length !== 1 ? 's' : '');
+        if (heroTitle) heroTitle.textContent = 'Exercise Tracker';
 
         const todayManual = exercises.filter(e => e.date.split('T')[0] === todayStr()).reduce((sum, e) => sum + e.duration, 0);
         const todayFitbit = fitbitConnected ? getFitbitMinutes(todayStr()) : 0;
