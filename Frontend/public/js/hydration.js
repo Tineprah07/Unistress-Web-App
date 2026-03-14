@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // In-memory cache
     let entries = [];
 
-    const DAILY_GOAL = 8;
+    const DAILY_GOAL  = 8;
+    const WEEKLY_GOAL = DAILY_GOAL * 7;
     const ML_PER_GLASS = 250;
 
     const glassCountEl   = document.getElementById('glassCount');
@@ -135,10 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (waterMlEl) waterMlEl.textContent = (todayGlasses * ML_PER_GLASS) + ' ml';
         if (todayGlassesEl) todayGlassesEl.textContent = todayGlasses;
 
-        if (goalText) goalText.textContent = todayGlasses + ' / ' + DAILY_GOAL + ' glasses';
+        const weeklyTotal = getWeekData().reduce((s, d) => s + d, 0);
+        if (goalText) goalText.textContent = weeklyTotal + ' / ' + WEEKLY_GOAL + ' glasses';
         if (goalBar) {
-            goalBar.max = DAILY_GOAL;
-            goalBar.value = Math.min(todayGlasses, DAILY_GOAL);
+            goalBar.max = WEEKLY_GOAL;
+            goalBar.value = Math.min(weeklyTotal, WEEKLY_GOAL);
         }
 
         if (heroRingFill) {

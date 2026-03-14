@@ -596,6 +596,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const wb = Math.round(stressScore + exerciseScore + sleepScore + hydrationScore + focusScore);
         const circumference = 2 * Math.PI * 52;
 
+        // Persist score to DB so it shows instantly on next refresh
+        fetch('/api/summary/wellbeing', {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ score: wb })
+        }).catch(() => {});  // fire-and-forget
+
         $('wbScore') && ($('wbScore').textContent = wb + '/100');
         $('wbRingPct') && ($('wbRingPct').textContent = wb + '%');
 
@@ -800,6 +808,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Restore cached wellbeing score from DB so the ring doesn't flash 0 on refresh
+    async function restoreWbCache() {
+        try {
+            const res = await fetch('/api/summary/wellbeing', { credentials: 'include' });
+            if (!res.ok) return;
+            const { score, date } = await res.json();
+            if (!date || date.slice(0, 10) !== todayISO || typeof score !== 'number') return;
+            const circ = 2 * Math.PI * 52;
+            const ringEl = document.getElementById('wbRingFill');
+            if (ringEl) {
+                ringEl.style.transition = 'none';
+                ringEl.style.strokeDashoffset = circ - (circ * score / 100);
+                requestAnimationFrame(() => { ringEl.style.transition = ''; });
+            }
+            const scoreEl = document.getElementById('wbScore');
+            if (scoreEl) scoreEl.textContent = score + '/100';
+            const pctEl = document.getElementById('wbRingPct');
+            if (pctEl) pctEl.textContent = score + '%';
+        } catch (e) { /* ignore */ }
+    }
+
+    restoreWbCache();
     loadDashboard().catch(() => { /* Not on dashboard page — safe to ignore */ });
 
     // =========================

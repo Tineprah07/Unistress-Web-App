@@ -293,6 +293,19 @@ async function runInit() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_enabled BOOLEAN DEFAULT FALSE;
     `);
 
+    // Wellbeing Scores
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS wellbeing_scores (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        score SMALLINT NOT NULL CHECK (score BETWEEN 0 AND 100),
+        score_date DATE NOT NULL DEFAULT CURRENT_DATE,
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_wellbeing_user ON wellbeing_scores(user_id);
+    `);
+    console.log("✅ wellbeing_scores table is ready");
+
     await pool.query("COMMIT");
     console.log("\n🎉 All UniStress tables initialised successfully!");
   } catch (error) {

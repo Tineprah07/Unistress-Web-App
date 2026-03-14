@@ -245,18 +245,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (goalText) goalText.textContent = 'Avg: ' + avg + ' hrs';
         if (goalBar) { goalBar.max = SLEEP_GOAL; goalBar.value = Math.min(avg, SLEEP_GOAL); }
 
-        // Hero ring
+        // Hero ring — last night's sleep
+        let lastNight = 0;
+        if (fitbitConnected && fitbitSleepData && fitbitSleepData.total_minutes > 0) {
+            lastNight = Math.round((parseFloat(fitbitSleepData.total_hours) || 0) * 10) / 10;
+        } else if (entries.length > 0) {
+            lastNight = Math.round(entries[0].duration * 10) / 10;
+        }
+
         if (heroRingFill) {
             const circumference = 326.73;
-            const pct = Math.min(avg / SLEEP_GOAL, 1);
+            const pct = Math.min(lastNight / SLEEP_GOAL, 1);
             heroRingFill.style.strokeDashoffset = circumference - (pct * circumference);
         }
-        if (heroRingValue) heroRingValue.textContent = avg;
+        if (heroRingValue) heroRingValue.textContent = lastNight;
 
         if (heroSubtitle) {
-            if (avg >= 7 && avg <= 9) heroSubtitle.textContent = "Great! You're in the healthy sleep range.";
-            else if (avg > 0 && avg < 7) heroSubtitle.textContent = "Try to get more sleep — aim for 7-9 hours.";
-            else if (avg > 9) heroSubtitle.textContent = "You're sleeping well! Watch for oversleeping.";
+            if (lastNight >= 7 && lastNight <= 9) heroSubtitle.textContent = "Great sleep last night! You're in the healthy range.";
+            else if (lastNight > 0 && lastNight < 7) heroSubtitle.textContent = "Last night was short — aim for 7-9 hours tonight.";
+            else if (lastNight > 9) heroSubtitle.textContent = "Long sleep last night. Consistency matters most.";
             else heroSubtitle.textContent = "Track your rest, improve your focus.";
         }
 

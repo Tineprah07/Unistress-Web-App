@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // CONSTANTS & ELEMENTS
     // =========================
     const WEEKLY_GOAL = 150;
+    const DAILY_GOAL  = 30;
 
     const form           = document.getElementById('exerciseForm');
     const typePicker     = document.getElementById('typePicker');
@@ -235,19 +236,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (heroTitle) heroTitle.textContent = exercises.length + ' Exercise' + (exercises.length !== 1 ? 's' : '');
 
+        const todayManual = exercises.filter(e => e.date.split('T')[0] === todayStr()).reduce((sum, e) => sum + e.duration, 0);
+        const todayFitbit = fitbitConnected ? getFitbitMinutes(todayStr()) : 0;
+        const todayTotal  = todayManual + todayFitbit;
+
         if (heroSubtitle) {
-            if (weekMinutes >= WEEKLY_GOAL) heroSubtitle.textContent = "Amazing! You've hit your weekly goal of " + WEEKLY_GOAL + " min!";
-            else if (weekMinutes > 0) heroSubtitle.textContent = (WEEKLY_GOAL - weekMinutes) + " min left to reach your " + WEEKLY_GOAL + " min weekly goal.";
-            else heroSubtitle.textContent = "Stay active, stay sharp. Track your exercise this week.";
+            if (todayTotal >= DAILY_GOAL) heroSubtitle.textContent = "Daily goal hit! Great work today.";
+            else if (todayTotal > 0) heroSubtitle.textContent = (DAILY_GOAL - todayTotal) + " min left to hit today's goal.";
+            else heroSubtitle.textContent = "Stay active, stay sharp. Log today's exercise.";
         }
 
         if (heroRingFill) {
             const circumference = 326.73;
-            const pct = Math.min(weekMinutes / WEEKLY_GOAL, 1);
+            const pct = Math.min(todayTotal / DAILY_GOAL, 1);
             heroRingFill.style.strokeDashoffset = circumference - (pct * circumference);
         }
-        if (heroRingValue) heroRingValue.textContent = weekMinutes;
-        if (heroRingTotal) heroRingTotal.textContent = '/' + WEEKLY_GOAL;
+        if (heroRingValue) heroRingValue.textContent = todayTotal;
+        if (heroRingTotal) heroRingTotal.textContent = '/' + DAILY_GOAL;
     }
 
     function getWeekMinutes(exs) {

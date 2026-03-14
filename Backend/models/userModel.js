@@ -114,3 +114,4 @@ export async function updateNotificationPref(userId, enabled) {
   const res = await pool.query(query, [userId, enabled]);
   return res.rows[0]?.notification_enabled || false;
 }
+
