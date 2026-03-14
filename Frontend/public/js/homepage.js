@@ -596,13 +596,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const wb = Math.round(stressScore + exerciseScore + sleepScore + hydrationScore + focusScore);
         const circumference = 2 * Math.PI * 52;
 
-        // Persist score to DB so it shows instantly on next refresh
-        fetch('/api/summary/wellbeing', {
-            method: 'PUT',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ score: wb })
-        }).catch(() => {});  // fire-and-forget
+        // Only persist manual-only score if Fitbit isn't connected
+        // (Fitbit-enriched score is saved in loadFitbitDashboard instead)
+        if (!window.Fitbit || !Fitbit.connected) {
+            fetch('/api/summary/wellbeing', {
+                method: 'PUT',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ score: wb })
+            }).catch(() => {});
+        }
 
         $('wbScore') && ($('wbScore').textContent = wb + '/100');
         $('wbRingPct') && ($('wbRingPct').textContent = wb + '%');
@@ -931,6 +934,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (wbScoreEl) wbScoreEl.textContent = wbF + '/100';
         if (wbPctEl)   wbPctEl.textContent   = wbF + '%';
         if (wbRingEl)  wbRingEl.style.strokeDashoffset = circumF - (circumF * wbF / 100);
+
+        // Persist the enriched score to DB
+        fetch('/api/summary/wellbeing', {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ score: wbF })
+        }).catch(() => {});
+
         if (wbMsgEl) {
             var msgF = wbF >= 80 ? "Outstanding! You're taking great care of yourself today."
                      : wbF >= 60 ? "Good progress! Keep up the healthy habits."
