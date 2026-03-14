@@ -956,46 +956,62 @@ document.addEventListener('DOMContentLoaded', () => {
             wbMsgEl.textContent = msgF;
         }
 
-        // ── Enrich Weekly Overview Chart with Fitbit today data ──
+        // ── Enrich Weekly Overview Chart with full-week Fitbit steps ──
         try {
-            var todayIdx = _dashWeekDates.indexOf(new Date().toISOString().split('T')[0]);
-            if (todayIdx >= 0 && _dashWeekExerciseVals.length === 7 && _dashWeekSleepVals.length === 7) {
+            var weekStart = _dashWeekDates[0];
+            var weekEnd   = _dashWeekDates[6];
 
-                // Add today's Fitbit active minutes to the exercise bar
-                if (fitbitActiveMins > 0) {
-                    _dashWeekExerciseVals[todayIdx] += fitbitActiveMins;
-                }
+            if (weekStart && weekEnd && _dashWeekExerciseVals.length === 7) {
+                var stepsData = await Fitbit.getSteps(weekStart, weekEnd);
 
-                // Use Fitbit sleep if it's higher than the manual log for today
-                var fitbitSleepHrs2 = sleep ? (parseFloat(sleep.total_hours) || 0) : 0;
-                if (fitbitSleepHrs2 > _dashWeekSleepVals[todayIdx]) {
-                    _dashWeekSleepVals[todayIdx] = fitbitSleepHrs2;
-                }
+                if (stepsData && Array.isArray(stepsData)) {
+                    var todayStr2 = new Date().toISOString().split('T')[0];
+                    var fitbitWeekExercise = 0;
 
-                // Re-render the chart with merged data
-                var barsEl2 = document.getElementById('dashChartBars');
-                if (barsEl2) {
-                    renderDashBarChart(barsEl2, [
-                        { vals: _dashWeekStressVals,   max: Math.max.apply(null, _dashWeekStressVals.concat([10])),   barClass: 'bar-stress' },
-                        { vals: _dashWeekExerciseVals, max: Math.max.apply(null, _dashWeekExerciseVals.concat([30])), barClass: 'bar-exercise' },
-                        { vals: _dashWeekSleepVals,    max: Math.max.apply(null, _dashWeekSleepVals.concat([8])),     barClass: 'bar-sleep' }
-                    ]);
-                }
+                    stepsData.forEach(function(d) {
+                        var idx = _dashWeekDates.indexOf(d.date);
+                        if (idx < 0) return;
+                        // For today use the more accurate active_minutes if higher than steps/100
+                        var stepsMin = Math.round((d.steps || 0) / 100);
+                        var contribution = (d.date === todayStr2 && fitbitActiveMins > stepsMin)
+                            ? fitbitActiveMins
+                            : stepsMin;
+                        _dashWeekExerciseVals[idx] += contribution;
+                        fitbitWeekExercise += contribution;
+                    });
 
-                // Enrich Weekly Summary exercise total
-                var weekExEl = document.getElementById('weekExercise');
-                if (weekExEl && fitbitActiveMins > 0) {
-                    var manualWeekEx = parseInt(weekExEl.textContent) || 0;
-                    weekExEl.textContent = (manualWeekEx + fitbitActiveMins) + ' min';
-                }
+                    // Enrich today's sleep bar with Fitbit sleep if higher than manual
+                    var fitbitSleepHrs2 = sleep ? (parseFloat(sleep.total_hours) || 0) : 0;
+                    var todayIdx = _dashWeekDates.indexOf(todayStr2);
+                    if (todayIdx >= 0 && fitbitSleepHrs2 > _dashWeekSleepVals[todayIdx]) {
+                        _dashWeekSleepVals[todayIdx] = fitbitSleepHrs2;
+                    }
 
-                // Enrich Weekly Summary sleep
-                if (fitbitSleepHrs2 > 0) {
-                    var weekSlEl = document.getElementById('weekSleep');
-                    if (weekSlEl) {
-                        var currentAvg = parseFloat(weekSlEl.textContent) || 0;
-                        if (fitbitSleepHrs2 > currentAvg) {
-                            weekSlEl.textContent = fitbitSleepHrs2.toFixed(1) + ' hrs';
+                    // Re-render the chart with merged data
+                    var barsEl2 = document.getElementById('dashChartBars');
+                    if (barsEl2) {
+                        renderDashBarChart(barsEl2, [
+                            { vals: _dashWeekStressVals,   max: Math.max.apply(null, _dashWeekStressVals.concat([10])),   barClass: 'bar-stress' },
+                            { vals: _dashWeekExerciseVals, max: Math.max.apply(null, _dashWeekExerciseVals.concat([30])), barClass: 'bar-exercise' },
+                            { vals: _dashWeekSleepVals,    max: Math.max.apply(null, _dashWeekSleepVals.concat([8])),     barClass: 'bar-sleep' }
+                        ]);
+                    }
+
+                    // Enrich Weekly Summary exercise total
+                    var weekExEl = document.getElementById('weekExercise');
+                    if (weekExEl && fitbitWeekExercise > 0) {
+                        var manualWeekEx = parseInt(weekExEl.textContent) || 0;
+                        weekExEl.textContent = (manualWeekEx + fitbitWeekExercise) + ' min';
+                    }
+
+                    // Enrich Weekly Summary sleep
+                    if (fitbitSleepHrs2 > 0) {
+                        var weekSlEl = document.getElementById('weekSleep');
+                        if (weekSlEl) {
+                            var currentAvg = parseFloat(weekSlEl.textContent) || 0;
+                            if (fitbitSleepHrs2 > currentAvg) {
+                                weekSlEl.textContent = fitbitSleepHrs2.toFixed(1) + ' hrs';
+                            }
                         }
                     }
                 }
