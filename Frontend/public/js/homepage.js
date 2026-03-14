@@ -613,6 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const ringFill = $('wbRingFill');
         if (ringFill) {
             const offset = circumference - (circumference * wb / 100);
+            _wbLiveSet = true;
             setTimeout(() => { ringFill.style.strokeDashoffset = offset; }, 100);
         }
 
@@ -811,6 +812,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Guard: set to true once live dashboard data has painted the ring,
+    // so a slow-resolving restoreWbCache fetch cannot overwrite it.
+    let _wbLiveSet = false;
+
     // Restore cached wellbeing score from DB so the ring doesn't flash 0 on refresh
     async function restoreWbCache() {
         try {
@@ -818,12 +823,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!res.ok) return;
             const { score, date } = await res.json();
             if (!date || date.slice(0, 10) !== todayISO || typeof score !== 'number') return;
+            // If live data has already painted the ring, don't overwrite it
+            if (_wbLiveSet) return;
             const circ = 2 * Math.PI * 52;
             const ringEl = document.getElementById('wbRingFill');
             if (ringEl) {
                 ringEl.style.transition = 'none';
                 ringEl.style.strokeDashoffset = circ - (circ * score / 100);
-                requestAnimationFrame(() => { ringEl.style.transition = ''; });
+                // Force reflow then restore transition after a short delay
+                void ringEl.getBoundingClientRect();
+                setTimeout(() => { ringEl.style.transition = ''; }, 50);
             }
             const scoreEl = document.getElementById('wbScore');
             if (scoreEl) scoreEl.textContent = score + '/100';
@@ -931,6 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
         var wbPctEl   = document.getElementById('wbRingPct');
         var wbRingEl  = document.getElementById('wbRingFill');
         var wbMsgEl   = document.getElementById('wbMessage');
+        _wbLiveSet = true;
         if (wbScoreEl) wbScoreEl.textContent = wbF + '/100';
         if (wbPctEl)   wbPctEl.textContent   = wbF + '%';
         if (wbRingEl)  wbRingEl.style.strokeDashoffset = circumF - (circumF * wbF / 100);
