@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // In-memory cache
     let entries = [];
 
-    const DAILY_GOAL  = 8;
-    const WEEKLY_GOAL = DAILY_GOAL * 7;
+    let DAILY_GOAL  = 8;
+    let WEEKLY_GOAL = DAILY_GOAL * 7;
     const ML_PER_GLASS = 250;
 
     const glassCountEl   = document.getElementById('glassCount');
@@ -50,6 +50,75 @@ document.addEventListener('DOMContentLoaded', () => {
     const customAmount   = document.getElementById('customAmount');
     const toast          = document.getElementById('toast');
     const toastMsg       = document.getElementById('toastMsg');
+
+    // Goal loading and editing
+    async function loadGoals() {
+        try {
+            const goals = await apiGet('/api/goals');
+            if (goals && !goals.error && goals.hydration_daily_glasses) {
+                DAILY_GOAL = goals.hydration_daily_glasses;
+                WEEKLY_GOAL = DAILY_GOAL * 7;
+            }
+        } catch (e) { /* use defaults */ }
+    }
+
+    function openGoalPopover() {
+        document.querySelector('.goal-popover')?.remove();
+        const btn = document.getElementById('editGoalsBtn');
+        const rect = btn.getBoundingClientRect();
+
+        const pop = document.createElement('div');
+        pop.className = 'goal-popover';
+        pop.innerHTML = `
+            <header class="goal-popover-header">
+                <span class="goal-popover-title"><i class="fa-solid fa-bullseye"></i> Hydration Goals</span>
+                <button class="goal-popover-close" type="button"><i class="fa-solid fa-xmark"></i></button>
+            </header>
+            <div class="goal-popover-divider">
+                <div class="goal-field">
+                    <label class="goal-field-label">Daily <span class="goal-field-hint">glasses/day</span></label>
+                    <input class="goal-field-input" type="number" id="goalDailyG" min="1" max="30" value="${DAILY_GOAL}">
+                </div>
+                <div class="goal-field">
+                    <label class="goal-field-label">Weekly <span class="goal-field-hint">glasses/week</span></label>
+                    <input class="goal-field-input" type="number" id="goalWeeklyG" min="7" max="210" value="${WEEKLY_GOAL}">
+                </div>
+            </div>
+            <div class="goal-popover-actions">
+                <button class="goal-save-btn" type="button">Save</button>
+                <button class="goal-cancel-btn" type="button">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(pop);
+
+        let left = rect.left;
+        if (left + 290 > window.innerWidth - 12) left = window.innerWidth - 302;
+        if (left < 12) left = 12;
+        pop.style.top  = (rect.bottom + 8) + 'px';
+        pop.style.left = left + 'px';
+
+        const dailyIn  = pop.querySelector('#goalDailyG');
+        const weeklyIn = pop.querySelector('#goalWeeklyG');
+        dailyIn.addEventListener('input',  () => { weeklyIn.value = Math.round(parseFloat(dailyIn.value  || 0) * 7); });
+        weeklyIn.addEventListener('input', () => { dailyIn.value  = Math.round(parseFloat(weeklyIn.value || 0) / 7); });
+
+        function close() { pop.remove(); document.removeEventListener('mousedown', outside); }
+        function outside(e) { if (!pop.contains(e.target) && e.target !== btn) close(); }
+        setTimeout(() => document.addEventListener('mousedown', outside), 0);
+        pop.querySelector('.goal-popover-close').addEventListener('click', close);
+        pop.querySelector('.goal-cancel-btn').addEventListener('click', close);
+
+        pop.querySelector('.goal-save-btn').addEventListener('click', () => {
+            const d = parseInt(dailyIn.value, 10);
+            const w = parseInt(weeklyIn.value, 10);
+            if (!d || d < 1 || !w || w < 7) return;
+            DAILY_GOAL = d; WEEKLY_GOAL = w;
+            renderAll(); close();
+            fetch('/api/goals', { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hydration_daily_glasses: d }) }).catch(() => {});
+        });
+    }
+
+    document.getElementById('editGoalsBtn')?.addEventListener('click', openGoalPopover);
 
     const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -344,6 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderAll() { renderStats(); renderChart(); renderHistory(); updateSameYesterday(); }
 
     async function init() {
+        await loadGoals();
         const data = await apiGet('/api/hydration?limit=200');
         if (data && Array.isArray(data)) entries = data.map(mapEntry);
         renderAll();

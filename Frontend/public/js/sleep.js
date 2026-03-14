@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let fitbitSleepData = null; // Today's Fitbit sleep data
     let fitbitWeeklySleep = {}; // Keyed by date string YYYY-MM-DD -> hours
 
-    const SLEEP_GOAL = 8;
+    let SLEEP_GOAL = 8;
 
     const form          = document.getElementById('sleepForm');
     const qualityPicker = document.getElementById('qualityPicker');
@@ -52,6 +52,74 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyList    = document.getElementById('historyList');
     const historyEmpty   = document.getElementById('historyEmpty');
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+    // Goal loading and editing
+    async function loadGoals() {
+        try {
+            const goals = await apiGet('/api/goals');
+            if (goals && !goals.error && goals.sleep_hours) {
+                SLEEP_GOAL = parseFloat(goals.sleep_hours);
+            }
+        } catch (e) { /* use default */ }
+    }
+
+    function openGoalPopover() {
+        document.querySelector('.goal-popover')?.remove();
+        const btn = document.getElementById('editGoalsBtn');
+        const rect = btn.getBoundingClientRect();
+        const weeklyGoal = Math.round(SLEEP_GOAL * 7 * 10) / 10;
+
+        const pop = document.createElement('div');
+        pop.className = 'goal-popover';
+        pop.innerHTML = `
+            <header class="goal-popover-header">
+                <span class="goal-popover-title"><i class="fa-solid fa-bullseye"></i> Sleep Goals</span>
+                <button class="goal-popover-close" type="button"><i class="fa-solid fa-xmark"></i></button>
+            </header>
+            <div class="goal-popover-divider">
+                <div class="goal-field">
+                    <label class="goal-field-label">Nightly <span class="goal-field-hint">hrs/night</span></label>
+                    <input class="goal-field-input" type="number" id="goalNightly" min="4" max="14" step="0.5" value="${SLEEP_GOAL}">
+                </div>
+                <div class="goal-field">
+                    <label class="goal-field-label">Weekly <span class="goal-field-hint">hrs/week</span></label>
+                    <input class="goal-field-input" type="number" id="goalWeeklySleep" min="28" max="98" step="0.5" value="${weeklyGoal}">
+                </div>
+            </div>
+            <div class="goal-popover-actions">
+                <button class="goal-save-btn" type="button">Save</button>
+                <button class="goal-cancel-btn" type="button">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(pop);
+
+        let left = rect.left;
+        if (left + 290 > window.innerWidth - 12) left = window.innerWidth - 302;
+        if (left < 12) left = 12;
+        pop.style.top  = (rect.bottom + 8) + 'px';
+        pop.style.left = left + 'px';
+
+        const nightlyIn = pop.querySelector('#goalNightly');
+        const weeklyIn  = pop.querySelector('#goalWeeklySleep');
+        nightlyIn.addEventListener('input', () => { weeklyIn.value  = Math.round(parseFloat(nightlyIn.value || 0) * 7 * 10) / 10; });
+        weeklyIn.addEventListener('input',  () => { nightlyIn.value = Math.round(parseFloat(weeklyIn.value  || 0) / 7 * 10) / 10; });
+
+        function close() { pop.remove(); document.removeEventListener('mousedown', outside); }
+        function outside(e) { if (!pop.contains(e.target) && e.target !== btn) close(); }
+        setTimeout(() => document.addEventListener('mousedown', outside), 0);
+        pop.querySelector('.goal-popover-close').addEventListener('click', close);
+        pop.querySelector('.goal-cancel-btn').addEventListener('click', close);
+
+        pop.querySelector('.goal-save-btn').addEventListener('click', () => {
+            const val = parseFloat(nightlyIn.value);
+            if (!val || val < 4 || val > 14) return;
+            SLEEP_GOAL = val;
+            renderAll(); close();
+            fetch('/api/goals', { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sleep_hours: val }) }).catch(() => {});
+        });
+    }
+
+    document.getElementById('editGoalsBtn')?.addEventListener('click', openGoalPopover);
 
     const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -259,6 +327,8 @@ document.addEventListener('DOMContentLoaded', () => {
             heroRingFill.style.strokeDashoffset = circumference - (pct * circumference);
         }
         if (heroRingValue) heroRingValue.textContent = lastNight;
+        const heroRingTotal = document.getElementById('heroRingTotal');
+        if (heroRingTotal) heroRingTotal.textContent = '/' + SLEEP_GOAL;
 
         if (heroSubtitle) {
             if (lastNight >= 7 && lastNight <= 9) heroSubtitle.textContent = "Great sleep last night! You're in the healthy range.";
@@ -443,6 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function init() {
+        await loadGoals();
         const data = await apiGet('/api/sleep?limit=200');
         if (data && Array.isArray(data)) entries = data.map(mapEntry);
         applySmartDefaults();

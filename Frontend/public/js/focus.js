@@ -29,8 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // In-memory cache for tasks (from API)
     let tasks = [];
-    const WEEKLY_GOAL = 120;
-    const DAILY_GOAL_SESSIONS = 4;
+    let WEEKLY_GOAL = 120;
+    let DAILY_GOAL_SESSIONS = 4;
 
     // Timer state
     let timerInterval = null;
@@ -73,6 +73,70 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskInput = document.getElementById('taskInput');
     const taskList  = document.getElementById('taskList');
     const taskEmpty = document.getElementById('taskEmpty');
+
+    // Goal loading and editing
+    async function loadGoals() {
+        try {
+            const goals = await apiGet('/api/goals');
+            if (goals && !goals.error) {
+                if (goals.focus_weekly_min) WEEKLY_GOAL = goals.focus_weekly_min;
+                if (goals.focus_daily_sessions) DAILY_GOAL_SESSIONS = goals.focus_daily_sessions;
+            }
+        } catch (e) { /* use defaults */ }
+    }
+
+    function openGoalPopover() {
+        document.querySelector('.goal-popover')?.remove();
+        const btn = document.getElementById('editGoalsBtn');
+        const rect = btn.getBoundingClientRect();
+
+        const pop = document.createElement('div');
+        pop.className = 'goal-popover';
+        pop.innerHTML = `
+            <header class="goal-popover-header">
+                <span class="goal-popover-title"><i class="fa-solid fa-bullseye"></i> Focus Goals</span>
+                <button class="goal-popover-close" type="button"><i class="fa-solid fa-xmark"></i></button>
+            </header>
+            <div class="goal-popover-divider">
+                <div class="goal-field">
+                    <label class="goal-field-label">Daily <span class="goal-field-hint">sessions/day</span></label>
+                    <input class="goal-field-input" type="number" id="goalFocusSess" min="1" max="20" value="${DAILY_GOAL_SESSIONS}">
+                </div>
+                <div class="goal-field">
+                    <label class="goal-field-label">Weekly <span class="goal-field-hint">min/week</span></label>
+                    <input class="goal-field-input" type="number" id="goalFocusWeekly" min="10" max="2000" value="${WEEKLY_GOAL}">
+                </div>
+            </div>
+            <div class="goal-popover-actions">
+                <button class="goal-save-btn" type="button">Save</button>
+                <button class="goal-cancel-btn" type="button">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(pop);
+
+        let left = rect.left;
+        if (left + 290 > window.innerWidth - 12) left = window.innerWidth - 302;
+        if (left < 12) left = 12;
+        pop.style.top  = (rect.bottom + 8) + 'px';
+        pop.style.left = left + 'px';
+
+        function close() { pop.remove(); document.removeEventListener('mousedown', outside); }
+        function outside(e) { if (!pop.contains(e.target) && e.target !== btn) close(); }
+        setTimeout(() => document.addEventListener('mousedown', outside), 0);
+        pop.querySelector('.goal-popover-close').addEventListener('click', close);
+        pop.querySelector('.goal-cancel-btn').addEventListener('click', close);
+
+        pop.querySelector('.goal-save-btn').addEventListener('click', () => {
+            const s = parseInt(pop.querySelector('#goalFocusSess').value, 10);
+            const w = parseInt(pop.querySelector('#goalFocusWeekly').value, 10);
+            if (!s || s < 1 || !w || w < 10) return;
+            DAILY_GOAL_SESSIONS = s; WEEKLY_GOAL = w;
+            renderAll(); close();
+            fetch('/api/goals', { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ focus_weekly_min: w, focus_daily_sessions: s }) }).catch(() => {});
+        });
+    }
+
+    document.getElementById('editGoalsBtn')?.addEventListener('click', openGoalPopover);
 
     const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -445,6 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderAll() { renderStats(); renderChart(); renderHistory(); renderTasks(); }
 
     async function init() {
+        await loadGoals();
         const [focusData, tasksData] = await Promise.all([apiGet('/api/focus?limit=200'), apiGet('/api/tasks')]);
         if (focusData && Array.isArray(focusData)) entries = focusData.map(mapEntry);
         if (tasksData && Array.isArray(tasksData)) tasks = tasksData.map(mapTask);

@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let fitbitConnected = false;
     let currentHeartRate = null;
 
+    let DAILY_CHECKIN_GOAL = 3;
+
     const checkinForm = document.getElementById('checkinForm');
     const stressSlider = document.getElementById('stressSlider');
     const sliderValue = document.getElementById('sliderValue');
@@ -67,6 +69,73 @@ document.addEventListener('DOMContentLoaded', () => {
     const hrPulseIcon = document.getElementById('hrPulseIcon');
     const hrLabel = document.getElementById('hrLabel');
     const hrLastSync = document.getElementById('hrLastSync');
+
+    // Goal loading and editing
+    async function loadGoals() {
+        try {
+            const goals = await apiGet('/api/goals');
+            if (goals && !goals.error && goals.stress_daily_checkins) {
+                DAILY_CHECKIN_GOAL = goals.stress_daily_checkins;
+            }
+        } catch (e) { /* use default */ }
+    }
+
+    function openGoalPopover() {
+        document.querySelector('.goal-popover')?.remove();
+        const btn = document.getElementById('editGoalsBtn');
+        const rect = btn.getBoundingClientRect();
+
+        const pop = document.createElement('div');
+        pop.className = 'goal-popover';
+        pop.innerHTML = `
+            <header class="goal-popover-header">
+                <span class="goal-popover-title"><i class="fa-solid fa-bullseye"></i> Stress Goals</span>
+                <button class="goal-popover-close" type="button"><i class="fa-solid fa-xmark"></i></button>
+            </header>
+            <div class="goal-popover-divider">
+                <div class="goal-field">
+                    <label class="goal-field-label">Daily <span class="goal-field-hint">/day</span></label>
+                    <input class="goal-field-input" type="number" id="goalDailyCI" min="1" max="10" value="${DAILY_CHECKIN_GOAL}">
+                </div>
+                <div class="goal-field">
+                    <label class="goal-field-label">Weekly <span class="goal-field-hint">/week</span></label>
+                    <input class="goal-field-input" type="number" id="goalWeeklyCI" min="7" max="70" value="${DAILY_CHECKIN_GOAL * 7}">
+                </div>
+            </div>
+            <div class="goal-popover-actions">
+                <button class="goal-save-btn" type="button">Save</button>
+                <button class="goal-cancel-btn" type="button">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(pop);
+
+        let left = rect.left;
+        if (left + 290 > window.innerWidth - 12) left = window.innerWidth - 302;
+        if (left < 12) left = 12;
+        pop.style.top  = (rect.bottom + 8) + 'px';
+        pop.style.left = left + 'px';
+
+        const dailyIn  = pop.querySelector('#goalDailyCI');
+        const weeklyIn = pop.querySelector('#goalWeeklyCI');
+        dailyIn.addEventListener('input',  () => { weeklyIn.value = Math.round(parseFloat(dailyIn.value  || 0) * 7); });
+        weeklyIn.addEventListener('input', () => { dailyIn.value  = Math.round(parseFloat(weeklyIn.value || 0) / 7); });
+
+        function close() { pop.remove(); document.removeEventListener('mousedown', outside); }
+        function outside(e) { if (!pop.contains(e.target) && e.target !== btn) close(); }
+        setTimeout(() => document.addEventListener('mousedown', outside), 0);
+        pop.querySelector('.goal-popover-close').addEventListener('click', close);
+        pop.querySelector('.goal-cancel-btn').addEventListener('click', close);
+
+        pop.querySelector('.goal-save-btn').addEventListener('click', () => {
+            const val = parseInt(dailyIn.value, 10);
+            if (!val || val < 1 || val > 10) return;
+            DAILY_CHECKIN_GOAL = val;
+            renderAll(); close();
+            fetch('/api/goals', { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ stress_daily_checkins: val }) }).catch(() => {});
+        });
+    }
+
+    document.getElementById('editGoalsBtn')?.addEventListener('click', openGoalPopover);
 
     const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const DAY_SHORT = ['S','M','T','W','T','F','S'];
@@ -279,13 +348,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hero ring (today check-ins vs goal 3)
         if (heroRingFill) {
             const circ = 326.73;
-            const pct = Math.min(todayEntries.length / 3, 1);
+            const pct = Math.min(todayEntries.length / DAILY_CHECKIN_GOAL, 1);
             heroRingFill.style.strokeDashoffset = circ - (pct * circ);
         }
         if (heroRingValue) heroRingValue.textContent = todayEntries.length;
 
         if (heroSubtitle) {
-            if (todayEntries.length >= 3) heroSubtitle.textContent = "Great self-awareness today! Keep tracking your patterns.";
+            if (todayEntries.length >= DAILY_CHECKIN_GOAL) heroSubtitle.textContent = "Great self-awareness today! Keep tracking your patterns.";
             else if (todayEntries.length > 0) heroSubtitle.textContent = "Good start. Try checking in again later to spot trends.";
             else heroSubtitle.textContent = "Understand your stress, take back control.";
         }
@@ -507,6 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function init() {
+        await loadGoals();
         const data = await apiGet('/api/stress?limit=200');
         if (data && Array.isArray(data)) entries = data.map(mapEntry);
         applySmartDefaults();

@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================
     // CONSTANTS & ELEMENTS
     // =========================
-    const WEEKLY_GOAL = 150;
-    const DAILY_GOAL  = 30;
+    let WEEKLY_GOAL = 150;
+    let DAILY_GOAL  = 30;
 
     const form           = document.getElementById('exerciseForm');
     const typePicker     = document.getElementById('typePicker');
@@ -56,6 +56,75 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
     const pageDateEl     = document.getElementById('pageDate');
+
+    // Goal loading and editing
+    async function loadGoals() {
+        try {
+            const goals = await apiGet('/api/goals');
+            if (goals && !goals.error) {
+                if (goals.exercise_weekly_min) WEEKLY_GOAL = goals.exercise_weekly_min;
+                DAILY_GOAL = Math.round(WEEKLY_GOAL / 7);
+            }
+        } catch (e) { /* use defaults */ }
+    }
+
+    function openGoalPopover() {
+        document.querySelector('.goal-popover')?.remove();
+        const btn = document.getElementById('editGoalsBtn');
+        const rect = btn.getBoundingClientRect();
+
+        const pop = document.createElement('div');
+        pop.className = 'goal-popover';
+        pop.innerHTML = `
+            <header class="goal-popover-header">
+                <span class="goal-popover-title"><i class="fa-solid fa-bullseye"></i> Exercise Goals</span>
+                <button class="goal-popover-close" type="button"><i class="fa-solid fa-xmark"></i></button>
+            </header>
+            <div class="goal-popover-divider">
+                <div class="goal-field">
+                    <label class="goal-field-label">Daily <span class="goal-field-hint">min/day</span></label>
+                    <input class="goal-field-input" type="number" id="goalDaily" min="1" max="300" value="${DAILY_GOAL}">
+                </div>
+                <div class="goal-field">
+                    <label class="goal-field-label">Weekly <span class="goal-field-hint">min/week</span></label>
+                    <input class="goal-field-input" type="number" id="goalWeekly" min="7" max="2100" value="${WEEKLY_GOAL}">
+                </div>
+            </div>
+            <div class="goal-popover-actions">
+                <button class="goal-save-btn" type="button">Save</button>
+                <button class="goal-cancel-btn" type="button">Cancel</button>
+            </div>
+        `;
+        document.body.appendChild(pop);
+
+        let left = rect.left;
+        if (left + 290 > window.innerWidth - 12) left = window.innerWidth - 302;
+        if (left < 12) left = 12;
+        pop.style.top  = (rect.bottom + 8) + 'px';
+        pop.style.left = left + 'px';
+
+        const dailyIn  = pop.querySelector('#goalDaily');
+        const weeklyIn = pop.querySelector('#goalWeekly');
+        dailyIn.addEventListener('input',  () => { weeklyIn.value = Math.round(parseFloat(dailyIn.value  || 0) * 7); });
+        weeklyIn.addEventListener('input', () => { dailyIn.value  = Math.round(parseFloat(weeklyIn.value || 0) / 7); });
+
+        function close() { pop.remove(); document.removeEventListener('mousedown', outside); }
+        function outside(e) { if (!pop.contains(e.target) && e.target !== btn) close(); }
+        setTimeout(() => document.addEventListener('mousedown', outside), 0);
+        pop.querySelector('.goal-popover-close').addEventListener('click', close);
+        pop.querySelector('.goal-cancel-btn').addEventListener('click', close);
+
+        pop.querySelector('.goal-save-btn').addEventListener('click', () => {
+            const d = parseInt(dailyIn.value, 10);
+            const w = parseInt(weeklyIn.value, 10);
+            if (!d || d < 1 || !w || w < 7) return;
+            DAILY_GOAL = d; WEEKLY_GOAL = w;
+            renderAll(); close();
+            fetch('/api/goals', { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exercise_weekly_min: w }) }).catch(() => {});
+        });
+    }
+
+    document.getElementById('editGoalsBtn')?.addEventListener('click', openGoalPopover);
 
     const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -447,6 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function init() {
+        await loadGoals();
         const data = await apiGet('/api/exercise?limit=200');
         if (data && Array.isArray(data)) exercises = data.map(mapEntry);
         applySmartDefaults();
