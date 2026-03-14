@@ -594,7 +594,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const hydrationScore = Math.min(20, (totalGlasses / 8) * 20);
         const focusScore     = Math.min(20, (totalFocus / 25) * 20);
         const wb = Math.round(stressScore + exerciseScore + sleepScore + hydrationScore + focusScore);
-        const circumference = 2 * Math.PI * 52;
 
         // Only persist manual-only score if Fitbit isn't connected
         // (Fitbit-enriched score is saved in loadFitbitDashboard instead)
@@ -607,15 +606,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }).catch(() => {});
         }
 
-        $('wbScore') && ($('wbScore').textContent = wb + '/100');
-        $('wbRingPct') && ($('wbRingPct').textContent = wb + '%');
-
-        const ringFill = $('wbRingFill');
-        if (ringFill) {
-            const offset = circumference - (circumference * wb / 100);
-            _wbLiveSet = true;
-            setTimeout(() => { ringFill.style.strokeDashoffset = offset; }, 100);
-        }
+        _wbLiveSet = true;
+        setWbRing(wb, true);
 
         let msg = 'Start tracking to build your score!';
         if (wb >= 80) msg = "Outstanding! You're taking great care of yourself today.";
@@ -816,6 +808,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // so a slow-resolving restoreWbCache fetch cannot overwrite it.
     let _wbLiveSet = false;
 
+    // Single helper for all wellbeing ring updates — eliminates transition race conditions.
+    // animate=false: instant snap (used by cache restore); animate=true: smooth transition.
+    function setWbRing(score, animate) {
+        const circ = 2 * Math.PI * 52;
+        const ringEl = document.getElementById('wbRingFill');
+        if (!ringEl) return;
+        const offset = circ - (circ * score / 100);
+        if (animate) {
+            ringEl.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)';
+            requestAnimationFrame(() => { ringEl.style.strokeDashoffset = offset; });
+        } else {
+            ringEl.style.transition = 'none';
+            ringEl.style.strokeDashoffset = offset;
+        }
+        const scoreEl = document.getElementById('wbScore');
+        const pctEl = document.getElementById('wbRingPct');
+        if (scoreEl) scoreEl.textContent = score + '/100';
+        if (pctEl) pctEl.textContent = score + '%';
+    }
+
     // Restore cached wellbeing score from DB so the ring doesn't flash 0 on refresh
     async function restoreWbCache() {
         try {
@@ -825,19 +837,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!date || date.slice(0, 10) !== todayISO || typeof score !== 'number') return;
             // If live data has already painted the ring, don't overwrite it
             if (_wbLiveSet) return;
-            const circ = 2 * Math.PI * 52;
-            const ringEl = document.getElementById('wbRingFill');
-            if (ringEl) {
-                ringEl.style.transition = 'none';
-                ringEl.style.strokeDashoffset = circ - (circ * score / 100);
-                // Force reflow then restore transition after a short delay
-                void ringEl.getBoundingClientRect();
-                setTimeout(() => { ringEl.style.transition = ''; }, 50);
-            }
-            const scoreEl = document.getElementById('wbScore');
-            if (scoreEl) scoreEl.textContent = score + '/100';
-            const pctEl = document.getElementById('wbRingPct');
-            if (pctEl) pctEl.textContent = score + '%';
+            setWbRing(score, false);
         } catch (e) { /* ignore */ }
     }
 
@@ -934,16 +934,10 @@ document.addEventListener('DOMContentLoaded', () => {
         var hydScF     = Math.min(20, (_dashGlasses / 8) * 20);
         var focScF     = Math.min(20, (_dashFocus / 25) * 20);
         var wbF        = Math.min(100, Math.round(stressScF + exScF + slScF + hydScF + focScF + hrBonus));
-        var circumF    = 2 * Math.PI * 52;
 
-        var wbScoreEl = document.getElementById('wbScore');
-        var wbPctEl   = document.getElementById('wbRingPct');
-        var wbRingEl  = document.getElementById('wbRingFill');
         var wbMsgEl   = document.getElementById('wbMessage');
         _wbLiveSet = true;
-        if (wbScoreEl) wbScoreEl.textContent = wbF + '/100';
-        if (wbPctEl)   wbPctEl.textContent   = wbF + '%';
-        if (wbRingEl)  wbRingEl.style.strokeDashoffset = circumF - (circumF * wbF / 100);
+        setWbRing(wbF, true);
 
         // Persist the enriched score to DB
         fetch('/api/summary/wellbeing', {
@@ -998,15 +992,9 @@ document.addEventListener('DOMContentLoaded', () => {
         var hydScR    = Math.min(20, (_dashGlasses / 8) * 20);
         var focScR    = Math.min(20, (_dashFocus / 25) * 20);
         var wbR       = Math.round(stressScR + exScR + slScR + hydScR + focScR);
-        var circumR   = 2 * Math.PI * 52;
 
-        var wbScoreElR = document.getElementById('wbScore');
-        var wbPctElR   = document.getElementById('wbRingPct');
-        var wbRingElR  = document.getElementById('wbRingFill');
+        setWbRing(wbR, true);
         var wbMsgElR   = document.getElementById('wbMessage');
-        if (wbScoreElR) wbScoreElR.textContent = wbR + '/100';
-        if (wbPctElR)   wbPctElR.textContent   = wbR + '%';
-        if (wbRingElR)  wbRingElR.style.strokeDashoffset = circumR - (circumR * wbR / 100);
         if (wbMsgElR) {
             var msgR = wbR >= 80 ? "Outstanding! You're taking great care of yourself today."
                      : wbR >= 60 ? "Good progress! Keep up the healthy habits."
