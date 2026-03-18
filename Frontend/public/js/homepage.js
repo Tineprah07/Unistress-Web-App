@@ -672,12 +672,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ──────── WELLBEING SCORE ────────
         const hrBonus        = fitbitHRVal > 0 && fitbitHRVal < 60 ? 5 : fitbitHRVal >= 60 && fitbitHRVal < 75 ? 3 : 0;
-        const stressScore    = tStress.length ? Math.max(0, 20 - (avgStress * 2)) : 0;
-        const exerciseScore  = Math.min(20, (mergedExercise / 30) * 20);
-        const sleepScore     = Math.min(20, (mergedSleep / 7) * 20);
-        const hydrationScore = Math.min(20, (totalGlasses / 8) * 20);
-        const focusScore     = Math.min(20, (totalFocus / 25) * 20);
-        const wb = Math.min(100, Math.round(stressScore + exerciseScore + sleepScore + hydrationScore + focusScore + hrBonus));
+        const stressScore    = tStress.length ? Math.max(0, 25 - (avgStress * 2.5)) : 0;
+        const exerciseScore  = Math.min(25, (mergedExercise / 30) * 25);
+        const sleepScore     = Math.min(25, (mergedSleep / 7) * 25);
+        const hydrationScore = Math.min(25, (totalGlasses / 8) * 25);
+        const wb = Math.min(100, Math.round(stressScore + exerciseScore + sleepScore + hydrationScore + hrBonus));
 
         fetch('/api/summary/wellbeing', {
             method: 'PUT',
