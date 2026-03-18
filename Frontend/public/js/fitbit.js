@@ -49,19 +49,37 @@
             } catch (e) { console.error('Fitbit disconnect:', e); }
         },
 
-        async getActivity(refresh) {
-            try { var r = await fetch('/api/fitbit/activity' + (refresh ? '?refresh=true' : ''), { credentials: 'include' }); return r.ok ? r.json() : null; }
-            catch (e) { return null; }
+        async getActivity(refresh, date) {
+            try {
+                var params = [];
+                if (date) params.push('date=' + date);
+                if (refresh) params.push('refresh=true');
+                var qs = params.length ? '?' + params.join('&') : '';
+                var r = await fetch('/api/fitbit/activity' + qs, { credentials: 'include' });
+                return r.ok ? r.json() : null;
+            } catch (e) { return null; }
         },
 
-        async getSleep(refresh) {
-            try { var r = await fetch('/api/fitbit/sleep' + (refresh ? '?refresh=true' : ''), { credentials: 'include' }); return r.ok ? r.json() : null; }
-            catch (e) { return null; }
+        async getSleep(refresh, date) {
+            try {
+                var params = [];
+                if (date) params.push('date=' + date);
+                if (refresh) params.push('refresh=true');
+                var qs = params.length ? '?' + params.join('&') : '';
+                var r = await fetch('/api/fitbit/sleep' + qs, { credentials: 'include' });
+                return r.ok ? r.json() : null;
+            } catch (e) { return null; }
         },
 
-        async getHeartRate(refresh) {
-            try { var r = await fetch('/api/fitbit/heart-rate' + (refresh ? '?refresh=true' : ''), { credentials: 'include' }); return r.ok ? r.json() : null; }
-            catch (e) { return null; }
+        async getHeartRate(refresh, date) {
+            try {
+                var params = [];
+                if (date) params.push('date=' + date);
+                if (refresh) params.push('refresh=true');
+                var qs = params.length ? '?' + params.join('&') : '';
+                var r = await fetch('/api/fitbit/heart-rate' + qs, { credentials: 'include' });
+                return r.ok ? r.json() : null;
+            } catch (e) { return null; }
         },
 
         async getSteps(start, end, refresh) {

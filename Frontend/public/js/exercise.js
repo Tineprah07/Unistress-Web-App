@@ -175,10 +175,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const start = startOfWeek.toISOString().split('T')[0];
             const end = now.toISOString().split('T')[0];
 
-            // Fetch steps for the week AND today's activity summary in parallel
-            const [stepsData, activityToday] = await Promise.all([
+            // Build array of dates for the week (Sun to today)
+            const weekDates = [];
+            for (let d = new Date(startOfWeek); d <= now; d.setDate(d.getDate() + 1)) {
+                weekDates.push(d.toISOString().split('T')[0]);
+            }
+
+            // Fetch steps for the week AND activity for each day in parallel
+            const [stepsData, ...activityResults] = await Promise.all([
                 Fitbit.getSteps(start, end),
-                Fitbit.getActivity()
+                ...weekDates.map(date => Fitbit.getActivity(false, date))
             ]);
 
             fitbitDayData = {};
@@ -194,14 +200,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // Override today with real active minutes if available
-            if (activityToday && activityToday.active_minutes > 0) {
-                const todayDate = new Date().toISOString().split('T')[0];
-                if (!fitbitDayData[todayDate]) {
-                    fitbitDayData[todayDate] = { steps: activityToday.steps || 0, activeMinutes: 0, estimatedMinutes: 0 };
+            // Override with real active minutes for each day
+            activityResults.forEach((activity, i) => {
+                if (activity && activity.active_minutes > 0) {
+                    const dateStr = weekDates[i];
+                    if (!fitbitDayData[dateStr]) {
+                        fitbitDayData[dateStr] = { steps: activity.steps || 0, activeMinutes: 0, estimatedMinutes: 0 };
+                    }
+                    fitbitDayData[dateStr].activeMinutes = activity.active_minutes;
+                    if (activity.steps && !fitbitDayData[dateStr].steps) {
+                        fitbitDayData[dateStr].steps = activity.steps;
+                        fitbitDayData[dateStr].estimatedMinutes = stepsToMinutes(activity.steps);
+                    }
                 }
-                fitbitDayData[todayDate].activeMinutes = activityToday.active_minutes;
-            }
+            });
         } catch (e) {
             console.warn('Failed to load Fitbit weekly data:', e);
         }

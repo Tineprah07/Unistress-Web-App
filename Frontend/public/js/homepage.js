@@ -559,6 +559,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // ──────── Fetch Fitbit sleep for each day of the week (for chart and weekly summary) ────────
+        let fitbitWeeklySleepMap = {};
+        if (fitbitConnected && weekDates.length === 7) {
+            try {
+                const datesToFetch = weekDates.filter(d => d <= todayISO);
+                const sleepResults = await Promise.all(
+                    datesToFetch.map(date => Fitbit.getSleep(false, date))
+                );
+                sleepResults.forEach((data, i) => {
+                    if (data && data.total_minutes > 0) {
+                        fitbitWeeklySleepMap[datesToFetch[i]] = parseFloat(data.total_hours) || 0;
+                    }
+                });
+            } catch (e) { /* ignore */ }
+        }
+
         // ──────── MERGED VALUES ────────
         const fitbitActiveMins = fitbitActivity ? (fitbitActivity.active_minutes || 0) : 0;
         const fitbitSleepHrs   = fitbitSleep ? (parseFloat(fitbitSleep.total_hours) || 0) : 0;
@@ -713,10 +729,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     _dashWeekExerciseVals[idx] += contribution;
                     fitbitWeekExercise += contribution;
                 });
-                var todayIdx = _dashWeekDates.indexOf(todayISO);
-                if (todayIdx >= 0 && fitbitSleepHrs > _dashWeekSleepVals[todayIdx]) {
-                    _dashWeekSleepVals[todayIdx] = fitbitSleepHrs;
-                }
+                // Apply Fitbit sleep for all days of the week
+                weekDates.forEach((dateStr, idx) => {
+                    const fbSleep = fitbitWeeklySleepMap[dateStr] || 0;
+                    if (fbSleep > _dashWeekSleepVals[idx]) {
+                        _dashWeekSleepVals[idx] = fbSleep;
+                    }
+                });
             }
 
             renderDashBarChart(barsEl, [
@@ -798,15 +817,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const wAvgStress    = wStress.length ? (wStress.reduce((s,e) => s + (e.stress_level||0), 0) / wStress.length).toFixed(1) : '0';
         const wTotalExercise= wExercise.reduce((s,e) => s + (e.duration||0), 0);
-        const sleepDays     = new Set(wSleep.map(e => e.created_at?.slice(0,10)));
+        const sleepDaysSet  = new Set(wSleep.map(e => e.created_at?.slice(0,10)));
         const hydDays       = new Set(wHydration.map(e => e.created_at?.slice(0,10)));
-        const wAvgSleep     = sleepDays.size ? (wSleep.reduce((s,e) => s + (parseFloat(e.duration_hours)||0), 0) / sleepDays.size).toFixed(1) : '0';
+        let wTotalSleepHrs  = wSleep.reduce((s,e) => s + (parseFloat(e.duration_hours)||0), 0);
+        Object.keys(fitbitWeeklySleepMap).forEach(dateStr => {
+            const fbHrs = fitbitWeeklySleepMap[dateStr];
+            if (fbHrs > 0 && !sleepDaysSet.has(dateStr)) {
+                wTotalSleepHrs += fbHrs;
+                sleepDaysSet.add(dateStr);
+            }
+        });
+        const wAvgSleep     = sleepDaysSet.size ? (wTotalSleepHrs / sleepDaysSet.size).toFixed(1) : '0';
         const wAvgHydration = hydDays.size ? Math.round(wHydration.reduce((s,e) => s + (e.glasses||0), 0) / hydDays.size) : 0;
         const wTotalFocus   = wFocus.reduce((s,e) => s + (e.duration_minutes||0), 0);
 
         $('weekExercise') && ($('weekExercise').textContent = (wTotalExercise + fitbitWeekExercise) + ' min');
         $('weekStress')   && ($('weekStress').textContent = wAvgStress + '/10');
-        $('weekSleep')    && ($('weekSleep').textContent = (fitbitSleepHrs > parseFloat(wAvgSleep) ? fitbitSleepHrs.toFixed(1) : wAvgSleep) + ' hrs');
+        $('weekSleep')    && ($('weekSleep').textContent = wAvgSleep + ' hrs');
         $('weekHydration')&& ($('weekHydration').textContent = wAvgHydration + ' glasses');
         $('weekFocus')    && ($('weekFocus').textContent = wTotalFocus + ' min');
 

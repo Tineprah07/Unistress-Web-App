@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return hrs + 'h ' + mins + 'm';
     }
 
-    // Load Fitbit sleep data
+    // Load Fitbit sleep data for the full week
     async function loadFitbitSleep() {
         if (!window.Fitbit || !Fitbit.connected) {
             fitbitConnected = false;
@@ -169,12 +169,31 @@ document.addEventListener('DOMContentLoaded', () => {
         fitbitConnected = true;
 
         try {
-            const sleepData = await Fitbit.getSleep();
-            if (sleepData && sleepData.total_minutes > 0) {
-                fitbitSleepData = sleepData;
+            // Build array of dates for the current week (Sun to today)
+            const now = new Date();
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            const weekDates = [];
+            for (let d = new Date(startOfWeek); d <= now; d.setDate(d.getDate() + 1)) {
+                weekDates.push(d.toISOString().split('T')[0]);
+            }
 
-                const todayDate = new Date().toISOString().split('T')[0];
-                fitbitWeeklySleep[todayDate] = parseFloat(sleepData.total_hours) || 0;
+            // Fetch sleep for each day in parallel
+            const sleepResults = await Promise.all(
+                weekDates.map(date => Fitbit.getSleep(false, date))
+            );
+
+            fitbitWeeklySleep = {};
+            sleepResults.forEach((data, i) => {
+                if (data && data.total_minutes > 0) {
+                    fitbitWeeklySleep[weekDates[i]] = parseFloat(data.total_hours) || 0;
+                }
+            });
+
+            // Store today's full sleep data for the Fitbit card display
+            const todaySleep = sleepResults[sleepResults.length - 1];
+            if (todaySleep && todaySleep.total_minutes > 0) {
+                fitbitSleepData = todaySleep;
             }
         } catch (e) {
             console.warn('Failed to load Fitbit sleep:', e);
@@ -235,10 +254,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (stagesLegend) {
                     stagesLegend.innerHTML =
-                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-deep"></span>Deep ${stages.deep}m</span>` +
-                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-light"></span>Light ${stages.light}m</span>` +
-                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-rem"></span>REM ${stages.rem}m</span>` +
-                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-wake"></span>Awake ${stages.wake}m</span>`;
+                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-deep"></span>Deep ${stages.deep}m<span class="stage-hint">Body repairs &amp; recharges</span></span>` +
+                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-light"></span>Light ${stages.light}m<span class="stage-hint">Easy rest between cycles</span></span>` +
+                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-rem"></span>REM ${stages.rem}m<span class="stage-hint">Dreams &amp; memory boost</span></span>` +
+                        `<span class="stage-legend-item"><span class="stage-legend-dot stage-wake"></span>Awake ${stages.wake}m<span class="stage-hint">Brief wake-ups at night</span></span>`;
                 }
             }
         }
