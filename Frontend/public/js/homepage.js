@@ -688,11 +688,7 @@ document.addEventListener('DOMContentLoaded', () => {
         _wbLiveSet = true;
         setWbRing(wb, true);
 
-        let msg = 'Start tracking to build your score!';
-        if (wb >= 80) msg = "Outstanding! You're taking great care of yourself today.";
-        else if (wb >= 60) msg = "Good progress! Keep up the healthy habits.";
-        else if (wb >= 40) msg = "Not bad! A few more healthy activities will boost your score.";
-        else if (wb > 0)  msg = "Getting started! Every small step counts.";
+        let msg = "Your activity summary for today.";
         $('wbMessage') && ($('wbMessage').textContent = msg);
 
 
