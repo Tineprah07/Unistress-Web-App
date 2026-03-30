@@ -167,36 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // =============================
     // HEART RATE HELPERS
     // =============================
-    function hrZone(bpm) {
-        if (bpm <= 80) return 'green';
-        if (bpm <= 100) return 'amber';
-        return 'red';
-    }
-
-    function hrZoneLabel(zone) {
-        if (zone === 'green') return 'Relaxed';
-        if (zone === 'amber') return 'Elevated';
-        return 'High';
-    }
-
-    // Convert HR zone to a stress-like score (1-10) for blending
-    function hrToScore(bpm) {
-        if (bpm <= 60) return 1;
-        if (bpm <= 70) return 2;
-        if (bpm <= 80) return 3;
-        if (bpm <= 85) return 5;
-        if (bpm <= 90) return 6;
-        if (bpm <= 100) return 7;
-        if (bpm <= 110) return 8;
-        return 10;
-    }
-
-    // Blend stress level with heart rate into a wellness score (1-10)
-    function wellnessScore(stressLevel, heartRate) {
-        if (!heartRate) return stressLevel;
-        const hrScore = hrToScore(heartRate);
-        return Math.round((stressLevel * 0.6 + hrScore * 0.4) * 10) / 10;
-    }
 
     // Update the heart rate display card
     function renderHeartRate() {
@@ -206,15 +176,14 @@ document.addEventListener('DOMContentLoaded', () => {
         hrCard.classList.toggle('connected', fitbitConnected);
 
         if (fitbitConnected && currentHeartRate) {
-            const zone = hrZone(currentHeartRate);
             if (hrBpm) hrBpm.innerHTML = currentHeartRate + '<small> BPM</small>';
-            if (hrZoneBadge) { hrZoneBadge.textContent = hrZoneLabel(zone); hrZoneBadge.className = 'hr-zone-badge zone-' + zone; }
-            if (hrPulseIcon) hrPulseIcon.className = 'fitbit-stat-icon icon-hr hr-' + zone;
+            if (hrZoneBadge) hrZoneBadge.style.display = 'none';
+            if (hrPulseIcon) hrPulseIcon.className = 'fitbit-stat-icon icon-hr';
             if (hrLabel) hrLabel.textContent = 'Resting heart rate';
             if (hrLastSync) hrLastSync.textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         } else if (fitbitConnected) {
             if (hrBpm) hrBpm.innerHTML = '--<small> BPM</small>';
-            if (hrZoneBadge) { hrZoneBadge.textContent = 'No data'; hrZoneBadge.className = 'hr-zone-badge'; }
+            if (hrZoneBadge) hrZoneBadge.style.display = 'none';
             if (hrPulseIcon) hrPulseIcon.className = 'fitbit-stat-icon icon-hr';
             if (hrLabel) hrLabel.textContent = 'Heart rate unavailable right now';
         }
@@ -342,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const d = new Date(e.date); const now = new Date();
             return (now - d) / 86400000 <= 7;
         });
-        const avg = week.length > 0 ? (week.reduce((s, e) => s + wellnessScore(e.stress, e.heartRate), 0) / week.length).toFixed(1) : 0;
+        const avg = week.length > 0 ? (week.reduce((s, e) => s + e.stress, 0) / week.length).toFixed(1) : 0;
         if (avgStressEl) avgStressEl.textContent = avg;
 
         // Hero ring (today check-ins vs goal 3)
@@ -395,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const ds = d.toISOString().split('T')[0];
             const dayEntries = entries.filter(e => e.date.split('T')[0] === ds);
             if (dayEntries.length > 0) {
-                const avg = dayEntries.reduce((s, e) => s + wellnessScore(e.stress, e.heartRate), 0) / dayEntries.length;
+                const avg = dayEntries.reduce((s, e) => s + e.stress, 0) / dayEntries.length;
                 weekData.push(Math.round(avg * 10) / 10);
             } else {
                 weekData.push(0);
@@ -473,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const dayEntries = entries.filter(e => e.date.split('T')[0] === ds);
             if (dayEntries.length > 0) {
-                dayAvg[d] = dayEntries.reduce((s, e) => s + wellnessScore(e.stress, e.heartRate), 0) / dayEntries.length;
+                dayAvg[d] = dayEntries.reduce((s, e) => s + e.stress, 0) / dayEntries.length;
                 const hrEntries = dayEntries.filter(e => e.heartRate);
                 if (hrEntries.length > 0) {
                     dayHrAvg[d] = Math.round(hrEntries.reduce((s, e) => s + e.heartRate, 0) / hrEntries.length);
@@ -492,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     else if (dayAvg[d] <= 6) level = ' level-2';
                     else level = ' level-3';
                 }
-                cells += `<span class="cal-cell${level}${isToday ? ' today' : ''}" title="${d} ${MONTHS[month]}${dayAvg[d] !== undefined ? ' — Wellness: ' + dayAvg[d].toFixed(1) : ''}${dayHrAvg[d] ? ' | HR: ' + dayHrAvg[d] + ' bpm' : ''}">${d}</span>`;
+                cells += `<span class="cal-cell${level}${isToday ? ' today' : ''}" title="${d} ${MONTHS[month]}${dayAvg[d] !== undefined ? ' — Stress: ' + dayAvg[d].toFixed(1) : ''}${dayHrAvg[d] ? ' | HR: ' + dayHrAvg[d] + ' bpm' : ''}">${d}</span>`;
             }
             moodCalendar.innerHTML = cells;
         }
