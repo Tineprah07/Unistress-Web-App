@@ -123,7 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    function todayStr() { return new Date().toISOString().split('T')[0]; }
+    function _localDate(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+    function todayStr() { return _localDate(new Date()); }
     function formatDate(dateStr) { const d = new Date(dateStr); return d.getDate() + ' ' + MONTHS[d.getMonth()]; }
     function formatTime(dateStr) { const d = new Date(dateStr); return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
 
@@ -258,14 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const today = todayStr();
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const yesterdayStr = _localDate(yesterday);
 
         let current = 0;
         if (metDates[0] === today || metDates[0] === yesterdayStr) {
             for (let i = 0; i < metDates.length; i++) {
                 const expected = new Date();
                 expected.setDate(expected.getDate() - (metDates[0] === today ? i : i + 1));
-                if (metDates[i] === expected.toISOString().split('T')[0]) {
+                if (metDates[i] === _localDate(expected)) {
                     current++;
                 } else break;
             }
@@ -293,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < 7; i++) {
             const d = new Date(now);
             d.setDate(now.getDate() - dayOfWeek + i);
-            const dateStr = d.toISOString().split('T')[0];
+            const dateStr = _localDate(d);
             const glasses = entries
                 .filter(e => e.date.split('T')[0] === dateStr)
                 .reduce((sum, e) => sum + e.glasses, 0);
@@ -388,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getYesterdayGlasses() {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const yStr = yesterday.toISOString().split('T')[0];
+        const yStr = _localDate(yesterday);
         return entries.filter(e => e.date.split('T')[0] === yStr).reduce((sum, e) => sum + e.glasses, 0);
     }
 

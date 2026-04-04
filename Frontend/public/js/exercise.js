@@ -129,7 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    function todayStr() { return new Date().toISOString().split('T')[0]; }
+    function _localDate(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+    function todayStr() { return _localDate(new Date()); }
     function formatDate(dateStr) { const d = new Date(dateStr); return d.getDate() + ' ' + MONTHS[d.getMonth()]; }
     function formatTime(dateStr) { const d = new Date(dateStr); return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
 
@@ -172,13 +173,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const now = new Date();
             const startOfWeek = new Date(now);
             startOfWeek.setDate(now.getDate() - now.getDay());
-            const start = startOfWeek.toISOString().split('T')[0];
-            const end = now.toISOString().split('T')[0];
+            const start = _localDate(startOfWeek);
+            const end = _localDate(now);
 
             // Build array of dates for the week (Sun to today)
             const weekDates = [];
             for (let d = new Date(startOfWeek); d <= now; d.setDate(d.getDate() + 1)) {
-                weekDates.push(d.toISOString().split('T')[0]);
+                weekDates.push(_localDate(d));
             }
 
             // Fetch steps for the week AND activity for each day in parallel
@@ -350,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fitbitConnected) {
             for (let i = 0; i < 7; i++) {
                 const d = new Date(now); d.setDate(now.getDate() - now.getDay() + i);
-                const ds = d.toISOString().split('T')[0];
+                const ds = _localDate(d);
                 if (d <= now) fitbitMin += getFitbitMinutes(ds);
             }
         }
@@ -364,13 +365,13 @@ document.addEventListener('DOMContentLoaded', () => {
         let current = 0;
         const today = todayStr();
         const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const yesterdayStr = _localDate(yesterday);
 
         if (uniqueDates[0] === today || uniqueDates[0] === yesterdayStr) {
             for (let i = 0; i < uniqueDates.length; i++) {
                 const expected = new Date();
                 expected.setDate(expected.getDate() - (uniqueDates[0] === today ? i : i + 1));
-                if (uniqueDates[i] === expected.toISOString().split('T')[0]) current++;
+                if (uniqueDates[i] === _localDate(expected)) current++;
                 else break;
             }
         }
@@ -395,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const weekData = [];
         for (let i = 0; i < 7; i++) {
             const d = new Date(now); d.setDate(now.getDate() - dayOfWeek + i);
-            const dateStr = d.toISOString().split('T')[0];
+            const dateStr = _localDate(d);
             const manualMin = exercises.filter(e => e.date.split('T')[0] === dateStr).reduce((sum, e) => sum + e.duration, 0);
             const fitbitMin = fitbitConnected ? getFitbitMinutes(dateStr) : 0;
             weekData.push({ day: DAYS[i], dateStr, manual: manualMin, fitbit: fitbitMin, total: manualMin + fitbitMin, isToday: i === dayOfWeek });
@@ -553,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (var i = 6; i >= 0; i--) {
             var d = new Date(now);
             d.setDate(now.getDate() - i);
-            dates.push(d.toISOString().split('T')[0]);
+            dates.push(_localDate(d));
         }
         return dates;
     }
@@ -594,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
         var avgEl = document.getElementById('fbStepAvg');
 
         if (svgEl && stepsData && Array.isArray(stepsData)) {
-            var todayStr = new Date().toISOString().split('T')[0];
+            var todayStr = _localDate(new Date());
             var stepMap = {};
             stepsData.forEach(function (d) { stepMap[d.date] = d.steps; });
 

@@ -25,7 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const SIDEBAR_KEY = 'unistress_sidebar';
     const THEME_KEY   = 'unistress_theme';
-    const todayISO    = new Date().toISOString().slice(0, 10);
+    function _localDate(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+    const todayISO    = _localDate(new Date());
     const MONTHS      = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     let currentProfile = {
         id: null,
@@ -445,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < 7; i++) {
             const dd = new Date(sun);
             dd.setDate(sun.getDate() + i);
-            dates.push(dd.toISOString().slice(0, 10));
+            dates.push(_localDate(dd));
         }
         return dates;
     }
@@ -626,7 +627,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // ──────── TREND INDICATORS ────────
-        const yesterdayISO = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+        const _yd = new Date(); _yd.setDate(_yd.getDate() - 1);
+        const yesterdayISO = _localDate(_yd);
         const yStress    = (stress    || []).filter(e => e.created_at?.slice(0,10) === yesterdayISO);
         const yExercise  = (exercise  || []).filter(e => e.created_at?.slice(0,10) === yesterdayISO);
         const ySleep     = (sleep_data|| []).filter(e => e.created_at?.slice(0,10) === yesterdayISO);

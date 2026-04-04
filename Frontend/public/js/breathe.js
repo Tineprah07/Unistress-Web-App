@@ -62,7 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    function todayStr() { return new Date().toISOString().split('T')[0]; }
+    function _localDate(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+    function todayStr() { return _localDate(new Date()); }
     function formatDate(d) { const dt = new Date(d); return dt.getDate() + ' ' + MONTHS[dt.getMonth()]; }
     function formatTime(d) { const dt = new Date(d); return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
 
@@ -231,12 +232,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let streak = 0;
         if (uniqueDates.length > 0) {
             const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-            const yStr = yesterday.toISOString().split('T')[0];
+            const yStr = _localDate(yesterday);
             if (uniqueDates[0] === today || uniqueDates[0] === yStr) {
                 for (let i = 0; i < uniqueDates.length; i++) {
                     const exp = new Date();
                     exp.setDate(exp.getDate() - (uniqueDates[0] === today ? i : i + 1));
-                    if (uniqueDates[i] === exp.toISOString().split('T')[0]) streak++;
+                    if (uniqueDates[i] === _localDate(exp)) streak++;
                     else break;
                 }
             }

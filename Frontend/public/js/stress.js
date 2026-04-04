@@ -146,7 +146,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const FACE_WORDS = { 1:'Very Calm', 2:'Calm', 3:'At Ease', 4:'Neutral', 5:'Slight Tension', 6:'Uneasy', 7:'Stressed', 8:'Very Stressed', 9:'Overwhelmed', 10:'Burnout' };
 
 
-    function todayStr() { return new Date().toISOString().split('T')[0]; }
+    function _localDate(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+    function todayStr() { return _localDate(new Date()); }
     function formatDate(d) { const dt = new Date(d); return dt.getDate() + ' ' + MONTHS[dt.getMonth()]; }
     function formatTime(d) { const dt = new Date(d); return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
 
@@ -337,12 +338,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let streak = 0;
         if (uniqueDates.length > 0) {
             const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-            const yStr = yesterday.toISOString().split('T')[0];
+            const yStr = _localDate(yesterday);
             if (uniqueDates[0] === today || uniqueDates[0] === yStr) {
                 for (let i = 0; i < uniqueDates.length; i++) {
                     const exp = new Date();
                     exp.setDate(exp.getDate() - (uniqueDates[0] === today ? i : i + 1));
-                    if (uniqueDates[i] === exp.toISOString().split('T')[0]) streak++;
+                    if (uniqueDates[i] === _localDate(exp)) streak++;
                     else break;
                 }
             }
@@ -365,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const weekData = [];
         for (let i = 0; i < 7; i++) {
             const d = new Date(now); d.setDate(now.getDate() - dow + i);
-            const ds = d.toISOString().split('T')[0];
+            const ds = _localDate(d);
             const dayEntries = entries.filter(e => e.date.split('T')[0] === ds);
             if (dayEntries.length > 0) {
                 const avg = dayEntries.reduce((s, e) => s + e.stress, 0) / dayEntries.length;

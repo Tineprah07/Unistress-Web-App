@@ -67,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
         Study: 'fa-book-open', Stress: 'fa-heart-pulse', Other: 'fa-ellipsis'
     };
 
-    const today = new Date().toISOString().split('T')[0];
+    function _localDate(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+    const today = _localDate(new Date());
     if (reminderDateIn) reminderDateIn.value = today;
 
     function mapEntry(e) {

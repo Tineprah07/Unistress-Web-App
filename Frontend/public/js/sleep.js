@@ -126,7 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const QUALITY_LABELS = ['', 'Very Poor', 'Poor', 'Okay', 'Good', 'Excellent'];
     const QUALITY_EMOJIS = ['', '😫', '😕', '😐', '😊', '😴'];
 
-    function todayStr() { return new Date().toISOString().split('T')[0]; }
+    function _localDate(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+    function todayStr() { return _localDate(new Date()); }
     function formatDate(d) { const dt = new Date(d); return dt.getDate() + ' ' + MONTHS[dt.getMonth()]; }
 
     function mapEntry(e) {
@@ -175,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
             startOfWeek.setDate(now.getDate() - now.getDay());
             const weekDates = [];
             for (let d = new Date(startOfWeek); d <= now; d.setDate(d.getDate() + 1)) {
-                weekDates.push(d.toISOString().split('T')[0]);
+                weekDates.push(_localDate(d));
             }
 
             // Fetch sleep for each day in parallel
@@ -375,14 +376,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const today = todayStr();
         const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-        const yStr = yesterday.toISOString().split('T')[0];
+        const yStr = _localDate(yesterday);
 
         let current = 0;
         if (metDates[0] === today || metDates[0] === yStr) {
             for (let i = 0; i < metDates.length; i++) {
                 const exp = new Date();
                 exp.setDate(exp.getDate() - (metDates[0] === today ? i : i + 1));
-                if (metDates[i] === exp.toISOString().split('T')[0]) current++;
+                if (metDates[i] === _localDate(exp)) current++;
                 else break;
             }
         }
@@ -404,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = [];
         for (let i = 0; i < 7; i++) {
             const d = new Date(now); d.setDate(now.getDate() - dow + i);
-            const ds = d.toISOString().split('T')[0];
+            const ds = _localDate(d);
             const manualHrs = entries.filter(e => e.date.split('T')[0] === ds).reduce((s, e) => s + e.duration, 0);
             const fitbitHrs = fitbitConnected ? (fitbitWeeklySleep[ds] || 0) : 0;
             data.push({

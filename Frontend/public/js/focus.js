@@ -143,7 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const MODE_LABELS = { focus: 'Focus Time', short: 'Short Break', long: 'Long Break' };
     const MODE_TIMES = { focus: 25, short: 5, long: 15 };
 
-    function todayStr() { return new Date().toISOString().split('T')[0]; }
+    function _localDate(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+    function todayStr() { return _localDate(new Date()); }
     function formatDate(d) { const dt = new Date(d); return dt.getDate() + ' ' + MONTHS[dt.getMonth()]; }
     function formatTime(d) { const dt = new Date(d); return dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
 
@@ -349,13 +350,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const uniqueDates = [...new Set(focusEntries.map(e => e.date.split('T')[0]))].sort().reverse();
         const today = todayStr();
         const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-        const yStr = yesterday.toISOString().split('T')[0];
+        const yStr = _localDate(yesterday);
         let current = 0;
         if (uniqueDates[0] === today || uniqueDates[0] === yStr) {
             for (let i = 0; i < uniqueDates.length; i++) {
                 const exp = new Date();
                 exp.setDate(exp.getDate() - (uniqueDates[0] === today ? i : i + 1));
-                if (uniqueDates[i] === exp.toISOString().split('T')[0]) current++;
+                if (uniqueDates[i] === _localDate(exp)) current++;
                 else break;
             }
         }
@@ -371,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = [];
         for (let i = 0; i < 7; i++) {
             const d = new Date(now); d.setDate(now.getDate() - dow + i);
-            const ds = d.toISOString().split('T')[0];
+            const ds = _localDate(d);
             const min = entries.filter(e => e.date.split('T')[0] === ds && e.mode === 'focus').reduce((s, e) => s + e.duration, 0);
             data.push(min);
         }
