@@ -6,6 +6,11 @@
 (function () {
     'use strict';
 
+    function localToday() {
+        var d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
     var Fitbit = {
         connected: false,
         fitbitUserId: null,
@@ -52,7 +57,7 @@
         async getActivity(refresh, date) {
             try {
                 var params = [];
-                if (date) params.push('date=' + date);
+                params.push('date=' + (date || localToday()));
                 if (refresh) params.push('refresh=true');
                 var qs = params.length ? '?' + params.join('&') : '';
                 var r = await fetch('/api/fitbit/activity' + qs, { credentials: 'include' });
@@ -63,7 +68,7 @@
         async getSleep(refresh, date) {
             try {
                 var params = [];
-                if (date) params.push('date=' + date);
+                params.push('date=' + (date || localToday()));
                 if (refresh) params.push('refresh=true');
                 var qs = params.length ? '?' + params.join('&') : '';
                 var r = await fetch('/api/fitbit/sleep' + qs, { credentials: 'include' });
@@ -74,7 +79,7 @@
         async getHeartRate(refresh, date) {
             try {
                 var params = [];
-                if (date) params.push('date=' + date);
+                params.push('date=' + (date || localToday()));
                 if (refresh) params.push('refresh=true');
                 var qs = params.length ? '?' + params.join('&') : '';
                 var r = await fetch('/api/fitbit/heart-rate' + qs, { credentials: 'include' });

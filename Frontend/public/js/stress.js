@@ -200,7 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             fitbitConnected = true;
 
-            const hrData = await apiGet('/api/fitbit/heart-rate' + (refresh ? '?refresh=true' : ''));
+            const d = new Date();
+            const today = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+            const hrData = await apiGet('/api/fitbit/heart-rate?date=' + today + (refresh ? '&refresh=true' : ''));
             if (hrData && hrData.resting_heart_rate) {
                 currentHeartRate = hrData.resting_heart_rate;
             }
@@ -265,7 +267,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Silently attach heart rate if Fitbit is connected
         if (fitbitConnected) {
             try {
-                const hrRes = await fetch('/api/fitbit/heart-rate', { credentials: 'include' });
+                const _d = new Date();
+                const _today = _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0');
+                const hrRes = await fetch('/api/fitbit/heart-rate?date=' + _today, { credentials: 'include' });
                 if (hrRes.ok) {
                     const hrData = await hrRes.json();
                     if (hrData && hrData.resting_heart_rate) {
