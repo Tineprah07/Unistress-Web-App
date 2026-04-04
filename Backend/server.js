@@ -11,6 +11,7 @@ import { testDbConnection } from "./db/pool.js";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { findUserByEmail, createUser, findUserByGoogleId, findUserById } from "./models/userModel.js";
+import { runInit } from "./db/init.js";
 
 // Auth middleware
 import { requireAuth } from "./middleware/authMiddleware.js";
@@ -239,11 +240,27 @@ app.get("/api/db-test", async (req, res) => {
 // -------------------------
 // Start Server
 // -------------------------
-app.listen(PORT, () => {
-  console.log(`-----------------------------------------------`);
-  console.log(`  UniStress running at http://localhost:${PORT}`);
-  console.log(`-----------------------------------------------`);
-});
+
+// Initialise database tables then start server
+async function startServer() {
+  try {
+    await testDbConnection();
+    console.log("Database connected");
+
+    await runInit();
+
+    app.listen(PORT, () => {
+      console.log("-----------------------------------------------");
+      console.log("  UniStress running at http://localhost:" + PORT);
+      console.log("-----------------------------------------------");
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 // Run commands to start the server:
 

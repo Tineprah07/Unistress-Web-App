@@ -234,7 +234,7 @@ async function createTasksTable() {
 // -------------------------
 // Run All
 // -------------------------
-async function runInit() {
+export async function runInit() {
   try {
     await pool.query("BEGIN");
 
@@ -313,15 +313,11 @@ async function runInit() {
     console.error("❌ Error running init:", error);
     throw error;
   } finally {
-    await pool.end();
+    // pool.end() removed — pool must stay open for the running server
   }
 }
 
-runInit();
-
-
-
 // Note that i will add more tables later as needed.
 
-// To run this script, use the command:
+// To run this script directly, use the command:
 // node backend/db/init.js
