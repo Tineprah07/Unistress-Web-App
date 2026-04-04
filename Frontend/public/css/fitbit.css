@@ -557,34 +557,6 @@
     font-weight: 600;
 }
 
-/* ── Dashboard Fitbit Stat Cards ── */
-.stat-card.stat-fitbit-steps,
-.stat-card.stat-fitbit-hr {
-    display: none;
-}
-.stat-cards.fitbit-connected .stat-card.stat-fitbit-steps,
-.stat-cards.fitbit-connected .stat-card.stat-fitbit-hr {
-    display: flex;
-}
-.stat-cards.fitbit-connected {
-    grid-template-columns: repeat(4, 1fr);
-}
-.stat-fitbit-steps .stat-icon {
-    background: rgba(0, 176, 185, 0.1);
-    color: #00B0B9;
-}
-.stat-fitbit-hr .stat-icon {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-}
-[data-theme="dark"] .stat-fitbit-steps .stat-icon {
-    background: rgba(0, 212, 170, 0.15);
-    color: #00D4AA;
-}
-[data-theme="dark"] .stat-fitbit-hr .stat-icon {
-    background: rgba(239, 68, 68, 0.15);
-    color: #f87171;
-}
 
 /* ── Dashboard Banner: Connected State ── */
 .fitbit-dash-banner.connected .fitbit-dash-icon {
@@ -602,8 +574,7 @@
     .fitbit-stats { grid-template-columns: repeat(2, 1fr); }
     .fitbit-dash-banner { flex-wrap: wrap; }
     .fitbit-dash-metrics { gap: 0.75rem; }
-    .stat-cards.fitbit-connected { grid-template-columns: repeat(2, 1fr); }
-    .fitbit-area-chart-wrap { height: 70px; }
+.fitbit-area-chart-wrap { height: 70px; }
 }
 
 @media (max-width: 480px) {

@@ -602,7 +602,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnEl.textContent = 'View Details';
                 btnEl.onclick = function () { window.location.href = '/views/exercise.html'; };
             }
-            if (statCards) statCards.classList.add('fitbit-connected');
             if (metricsEl) {
                 var bHtml = '';
                 if (fitbitActivity) {
@@ -617,11 +616,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (bHtml) metricsEl.innerHTML = bHtml;
             }
-            var stepsEl = document.getElementById('statFitbitSteps');
-            var hrEl    = document.getElementById('statFitbitHR');
-            if (fitbitActivity && stepsEl) animateValue(stepsEl, fitbitActivity.steps || 0, '');
-            if (fitbitHRVal && hrEl) animateValue(hrEl, fitbitHRVal, '<small>bpm</small>');
-            else if (hrEl) hrEl.innerHTML = '--';
         } else {
             if (titleEl) titleEl.textContent = 'Connect Fitbit';
             if (metricsEl) metricsEl.innerHTML = '<span class="fitbit-dash-metric">Sync your activity, sleep, and heart rate data automatically.</span>';
@@ -629,11 +623,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnEl.textContent = 'Connect';
                 btnEl.onclick = function () { if (window.Fitbit) Fitbit.connect(); };
             }
-            if (statCards) statCards.classList.remove('fitbit-connected');
-            var stepsElR = document.getElementById('statFitbitSteps');
-            var hrElR    = document.getElementById('statFitbitHR');
-            if (stepsElR) stepsElR.textContent = '--';
-            if (hrElR) hrElR.textContent = '--';
         }
 
         // ──────── TREND INDICATORS ────────
