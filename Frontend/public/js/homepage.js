@@ -364,8 +364,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 7. MOBILE HAMBURGER
+    // 7. MOBILE HAMBURGER + STICKY TOPBAR
     // =========================
+    const hasTopbar = !!document.querySelector('.topbar');
+
     function createMobileHamburger() {
         if (document.getElementById('mobileHamburger')) return;
         const btn = document.createElement('button');
@@ -373,16 +375,57 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.setAttribute('aria-label', 'Open menu');
         btn.innerHTML = '<i class="fa-solid fa-bars"></i>';
         btn.addEventListener('click', openSidebar);
-        const topbar = document.querySelector('.topbar');
-        if (topbar) { topbar.appendChild(btn); } else { body.appendChild(btn); }
+
+        if (hasTopbar) {
+            // Homepage: put inside existing topbar
+            document.querySelector('.topbar').appendChild(btn);
+        } else {
+            // Other pages: create a sticky mobile topbar
+            let mobileBar = document.getElementById('mobileTopbar');
+            if (!mobileBar) {
+                mobileBar = document.createElement('div');
+                mobileBar.id = 'mobileTopbar';
+                mobileBar.className = 'mobile-topbar';
+                const mainContent = document.getElementById('mainContent');
+                if (mainContent) mainContent.prepend(mobileBar);
+            }
+            mobileBar.appendChild(btn);
+        }
     }
-    function handleMobileHamburger() { isMobile() ? createMobileHamburger() : document.getElementById('mobileHamburger')?.remove(); }
+
+    function removeMobileHamburger() {
+        document.getElementById('mobileHamburger')?.remove();
+        const mobileBar = document.getElementById('mobileTopbar');
+        if (mobileBar) mobileBar.remove();
+    }
+
+    function handleMobileHamburger() { isMobile() ? createMobileHamburger() : removeMobileHamburger(); }
     handleMobileHamburger();
     window.addEventListener('resize', handleMobileHamburger);
 
+    // Scroll: add 'scrolled' class for transparent blur effect
+    if (!hasTopbar) {
+        window.addEventListener('scroll', () => {
+            const bar = document.getElementById('mobileTopbar');
+            if (bar) bar.classList.toggle('scrolled', window.scrollY > 10);
+        }, { passive: true });
+    }
+
     if (!document.getElementById('mobileHamburgerStyle')) {
         const ms = document.createElement('style'); ms.id = 'mobileHamburgerStyle';
-        ms.textContent = ".mobile-hamburger{position:absolute;top:0;left:0;z-index:98;width:40px;height:40px;border-radius:10px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);font-size:1.05rem;cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow-sm);transition:background .2s,color .2s}.mobile-hamburger:hover{background:var(--primary-glow);color:var(--primary)}";
+        ms.textContent = [
+            ".mobile-hamburger{position:relative;top:auto;left:auto;z-index:98;width:40px;height:40px;border-radius:10px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);font-size:1.05rem;cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow-sm);transition:background .2s,color .2s}",
+            ".mobile-hamburger:hover{background:var(--primary-glow);color:var(--primary)}",
+            ".topbar .mobile-hamburger{position:absolute;top:0;left:0}",
+            ".mobile-topbar{display:none}",
+            "@media(max-width:768px){",
+            ".mobile-topbar{display:flex;align-items:center;position:sticky;top:0;z-index:98;padding:0.6rem 1rem;margin:-1.8rem -1rem 0.75rem;border-radius:0 0 14px 14px;transition:background .3s,box-shadow .3s,backdrop-filter .3s}",
+            ".mobile-topbar.scrolled{background:transparent}",
+            "}",
+            "@media(max-width:480px){",
+            ".mobile-topbar{padding:0.5rem 0.75rem;margin:-1.5rem -0.75rem 0.6rem}",
+            "}"
+        ].join("");
         document.head.appendChild(ms);
     }
 

@@ -196,23 +196,144 @@
    ========================================= */
 @media (max-width: 1024px) { .stats-row { grid-template-columns: repeat(2,1fr); } .breathe-grid { grid-template-columns: 1fr; } }
 @media (max-width: 768px) {
-    .breathe-hero { flex-direction: column; align-items: flex-start; gap: 1.25rem; padding: 1.5rem; min-height: auto; border-radius: 18px; }
-    .hero-ring-wrap { width: 90px; height: 90px; align-self: flex-end; margin-top: -3.5rem; }
-    .hero-title { font-size: 1.3rem; }
-    .hero-subtitle { font-size: 0.75rem; line-height: 1.35; }
-    .stats-row { grid-template-columns: repeat(2,1fr); gap: 0.75rem; }
+    /* Hero – keep horizontal layout with ring on right, tighter spacing */
+    .breathe-hero { padding: 1rem 1.15rem; min-height: auto; border-radius: 18px; gap: 0.75rem; }
+    .hero-left { padding-top: 1.5rem; }
+    .hero-title { font-size: 1.1rem; }
+    .hero-subtitle { font-size: 0.72rem; line-height: 1.35; }
+    .hero-ring-wrap { width: 70px; height: 70px; }
+    .ring-value { font-size: 1.2rem; }
+    .ring-unit { font-size: 0.5rem; }
+    .hero-icon-bg { font-size: 2.4rem; top: 12px; left: 16px; }
+    .shape-1 { width: 120px; height: 120px; }
+    .shape-2 { width: 70px; height: 70px; }
+    .shape-3 { width: 35px; height: 35px; }
+
+    /* Stats row */
+    .stats-row { grid-template-columns: repeat(2,1fr); gap: 0.55rem; }
+    .stat-card { padding: 0.65rem 0.6rem; gap: 0.35rem; border-radius: 14px; }
+    .stat-icon-wrap { width: 32px; height: 32px; border-radius: 10px; font-size: 0.9rem; }
+    .stat-value { font-size: 1rem; }
+    .stat-value small { font-size: 0.6rem; }
+    .stat-label { font-size: 0.65rem; }
+
+    /* Cards */
+    .card { padding: 0.85rem 0.9rem; border-radius: 14px; }
+    .card-header { margin-bottom: 0.85rem; }
+    .card-title { font-size: 0.82rem; gap: 0.35rem; }
+    .card-title i { font-size: 0.82rem; }
+    .card-badge { font-size: 0.58rem; padding: 0.2rem 0.5rem; }
+
+    /* Breathing circle */
+    .breathe-circle { width: 175px; height: 175px; }
+    .ring-outer { width: 175px; height: 175px; }
+    .ring-inner { width: 140px; height: 140px; }
+    .breathe-label { font-size: 1.05rem; }
+    .breathe-timer { font-size: 0.7rem; bottom: 14px; }
+    .cycle-count { font-size: 0.72rem; }
+
+    /* Duration picker */
+    .duration-row { gap: 0.45rem; margin-bottom: 1rem; }
+    .duration-row .form-label { font-size: 0.72rem; }
+    .dur-btn { padding: 0.35rem 0.4rem; font-size: 0.72rem; border-radius: 7px; }
+
+    /* Controls */
+    .breathe-controls { gap: 0.5rem; margin-bottom: 1rem; }
+    .breathe-btn { padding: 0.55rem 1.2rem; font-size: 0.8rem; border-radius: 10px; }
+
+    /* Tip */
+    .breathe-tip { padding: 0.6rem 0.8rem; border-radius: 8px; }
+    .breathe-tip i { font-size: 0.78rem; }
+    .breathe-tip p { font-size: 0.68rem; }
+
+    /* Techniques */
+    .technique-item { padding: 0.6rem 0.75rem; gap: 0.55rem; border-radius: 12px; }
+    .tech-icon { font-size: 1.25rem; }
+    .tech-info h3 { font-size: 0.78rem; }
+    .tech-info p { font-size: 0.62rem; }
+    .tech-tag { font-size: 0.55rem; padding: 0.12rem 0.38rem; }
+
+    /* History */
+    .history-item { padding: 0.55rem 0.75rem; gap: 0.6rem; border-radius: 12px; }
+    .history-icon-wrap { width: 32px; height: 32px; border-radius: 8px; font-size: 0.85rem; }
+    .history-type { font-size: 0.78rem; }
+    .history-meta { font-size: 0.65rem; }
+    .history-date { font-size: 0.65rem; }
+    .history-empty { padding: 1.75rem 0.75rem; }
+    .history-empty i { font-size: 1.6rem; }
+    .history-empty p { font-size: 0.75rem; }
 }
 @media (max-width: 480px) {
-    .breathe-hero { padding: 1.25rem; border-radius: 16px; }
-    .hero-ring-wrap { width: 80px; height: 80px; }
-    .stat-card { padding: 0.85rem; }
-    .stat-value { font-size: 1.25rem; }
-    .card { padding: 1.1rem; }
-    .duration-row { flex-direction: column; align-items: stretch; gap: 0.45rem; }
-    .duration-row .form-label { white-space: normal; }
-    .breathe-controls { flex-direction: column; width: 100%; }
-    .breathe-btn { width: 100%; justify-content: center; }
-    .breathe-circle { width: 160px; height: 160px; }
-    .ring-outer { width: 160px; height: 160px; }
-    .ring-inner { width: 128px; height: 128px; }
+    /* Hero – even more compact */
+    .breathe-hero { padding: 0.85rem 1rem; border-radius: 16px; gap: 0.5rem; }
+    .hero-left { padding-top: 1.2rem; }
+    .hero-title { font-size: 1rem; }
+    .hero-subtitle { font-size: 0.68rem; }
+    .hero-ring-wrap { width: 60px; height: 60px; }
+    .ring-value { font-size: 1rem; }
+    .ring-unit { font-size: 0.45rem; }
+    .hero-icon-bg { font-size: 2rem; top: 10px; left: 12px; }
+    .shape-1 { width: 90px; height: 90px; }
+    .shape-2 { width: 50px; height: 50px; }
+    .shape-3 { width: 25px; height: 25px; }
+
+    /* Stats row */
+    .stats-row { gap: 0.45rem; margin-bottom: 1rem; }
+    .stat-card { padding: 0.55rem 0.5rem; gap: 0.3rem; border-radius: 12px; }
+    .stat-icon-wrap { width: 28px; height: 28px; border-radius: 8px; font-size: 0.78rem; }
+    .stat-value { font-size: 0.9rem; }
+    .stat-value small { font-size: 0.55rem; }
+    .stat-label { font-size: 0.6rem; }
+
+    /* Cards */
+    .card { padding: 0.7rem 0.75rem; border-radius: 12px; }
+    .card-header { margin-bottom: 0.7rem; }
+    .card-title { font-size: 0.75rem; gap: 0.3rem; }
+    .card-title i { font-size: 0.75rem; }
+    .card-badge { font-size: 0.55rem; padding: 0.18rem 0.45rem; border-radius: 5px; }
+
+    /* Breathing circle – still prominent */
+    .breathe-circle { width: 150px; height: 150px; }
+    .ring-outer { width: 150px; height: 150px; }
+    .ring-inner { width: 120px; height: 120px; }
+    .breathe-label { font-size: 0.95rem; }
+    .breathe-timer { font-size: 0.65rem; bottom: 12px; }
+    .cycle-count { font-size: 0.68rem; margin-bottom: 0.75rem; }
+
+    /* Duration picker – stacked */
+    .duration-row { flex-direction: column; align-items: stretch; gap: 0.4rem; margin-bottom: 0.85rem; }
+    .duration-row .form-label { white-space: normal; font-size: 0.68rem; }
+    .duration-picker { gap: 0.3rem; }
+    .dur-btn { padding: 0.38rem 0.35rem; font-size: 0.7rem; border-radius: 7px; }
+
+    /* Controls – full width stacked */
+    .breathe-controls { flex-direction: column; width: 100%; gap: 0.4rem; margin-bottom: 0.85rem; }
+    .breathe-btn { width: 100%; justify-content: center; padding: 0.6rem 1rem; font-size: 0.8rem; border-radius: 10px; }
+
+    /* Tip */
+    .breathe-tip { padding: 0.55rem 0.7rem; border-radius: 8px; gap: 0.4rem; }
+    .breathe-tip i { font-size: 0.72rem; }
+    .breathe-tip p { font-size: 0.65rem; line-height: 1.4; }
+
+    /* Techniques – tappable sizing */
+    .technique-list { gap: 0.4rem; }
+    .technique-item { padding: 0.55rem 0.65rem; gap: 0.5rem; border-radius: 10px; }
+    .tech-icon { font-size: 1.15rem; }
+    .tech-info h3 { font-size: 0.72rem; }
+    .tech-info p { font-size: 0.58rem; }
+    .tech-tag { font-size: 0.5rem; padding: 0.1rem 0.35rem; border-radius: 4px; }
+
+    /* History */
+    .history-item { padding: 0.5rem 0.65rem; gap: 0.5rem; border-radius: 10px; }
+    .history-icon-wrap { width: 28px; height: 28px; border-radius: 7px; font-size: 0.78rem; }
+    .history-type { font-size: 0.72rem; }
+    .history-meta { font-size: 0.6rem; }
+    .history-date { font-size: 0.6rem; }
+    .history-delete { font-size: 0.78rem; padding: 0.25rem; }
+    .history-empty { padding: 1.5rem 0.65rem; gap: 0.45rem; }
+    .history-empty i { font-size: 1.4rem; }
+    .history-empty p { font-size: 0.7rem; max-width: 240px; }
+
+    /* Grid spacing */
+    .breathe-grid { gap: 0.85rem; margin-bottom: 0.85rem; }
 }
