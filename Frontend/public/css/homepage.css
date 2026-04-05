@@ -424,16 +424,6 @@ body {
     color: var(--text-primary); cursor: pointer;
 }
 
-/* Motivation Slider */
-.motivation-slider { background: var(--body-bg); border-radius: 14px; padding: 1rem 1.1rem 0.75rem; position: relative; overflow: hidden; }
-.motivation-track { position: relative; min-height: 80px; }
-.motivation-slide { position: absolute; top: 0; left: 0; right: 0; opacity: 0; transform: translateX(30px); transition: opacity 0.45s, transform 0.45s; margin: 0; padding: 0; border: none; pointer-events: none; }
-.motivation-slide.active { opacity: 1; transform: translateX(0); position: relative; pointer-events: auto; }
-.motivation-slide p { font-size: 0.82rem; font-weight: 500; color: var(--text-primary); line-height: 1.55; font-style: italic; }
-.motivation-slide cite { display: block; font-size: 0.72rem; color: var(--text-secondary); font-style: normal; margin-top: 0.45rem; font-weight: 500; }
-.motivation-dots { display: flex; justify-content: center; gap: 6px; margin-top: 0.65rem; }
-.dot { width: 7px; height: 7px; border-radius: 50%; border: none; background: var(--border-color); cursor: pointer; padding: 0; transition: background 0.25s, transform 0.25s; }
-.dot.active { background: var(--primary); transform: scale(1.3); }
 
 /* Calendar */
 .calendar-widget { background: var(--card-bg); }
@@ -563,7 +553,6 @@ body {
 .stat-cards,
 .dash-grid,
 .profile-card,
-.motivation-slider,
 .calendar-widget,
 .scheduled-section { animation: none; }
 
@@ -685,13 +674,49 @@ body {
     .wb-left { flex: 1; min-width: 0; }
     .topbar-date { display: none; }
     .popover-item-mobile-only { display: flex; }
+    .settings-popover { width: 220px !important; border-radius: 11px; }
+    .popover-header { padding: 0.55rem 0.8rem 0.4rem; }
+    .popover-title { font-size: 0.7rem; }
+    .popover-list { padding: 0.3rem 0; }
+    .popover-item { padding: 0.45rem 0.8rem; }
+    .popover-label { font-size: 0.75rem; gap: 0.4rem; }
+    .popover-label i { font-size: 0.8rem; width: 16px; }
+    .popover-action-btn .fa-chevron-right { font-size: 0.6rem; }
+    .theme-switch { width: 34px; height: 18px; }
+    .switch-knob { width: 14px; height: 14px; }
+    .theme-switch[aria-checked="true"] .switch-knob { transform: translateX(16px); }
     .profile-panel.mobile-open {
         display: flex; position: fixed; top: 0; right: 0; bottom: 0;
-        width: min(92vw, 360px); min-width: min(92vw, 360px);
-        z-index: 180; padding-top: 0.9rem;
+        width: min(80vw, 300px); min-width: min(80vw, 300px);
+        z-index: 180; padding: 0.75rem 0.85rem; gap: 1rem;
         box-shadow: -12px 0 28px rgba(0,0,0,0.18);
     }
-    .profile-mobile-close { display: grid; place-items: center; }
+    .profile-mobile-close { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 7px; font-size: 0.8rem; }
+    .profile-panel.mobile-open .profile-card-header { margin-bottom: 0.7rem; }
+    .profile-panel.mobile-open .profile-card-title { font-size: 0.85rem; }
+    .profile-panel.mobile-open .profile-edit-btn { font-size: 0.65rem; padding: 0.22rem 0.55rem; }
+    .profile-panel.mobile-open .avatar-circle { width: 58px; height: 58px; }
+    .profile-panel.mobile-open .avatar-icon { font-size: 1.6rem; }
+    .profile-panel.mobile-open .avatar-letter { font-size: 1.4rem; }
+    .profile-panel.mobile-open .profile-name { font-size: 0.88rem; }
+    .profile-panel.mobile-open .profile-handle { font-size: 0.68rem; }
+    .profile-panel.mobile-open .profile-edit-panel { padding: 0.6rem; gap: 0.4rem; }
+    .profile-panel.mobile-open .profile-edit-field span { font-size: 0.6rem; }
+    .profile-panel.mobile-open .profile-edit-field input[type="text"] { height: 30px; font-size: 0.72rem; }
+    .profile-panel.mobile-open .profile-edit-field input[type="color"] { height: 30px; }
+    .profile-panel.mobile-open .profile-edit-save,
+    .profile-panel.mobile-open .profile-edit-cancel { height: 30px; font-size: 0.68rem; }
+    .profile-panel.mobile-open .calendar-title { font-size: 0.8rem; margin-bottom: 0.5rem; }
+    .profile-panel.mobile-open .cal-month-year { font-size: 0.72rem; }
+    .profile-panel.mobile-open .cal-nav-btn { width: 24px; height: 24px; font-size: 0.65rem; }
+    .profile-panel.mobile-open .calendar-grid th { font-size: 0.6rem; }
+    .profile-panel.mobile-open .calendar-grid td span { width: 26px; height: 26px; font-size: 0.68rem; }
+    .profile-panel.mobile-open .scheduled-title { font-size: 0.8rem; }
+    .profile-panel.mobile-open .scheduled-card { padding: 0.6rem 0.75rem; gap: 0.4rem; }
+    .profile-panel.mobile-open .scheduled-tag { font-size: 0.58rem; padding: 0.15rem 0.45rem; }
+    .profile-panel.mobile-open .scheduled-name { font-size: 0.78rem; }
+    .profile-panel.mobile-open .scheduled-time { font-size: 0.6rem; }
+    .profile-panel.mobile-open .scheduled-date { font-size: 0.65rem; }
     .profile-panel-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.35);
         z-index: 170; opacity: 0; visibility: hidden; transition: opacity 0.2s;

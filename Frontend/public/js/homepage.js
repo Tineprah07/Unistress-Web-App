@@ -485,21 +485,6 @@ document.addEventListener('DOMContentLoaded', () => {
     calNext?.addEventListener('click', () => { calDate.setMonth(calDate.getMonth() + 1); renderCalendar(); });
     renderCalendar();
 
-    // =========================
-    // 10. MOTIVATION SLIDER
-    // =========================
-    const slideEls = document.querySelectorAll('.motivation-slide');
-    const dotEls = document.querySelectorAll('.motivation-dots .dot');
-    let curSlide = 0, slideInt;
-
-    function showSlide(i) {
-        slideEls.forEach((s, idx) => s.classList.toggle('active', idx === i));
-        dotEls.forEach((d, idx) => d.classList.toggle('active', idx === i));
-        curSlide = i;
-    }
-    function startAuto() { slideInt = setInterval(() => showSlide((curSlide + 1) % slideEls.length), 5000); }
-    dotEls.forEach(d => d.addEventListener('click', () => { showSlide(parseInt(d.dataset.index, 10)); clearInterval(slideInt); startAuto(); }));
-    if (slideEls.length > 0) startAuto();
 
 
     // =====================================================
