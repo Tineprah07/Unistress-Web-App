@@ -304,22 +304,35 @@
                 </article>
 
                 <!-- Recent Activity -->
-                <article class="dash-card">
+                <article class="dash-card dash-collapsible" id="activityCard">
                     <header class="dash-card-header">
                         <h2 class="dash-card-title">Recent Activity</h2>
-                        <span class="dash-card-badge">Today</span>
+                        <div class="dash-card-header-right">
+                            <span class="dash-card-badge">Today</span>
+                            <button class="dash-collapse-btn" type="button" aria-label="Toggle section">
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                        </div>
                     </header>
-                    <div class="activity-list" id="activityList">
-                        <p class="activity-empty" id="activityEmpty">No activity yet today. Start tracking!</p>
+                    <div class="dash-collapsible-body">
+                        <div class="activity-list" id="activityList">
+                            <p class="activity-empty" id="activityEmpty">No activity yet today. Start tracking!</p>
+                        </div>
                     </div>
                 </article>
 
                 <!-- Weekly Summary -->
-                <article class="dash-card">
+                <article class="dash-card dash-collapsible" id="weeklySummaryCard">
                     <header class="dash-card-header">
                         <h2 class="dash-card-title">Weekly Summary</h2>
-                        <span class="dash-card-badge">Avg / Total</span>
+                        <div class="dash-card-header-right">
+                            <span class="dash-card-badge">Avg / Total</span>
+                            <button class="dash-collapse-btn" type="button" aria-label="Toggle section">
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                        </div>
                     </header>
+                    <div class="dash-collapsible-body">
                     <div class="weekly-stats">
                         <div class="ws-item">
                             <div class="ws-icon ws-icon-exercise"><i class="fa-solid fa-dumbbell"></i></div>
@@ -341,6 +354,7 @@
                             <div class="ws-icon ws-icon-focus"><i class="fa-solid fa-book-open"></i></div>
                             <div class="ws-info"><p class="ws-value" id="weekFocus">0 min</p><p class="ws-label">Focus (total)</p></div>
                         </div>
+                    </div>
                     </div>
                 </article>
 

@@ -335,6 +335,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // =========================
+    // =========================
+    // 6b. MOBILE COLLAPSIBLE CARDS
+    // =========================
+    function initCollapsibleCards() {
+        document.querySelectorAll('.dash-collapsible').forEach(card => {
+            const header = card.querySelector('.dash-card-header');
+            if (!header) return;
+            if (isMobile()) card.classList.add('collapsed');
+            header.style.cursor = isMobile() ? 'pointer' : '';
+            header.addEventListener('click', () => {
+                if (!isMobile()) return;
+                card.classList.toggle('collapsed');
+            });
+        });
+    }
+    initCollapsibleCards();
+    // Uncollapse when switching to desktop, update cursor
+    window.addEventListener('resize', () => {
+        document.querySelectorAll('.dash-collapsible').forEach(card => {
+            const header = card.querySelector('.dash-card-header');
+            if (!isMobile()) {
+                card.classList.remove('collapsed');
+                if (header) header.style.cursor = '';
+            } else {
+                if (header) header.style.cursor = 'pointer';
+            }
+        });
+    });
+
     // 7. MOBILE HAMBURGER
     // =========================
     function createMobileHamburger() {
@@ -344,7 +373,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.setAttribute('aria-label', 'Open menu');
         btn.innerHTML = '<i class="fa-solid fa-bars"></i>';
         btn.addEventListener('click', openSidebar);
-        body.appendChild(btn);
+        const topbar = document.querySelector('.topbar');
+        if (topbar) { topbar.appendChild(btn); } else { body.appendChild(btn); }
     }
     function handleMobileHamburger() { isMobile() ? createMobileHamburger() : document.getElementById('mobileHamburger')?.remove(); }
     handleMobileHamburger();
@@ -352,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!document.getElementById('mobileHamburgerStyle')) {
         const ms = document.createElement('style'); ms.id = 'mobileHamburgerStyle';
-        ms.textContent = ".mobile-hamburger{position:fixed;top:1rem;left:1rem;z-index:98;width:40px;height:40px;border-radius:10px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);font-size:1.05rem;cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow-sm);transition:background .2s,color .2s}.mobile-hamburger:hover{background:var(--primary-glow);color:var(--primary)}.sidebar.expanded~.mobile-hamburger{display:none}";
+        ms.textContent = ".mobile-hamburger{position:absolute;top:0;left:0;z-index:98;width:40px;height:40px;border-radius:10px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-primary);font-size:1.05rem;cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow-sm);transition:background .2s,color .2s}.mobile-hamburger:hover{background:var(--primary-glow);color:var(--primary)}";
         document.head.appendChild(ms);
     }
 
