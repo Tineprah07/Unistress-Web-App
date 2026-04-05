@@ -340,7 +340,7 @@
 
     /* Form */
     .form-label { font-size: 0.72rem; }
-    .form-input { min-height: 44px; padding: 0.6rem 0.75rem; font-size: 0.82rem; }
+    .form-input { min-height: 38px; padding: 0.5rem 0.7rem; font-size: 0.82rem; border-radius: 8px; }
     .editor-actions { flex-direction: column; }
     .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
     .btn-primary { font-size: 0.78rem; padding: 0.6rem 0.9rem; }

@@ -1006,15 +1006,9 @@
         font-size: 0.7rem;
     }
 
-    .form-label {
-        font-size: 0.75rem;
-    }
-
-    .btn-primary {
-        padding: 0.7rem 1.2rem;
-        font-size: 0.82rem;
-        border-radius: 10px;
-    }
+    .form-label { font-size: 0.75rem; }
+    .form-input { padding: 0.5rem 0.7rem; font-size: 0.82rem; border-radius: 9px; }
+    .btn-primary { padding: 0.6rem 1rem; font-size: 0.78rem; border-radius: 9px; }
 
     /* ── History ── */
     .history-item {
@@ -1221,15 +1215,8 @@
     }
 
     /* ── Form (touch-friendly) ── */
-    .form-input {
-        min-height: 46px;
-        padding: 0.7rem 0.9rem;
-        font-size: 1rem;
-    }
-
-    .form-label {
-        font-size: 0.72rem;
-    }
+    .form-input { min-height: 38px; padding: 0.5rem 0.7rem; font-size: 0.82rem; border-radius: 8px; }
+    .form-label { font-size: 0.7rem; }
 
     .type-btn {
         min-width: 44px;

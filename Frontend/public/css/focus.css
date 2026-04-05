@@ -395,7 +395,7 @@
 
     /* Tasks */
     .task-form { flex-direction: column; }
-    .task-form .form-input { min-height: 42px; padding: 0.6rem 0.8rem; font-size: 0.88rem; border-radius: 9px; }
+    .task-form .form-input { min-height: 38px; padding: 0.5rem 0.7rem; font-size: 0.82rem; border-radius: 8px; }
     .btn-add-task { width: 100%; height: 40px; border-radius: 9px; font-size: 0.85rem; }
     .task-name { font-size: 0.7rem; }
     .task-item { padding: 0.4rem 0.55rem; gap: 0.45rem; border-radius: 8px; }

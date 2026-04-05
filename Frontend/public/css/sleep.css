@@ -504,7 +504,10 @@
 
     /* Form */
     .form-row-2 { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-    .form-label { font-size: 0.75rem; }
+    .form-label { font-size: 0.72rem; }
+    .form-input { padding: 0.45rem 0.65rem; font-size: 0.8rem; border-radius: 9px; }
+    .form-input[type="time"] { min-height: 38px; padding: 0.45rem 0.65rem; font-size: 0.82rem; }
+    .form-group { gap: 0.3rem; }
 
     /* Quality picker – compact but spaced */
     .quality-picker { flex-wrap: nowrap; gap: 0.3rem; }
@@ -570,15 +573,13 @@
     .chart-legend { gap: 0.6rem; padding-top: 0.35rem; }
 
     /* Form – keep touch-friendly inputs */
-    .form-input[type="time"] {
-        min-height: 50px;
-        padding: 0.7rem 0.9rem;
-        font-size: 1rem;
-        border-radius: 12px;
-    }
-    .form-label { font-size: 0.72rem; }
-    .form-input { font-size: 0.82rem; padding: 0.6rem 0.75rem; }
-    .btn-primary { font-size: 0.82rem; padding: 0.7rem 1.2rem; border-radius: 10px; }
+    .form-label { font-size: 0.68rem; }
+    .form-input { min-height: 34px; padding: 0.4rem 0.6rem; font-size: 0.78rem; border-radius: 8px; }
+    .form-input[type="time"] { min-height: 36px; padding: 0.45rem 0.65rem; font-size: 0.8rem; border-radius: 8px; }
+    .form-textarea { min-height: 40px; font-size: 0.78rem; }
+    .form-row-2 { gap: 0.6rem; }
+    .form-group { gap: 0.3rem; }
+    .btn-primary { font-size: 0.75rem; padding: 0.55rem 1rem; border-radius: 9px; }
 
     /* Quality picker – slightly smaller but still tappable */
     .quality-picker { gap: 0.25rem; }

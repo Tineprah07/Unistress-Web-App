@@ -320,11 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =============================
     // COLLAPSIBLE COMPLETED
     // =============================
-    const completedCard = document.getElementById('completedCard');
-    completedCard?.querySelector('.completed-toggle')?.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-text')) return;
-        completedCard.classList.toggle('open');
-    });
+    // Completed card now uses shared .history-card toggle from homepage.js
 
     // =============================
     // RENDER ALL & INIT

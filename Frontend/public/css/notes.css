@@ -299,7 +299,7 @@
     .note-action-btn { font-size: 0.7rem; padding: 0.2rem; }
 
     /* Editor */
-    .form-input { min-height: 44px; padding: 0.55rem 0.7rem; font-size: 0.82rem; }
+    .form-input { min-height: 38px; padding: 0.5rem 0.7rem; font-size: 0.82rem; border-radius: 8px; }
     .title-input { font-size: 0.9rem; }
     .note-textarea { min-height: 90px; }
     .form-label { font-size: 0.7rem; }
