@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniStress | About</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/images/unistress-favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/about.css">
+</head>
+
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+
+        <header class="sidebar-header">
+            <figure class="sidebar-brand">
+                <span class="brand-icon">U</span>
+                <figcaption class="brand-text">UniStress</figcaption>
+            </figure>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </header>
+
+        <figure class="sidebar-home-icon" aria-hidden="true">
+            <i class="fa-solid fa-circle-info"></i>
+        </figure>
+
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="/views/homepage.html" class="nav-link" data-tooltip="Dashboard"><i class="fa-solid fa-chart-line nav-icon"></i><span class="nav-text">Dashboard</span></a></li>
+                <li class="nav-item"><a href="/views/stress.html" class="nav-link" data-tooltip="Stress Tracking"><i class="fa-solid fa-heart-pulse nav-icon"></i><span class="nav-text">Stress Tracking</span></a></li>
+                <li class="nav-item"><a href="/views/exercise.html" class="nav-link" data-tooltip="Exercise"><i class="fa-solid fa-dumbbell nav-icon"></i><span class="nav-text">Exercise</span></a></li>
+                <li class="nav-item"><a href="/views/sleep.html" class="nav-link" data-tooltip="Sleep"><i class="fa-solid fa-moon nav-icon"></i><span class="nav-text">Sleep</span></a></li>
+                <li class="nav-item"><a href="/views/hydration.html" class="nav-link" data-tooltip="Hydration"><i class="fa-solid fa-droplet nav-icon"></i><span class="nav-text">Hydration</span></a></li>
+                <li class="nav-item"><a href="/views/focus.html" class="nav-link" data-tooltip="Focus Timer"><i class="fa-solid fa-book-open nav-icon"></i><span class="nav-text">Focus Timer</span></a></li>
+                <li class="nav-item"><a href="/views/breathe.html" class="nav-link" data-tooltip="Breathe Flow"><i class="fa-solid fa-wind nav-icon"></i><span class="nav-text">Breathe Flow</span></a></li>
+                <li class="nav-item"><a href="/views/notes.html" class="nav-link" data-tooltip="My Notes"><i class="fa-regular fa-note-sticky nav-icon"></i><span class="nav-text">My Notes</span></a></li>
+                <li class="nav-item"><a href="/views/reminders.html" class="nav-link" data-tooltip="Reminders"><i class="fa-solid fa-bell nav-icon"></i><span class="nav-text">Reminders</span></a></li>
+                <li class="nav-item active"><a href="/views/about.html" class="nav-link" data-tooltip="About App"><i class="fa-solid fa-circle-info nav-icon"></i><span class="nav-text">About App</span></a></li>
+            </ul>
+        </nav>
+
+        <footer class="sidebar-footer">
+            <section class="settings-wrapper">
+                <button class="sidebar-footer-btn" id="settingsBtn" type="button" data-tooltip="Settings">
+                    <i class="fa-solid fa-gear nav-icon"></i>
+                    <span class="nav-text">Settings</span>
+                </button>
+                <article class="settings-popover" id="settingsPopover" role="dialog" aria-label="Settings menu">
+                    <header class="popover-header">
+                        <h3 class="popover-title">Settings</h3>
+                    </header>
+                    <ul class="popover-list">
+                        <li class="popover-item">
+                            <span class="popover-label">
+                                <i class="fa-solid fa-circle-half-stroke"></i>
+                                Dark Mode
+                            </span>
+                            <button class="theme-switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+                                <span class="switch-knob"></span>
+                            </button>
+                        </li>
+                        <li class="popover-item">
+                            <span class="popover-label"><i class="fa-solid fa-bell"></i> Notifications</span>
+                            <button class="theme-switch" id="notifSwitch" type="button" role="switch" aria-checked="false" aria-label="Toggle notifications"><span class="switch-knob"></span></button>
+                        </li>
+                        <li class="popover-item popover-item-mobile-only">
+                            <button class="popover-action-btn" id="openProfilePanelBtn" type="button" aria-label="Open profile and calendar">
+                                <span class="popover-label">
+                                    <i class="fa-solid fa-user"></i>
+                                    Profile & Calendar
+                                </span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </article>
+            </section>
+            <button class="sidebar-footer-btn logout-btn" id="logoutBtn" type="button" data-tooltip="Log Out">
+                <i class="fa-solid fa-right-from-bracket nav-icon"></i>
+                <span class="nav-text">Log Out</span>
+            </button>
+        </footer>
+
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- Top Bar -->
+        <header class="topbar">
+            <section class="welcome-section">
+                <h1 class="welcome-title">About UniStress</h1>
+                <p class="welcome-subtitle">Learn more about the app, its purpose, and the person behind it.</p>
+            </section>
+        </header>
+
+        <!-- ── Hero Banner ── -->
+        <section class="about-hero">
+            <div class="about-hero-content">
+                <div class="about-hero-icon">
+                    <span class="brand-icon-large">U</span>
+                </div>
+                <h2 class="about-hero-title">UniStress</h2>
+                <p class="about-hero-tagline">Your personal university wellbeing companion</p>
+            </div>
+            <div class="about-hero-blob blob-1"></div>
+            <div class="about-hero-blob blob-2"></div>
+            <div class="about-hero-blob blob-3"></div>
+        </section>
+
+        <!-- ── About Grid ── -->
+        <div class="about-grid">
+
+            <!-- What is UniStress -->
+            <section class="about-card about-card-full">
+                <div class="about-card-icon">
+                    <i class="fa-solid fa-lightbulb"></i>
+                </div>
+                <h3 class="about-card-title">What is UniStress?</h3>
+                <p class="about-card-text">
+                    UniStress is a comprehensive wellbeing management platform designed specifically for university students.
+                    University life brings a unique set of challenges, from exam pressure and assignment deadlines to managing
+                    sleep, staying active, and maintaining mental health. UniStress brings all of these together in one place,
+                    giving students a simple, intuitive way to track, understand, and improve their daily wellbeing.
+                </p>
+                <p class="about-card-text">
+                    Rather than relying on scattered apps for different aspects of health, UniStress provides a unified dashboard
+                    where students can monitor their stress levels, log exercise and sleep, track water intake, use focus timers
+                    for productive study sessions, practise guided breathing exercises, journal their thoughts, and set reminders
+                    - all from a single, beautifully designed interface.
+                </p>
+            </section>
+
+            <!-- Why it was built -->
+            <section class="about-card">
+                <div class="about-card-icon icon-red">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <h3 class="about-card-title">Why Was It Built?</h3>
+                <p class="about-card-text">
+                    Research consistently shows that university students experience higher levels of stress, anxiety, and burnout
+                    compared to the general population. Many students struggle silently, unsure of how to manage their wellbeing
+                    or unaware of how their daily habits impact their mental and physical health.
+                </p>
+                <p class="about-card-text">
+                    UniStress was built to bridge that gap - to provide students with an accessible, non-judgmental tool
+                    that encourages self-awareness and healthier habits. By making wellbeing tracking effortless and visual,
+                    the app empowers students to take proactive control of their health during one of the most demanding
+                    periods of their lives.
+                </p>
+            </section>
+
+            <!-- Key Features -->
+            <section class="about-card">
+                <div class="about-card-icon icon-green">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <h3 class="about-card-title">Key Features</h3>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-card-icon feat-stress"><i class="fa-solid fa-heart-pulse"></i></div>
+                        <div class="feature-card-text">
+                            <h4>Stress Tracking</h4>
+                            <p>Log daily mood, identify triggers, and visualise stress patterns</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon feat-exercise"><i class="fa-solid fa-dumbbell"></i></div>
+                        <div class="feature-card-text">
+                            <h4>Exercise Logging</h4>
+                            <p>Record workouts with type, duration, and intensity tracking</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon feat-sleep"><i class="fa-solid fa-moon"></i></div>
+                        <div class="feature-card-text">
+                            <h4>Sleep Monitoring</h4>
+                            <p>Track bedtime, wake time, and sleep quality</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon feat-hydration"><i class="fa-solid fa-droplet"></i></div>
+                        <div class="feature-card-text">
+                            <h4>Hydration Tracker</h4>
+                            <p>Stay on top of daily water intake with quick-log buttons</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon feat-focus"><i class="fa-solid fa-book-open"></i></div>
+                        <div class="feature-card-text">
+                            <h4>Focus Timer</h4>
+                            <p>Pomodoro-based study timer to boost concentration</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon feat-breathe"><i class="fa-solid fa-wind"></i></div>
+                        <div class="feature-card-text">
+                            <h4>Breathe Flow</h4>
+                            <p>Guided breathing exercises with animated visual guides</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon feat-notes"><i class="fa-regular fa-note-sticky"></i></div>
+                        <div class="feature-card-text">
+                            <h4>Smart Notes</h4>
+                            <p>Journal thoughts with mood tags and categories</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon feat-reminders"><i class="fa-solid fa-bell"></i></div>
+                        <div class="feature-card-text">
+                            <h4>Reminders</h4>
+                            <p>Schedule wellness reminders with priority levels</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon feat-dashboard"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="feature-card-text">
+                            <h4>Dashboard</h4>
+                            <p>Unified overview with activity scores and weekly charts</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon feat-fitbit"><i class="fa-brands fa-fitbit"></i></div>
+                        <div class="feature-card-text">
+                            <h4>Fitbit Integration</h4>
+                            <p>Sync real-time health data from your Fitbit device</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- How it works -->
+            <section class="about-card about-card-full">
+                <div class="about-card-icon icon-blue">
+                    <i class="fa-solid fa-gears"></i>
+                </div>
+                <h3 class="about-card-title">How Does It Work?</h3>
+                <div class="about-steps">
+                    <div class="about-step">
+                        <div class="step-number">1</div>
+                        <h4>Sign Up</h4>
+                        <p>Create your account using your email or sign in with Google - quick and secure.</p>
+                    </div>
+                    <div class="about-step">
+                        <div class="step-number">2</div>
+                        <h4>Track Daily</h4>
+                        <p>Log your stress, exercise, sleep, water intake, and more through simple, guided forms.</p>
+                    </div>
+                    <div class="about-step">
+                        <div class="step-number">3</div>
+                        <h4>Review Insights</h4>
+                        <p>View weekly charts, mood calendars, and trend data to understand your patterns.</p>
+                    </div>
+                    <div class="about-step">
+                        <div class="step-number">4</div>
+                        <h4>Improve &amp; Grow</h4>
+                        <p>Use your insights to build healthier habits, manage stress, and thrive at university.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tech Stack -->
+            <section class="about-card">
+                <div class="about-card-icon icon-purple">
+                    <i class="fa-solid fa-code"></i>
+                </div>
+                <h3 class="about-card-title">Built With</h3>
+                <div class="tech-stack-grid">
+                    <div class="tech-item">
+                        <i class="fa-brands fa-html5"></i>
+                        <span>HTML5</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fa-brands fa-css3-alt"></i>
+                        <span>CSS3</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fa-brands fa-js"></i>
+                        <span>JavaScript</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fa-brands fa-node-js"></i>
+                        <span>Node.js</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fa-solid fa-server"></i>
+                        <span>Express.js</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fa-solid fa-database"></i>
+                        <span>MongoDB</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Passport.js</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fa-brands fa-fitbit"></i>
+                        <span>Fitbit API</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- The Developer -->
+            <section class="about-card">
+                <div class="about-card-icon icon-amber">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <h3 class="about-card-title">The Developer</h3>
+                <div class="developer-info">
+                    <div class="developer-avatar">
+                        <i class="fa-solid fa-user-graduate"></i>
+                    </div>
+                    <div class="developer-details">
+                        <h4 class="developer-name">Augustine Gyamprah</h4>
+                        <p class="developer-id">Student ID: UP2158902</p>
+                        <p class="developer-uni">University of Portsmouth</p>
+                    </div>
+                </div>
+                <p class="about-card-text">
+                    UniStress was developed by <strong>Augustine Gyamprah</strong> as a <strong>Final Year Project</strong>
+                    for the completion of a degree at the University of Portsmouth. This project represents the culmination
+                    of years of learning in software development, user experience design, and web technologies.
+                </p>
+                <p class="about-card-text">
+                    The idea for UniStress was born out of first-hand experience with the pressures of university life and
+                    a genuine desire to create something meaningful - a tool that could make a real difference in the
+                    lives of fellow students. Every feature, from the stress tracker to the breathing exercises, was carefully
+                    researched and designed with the student experience at its core.
+                </p>
+            </section>
+
+            <!-- Final Year Project -->
+            <section class="about-card about-card-full">
+                <div class="about-card-icon icon-indigo">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h3 class="about-card-title">Final Year Project</h3>
+                <p class="about-card-text">
+                    This application was developed as part of the <strong>Final Year Project</strong> module, which is a
+                    core requirement for undergraduate students completing their degree programme. The project involved the
+                    full software development lifecycle - from initial research and requirements gathering, through
+                    design and prototyping, to implementation, testing, and deployment.
+                </p>
+                <p class="about-card-text">
+                    The goal of the project was to investigate the challenges university students face in managing their
+                    wellbeing and to develop a practical, evidence-informed web application that addresses those challenges.
+                    UniStress demonstrates proficiency in full-stack web development, responsive UI/UX design, RESTful API
+                    architecture, third-party API integration, user authentication, and data visualisation.
+                </p>
+                <div class="project-details">
+                    <div class="project-detail-item">
+                        <i class="fa-solid fa-user"></i>
+                        <div>
+                            <strong>Developer</strong>
+                            <span>Augustine Gyamprah</span>
+                        </div>
+                    </div>
+                    <div class="project-detail-item">
+                        <i class="fa-solid fa-id-card"></i>
+                        <div>
+                            <strong>Student ID</strong>
+                            <span>UP2158902</span>
+                        </div>
+                    </div>
+                    <div class="project-detail-item">
+                        <i class="fa-solid fa-university"></i>
+                        <div>
+                            <strong>Institution</strong>
+                            <span>University of Portsmouth</span>
+                        </div>
+                    </div>
+                    <div class="project-detail-item">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        <div>
+                            <strong>Academic Year</strong>
+                            <span>2025 / 2026</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="about-footer">
+            <p>&copy; 2026 UniStress - Built with care by Augustine Gyamprah (UP2158902)</p>
+        </footer>
+
+    </main>
+
+    <script src="/js/homepage.js"></script>
+
+</body>
+</html>
