@@ -77,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isMobile()) localStorage.setItem(SIDEBAR_KEY, 'expanded');
         if (isMobile()) {
             overlay.classList.add('active');
+            body.style.overflow = 'hidden';
             const mobileBtn = document.getElementById('mobileHamburger');
             if (mobileBtn) mobileBtn.style.display = 'none';
         }
@@ -86,12 +87,13 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebar.classList.remove('expanded');
         if (!isMobile()) localStorage.setItem(SIDEBAR_KEY, 'collapsed');
         overlay.classList.remove('active');
+        body.style.overflow = '';
         const mobileBtn = document.getElementById('mobileHamburger');
         if (mobileBtn) mobileBtn.style.display = 'grid';
     }
 
     sidebarToggle?.addEventListener('click', () => sidebar.classList.contains('expanded') ? closeSidebar() : openSidebar());
-    overlay.addEventListener('click', e => { if (e.target === overlay) closeSidebar(); });
+    overlay.addEventListener('click', closeSidebar);
     if (!isMobile() && localStorage.getItem(SIDEBAR_KEY) === 'expanded') sidebar.classList.add('expanded');
     window.addEventListener('resize', () => { if (isMobile() && sidebar.classList.contains('expanded')) closeSidebar(); });
 
@@ -116,11 +118,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================
     // 2. ACTIVE NAV ITEM
     // =========================
+    let touchMoved = false;
+    sidebar.addEventListener('touchstart', () => { touchMoved = false; }, { passive: true });
+    sidebar.addEventListener('touchmove', () => { touchMoved = true; }, { passive: true });
+
     navItems.forEach(item => {
         item.querySelector('.nav-link')?.addEventListener('click', () => {
             navItems.forEach(i => i.classList.remove('active'));
             item.classList.add('active');
-            if (isMobile()) closeSidebar();
+            if (isMobile() && !touchMoved) closeSidebar();
         });
     });
 
