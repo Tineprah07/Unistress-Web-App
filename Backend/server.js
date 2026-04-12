@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 import session from "express-session";
 import dotenv from "dotenv";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import { testDbConnection } from "./db/pool.js";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
@@ -192,7 +193,18 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "UniStress backend is live" });
 });
 
+// Rate limiting for auth routes (brute-force protection)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // max 10 attempts per window
+  message: { error: "Too many attempts. Please try again after 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Auth (public — no requireAuth)
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
 app.use("/api/auth", authRoutes);
 
 // Protected module APIs — all require login
