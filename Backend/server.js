@@ -200,6 +200,7 @@ const authLimiter = rateLimit({
   message: { error: "Too many attempts. Please try again after 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { trustProxy: false },
 });
 
 // Auth (public — no requireAuth)
