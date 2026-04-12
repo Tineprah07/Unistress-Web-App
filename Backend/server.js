@@ -197,10 +197,13 @@ app.get("/api/health", (req, res) => {
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // max 10 attempts per window
-  message: { error: "Too many attempts. Please try again after 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
   validate: { trustProxy: false },
+  keyGenerator: (req) => req.ip || req.headers["x-forwarded-for"] || "unknown",
+  handler: (req, res) => {
+    res.status(429).json({ error: "Too many attempts. Please try again after 15 minutes." });
+  },
 });
 
 // Auth (public — no requireAuth)
