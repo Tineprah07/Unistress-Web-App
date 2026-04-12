@@ -408,6 +408,84 @@
     margin: 0;
 }
 
+/* ── Dark Mode ── */
+[data-theme="dark"] .about-hero {
+    background: linear-gradient(135deg, #3a3f9e 0%, #6366f1 100%);
+}
+
+[data-theme="dark"] .about-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .feature-card,
+[data-theme="dark"] .tech-item,
+[data-theme="dark"] .developer-info,
+[data-theme="dark"] .project-detail-item {
+    background: var(--sidebar-bg, #1a1a24);
+}
+
+[data-theme="dark"] .tech-item i {
+    color: #a5a9ff;
+}
+
+[data-theme="dark"] .developer-id {
+    color: #a5a9ff;
+}
+
+[data-theme="dark"] .project-detail-item > i {
+    color: #a5a9ff;
+}
+
+[data-theme="dark"] .about-card-icon {
+    background: rgba(78, 84, 200, 0.2);
+    color: #a5a9ff;
+}
+
+[data-theme="dark"] .about-card-icon.icon-red {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+[data-theme="dark"] .about-card-icon.icon-green {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+
+[data-theme="dark"] .about-card-icon.icon-blue {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .about-card-icon.icon-purple {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+}
+
+[data-theme="dark"] .about-card-icon.icon-amber {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+
+[data-theme="dark"] .about-card-icon.icon-indigo {
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+}
+
+[data-theme="dark"] .feat-stress { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+[data-theme="dark"] .feat-exercise { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+[data-theme="dark"] .feat-sleep { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+[data-theme="dark"] .feat-hydration { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+[data-theme="dark"] .feat-focus { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+[data-theme="dark"] .feat-breathe { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+[data-theme="dark"] .feat-notes { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
+[data-theme="dark"] .feat-reminders { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+[data-theme="dark"] .feat-dashboard { background: rgba(78, 84, 200, 0.15); color: #a5a9ff; }
+[data-theme="dark"] .feat-fitbit { background: rgba(0, 184, 212, 0.15); color: #22d3ee; }
+
+[data-theme="dark"] .about-footer {
+    border-top-color: var(--border-color, #2a2a3c);
+}
+
 /* ── Responsive: Tablet ── */
 @media (max-width: 900px) {
     .about-grid {
