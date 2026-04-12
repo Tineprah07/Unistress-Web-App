@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     sidebarToggle?.addEventListener('click', () => sidebar.classList.contains('expanded') ? closeSidebar() : openSidebar());
-    overlay.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeSidebar(); });
     if (!isMobile() && localStorage.getItem(SIDEBAR_KEY) === 'expanded') sidebar.classList.add('expanded');
     window.addEventListener('resize', () => { if (isMobile() && sidebar.classList.contains('expanded')) closeSidebar(); });
 
